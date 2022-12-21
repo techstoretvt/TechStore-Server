@@ -27,7 +27,7 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING
       },
-      token: {
+      keyVerify: {
         allowNull: false,
         type: Sequelize.STRING
       },
