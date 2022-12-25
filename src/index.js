@@ -2,19 +2,32 @@ import express from "express";
 require('dotenv').config();
 import bodyParser from "body-parser";
 const cors = require('cors');
+const { Server } = require('socket.io')
+const http = require('http');
 
+import configViewEngine from "./config/viewEngine";
 import initWebRoute from "./Route/web";
 
-
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: `${process.env.LINK_FONTEND}`,
+        methods: ["GET", "POST"]
+    }
+});
+
+
+
+configViewEngine(app);
 
 app.use(cors());
 // app.use(cors({ origin: true }))
 // app.use(function (req, res, next) {
 
 //     // Website you wish to allow to connect
-//     res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
-//     // res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8080');
+//     // res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+//     res.setHeader('Access-Control-Allow-Origin', '*');
 
 //     // Request methods you wish to allow
 //     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
@@ -36,9 +49,22 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }))
 
 initWebRoute(app);
 
+//web socket
+io.on('connection', (socket) => {
+    console.log('user connected');
+
+    socket.on('send-email-verify', function (from, msg) {
+        console.log('MSG', from, ' saying ', msg);
+
+        io.emit(`email-verify-${from}`, {
+            message: 'success',
+            linkFe: process.env.LINK_FONTEND
+        })
+    });
+})
 
 const port = process.env.PORT
-app.listen(port, () => {
+server.listen(port, () => {
     console.log('Runing server succeed!');
     console.log('Listen from port:', port);
 })

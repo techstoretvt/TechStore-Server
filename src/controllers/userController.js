@@ -1,5 +1,21 @@
 import userService from '../services/userService'
 
+const ContentController = async (res, inputData, callback) => {
+    try {
+        //call service data
+        let data = await callback(data)
+
+        return res.status(200).json(inputData)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
 const CreateUser = async (req, res) => {
     try {
         //call service data
@@ -80,10 +96,22 @@ const getUserLogin = async (req, res) => {
     }
 }
 
+const verifyEmail = (req, res) => {
+    res.render('verifyEmailPage.ejs')
+}
+
+const accountVerifyPage = (req, res) => {
+    res.render('accountVerifyPage.ejs')
+}
+
+
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
     userLogin,
     refreshToken,
-    getUserLogin
+    getUserLogin,
+    verifyEmail,
+    accountVerifyPage,
 }

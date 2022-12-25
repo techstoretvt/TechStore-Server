@@ -4,10 +4,11 @@ import userController from '../controllers/userController'
 let router = express.Router();
 
 const initWebRoute = (app) => {
-    router.get('/', (req, res) => {
-        res.send('Hello backend')
-    })
+    router.get('/', (req, res, next) => { res.send('Hello backend') })
+    router.get('/account', userController.accountVerifyPage)
+    router.get('/verify-email', userController.verifyEmail)
 
+    //user api
     router.post('/api/create-user', userController.CreateUser)
     router.post('/api/verify-create-user', userController.verifyCreateUser)
     router.post('/api/user-login', userController.userLogin)

@@ -61,7 +61,8 @@ const CreateUser = (data) => {
                         errMessage: 'Tài khoản chưa được xác nhận',
                         data: {
                             accessToken: tokens.accessToken,
-                            refreshToken: tokens.refreshToken
+                            refreshToken: tokens.refreshToken,
+                            keyVerify
                         }
                     })
                 }
@@ -81,7 +82,8 @@ const CreateUser = (data) => {
                     errMessage: 'Đã tạo tài khoản',
                     data: {
                         accessToken: tokens.accessToken,
-                        refreshToken: tokens.refreshToken
+                        refreshToken: tokens.refreshToken,
+                        keyVerify
                     }
                 })
             }
@@ -154,7 +156,8 @@ const verifyCreateUser = (data) => {
                 let user = await db.User.findOne({
                     where: {
                         id: +data.id,
-                        keyVerify: data.keyVerify
+                        keyVerify: data.keyVerify,
+                        statusUser: 'wait'
                     },
                     raw: false
                 })
@@ -172,7 +175,8 @@ const verifyCreateUser = (data) => {
 
                     resolve({
                         errCode: 0,
-                        errMessage: 'Kích hoạt tài khoản thành công. Cảm ơn vì đã xác nhận.'
+                        errMessage: 'Kích hoạt tài khoản thành công. Cảm ơn vì đã xác nhận.',
+                        keyVerify: data.keyVerify
                     })
                 }
             }
@@ -307,11 +311,39 @@ const getUserLogin = (data) => {
                     })
 
                     if (user) {
-                        resolve({
-                            errCode: 0,
-                            errMessage: 'Get user succeed!',
-                            data: user
-                        });
+                        let date = new Date().getTime();
+                        if (user.statusUser !== 'wait' && user.statusUser !== 'false') {
+                            if (user.statusUser === 'true') {
+                                resolve({
+                                    errCode: 0,
+                                    errMessage: 'Get user succeed!',
+                                    data: user
+                                });
+                            }
+                            else {
+                                if (+user.statusUser < date) {
+                                    resolve({
+                                        errCode: 0,
+                                        errMessage: 'Get user succeed!',
+                                        data: user
+                                    });
+                                }
+                                else {
+                                    resolve({
+                                        errCode: 3,
+                                        errMessage: 'Not found user!',
+                                    });
+                                }
+                            }
+
+                        }
+                        else {
+                            resolve({
+                                errCode: 3,
+                                errMessage: 'Not found user!',
+                            });
+                        }
+
                     }
                     else {
                         resolve({
@@ -334,10 +366,11 @@ const getUserLogin = (data) => {
     })
 }
 
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
     userLogin,
     refreshToken,
-    getUserLogin
+    getUserLogin,
 }
