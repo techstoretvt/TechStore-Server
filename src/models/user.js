@@ -17,8 +17,11 @@ module.exports = (sequelize, DataTypes) => {
     pass: DataTypes.STRING,
     avatar: DataTypes.TEXT,
     idTypeUser: DataTypes.INTEGER,
-    statusUser: DataTypes.STRING
-
+    statusUser: DataTypes.STRING,
+    avatarGoogle: DataTypes.TEXT,
+    typeAccount: DataTypes.STRING,
+    idFacebook: DataTypes.STRING,
+    avatarFacebook: DataTypes.TEXT
 
   }, {
     sequelize,

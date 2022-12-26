@@ -14,6 +14,8 @@ const initWebRoute = (app) => {
     router.post('/api/user-login', userController.userLogin)
     router.post('/api/refresh-token', userController.refreshToken)
     router.get('/api/get-user-login', userController.getUserLogin);
+    router.post('/api/login-google', userController.loginGoogle)
+    router.post('/api/login-facebook', userController.loginFacebook)
 
     return app.use('/', router);
 }

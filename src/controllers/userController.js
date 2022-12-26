@@ -104,6 +104,37 @@ const accountVerifyPage = (req, res) => {
     res.render('accountVerifyPage.ejs')
 }
 
+const loginGoogle = async (req, res) => {
+    try {
+        //call service data
+        let data = await userService.loginGoogle(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const loginFacebook = async (req, res) => {
+    try {
+        //call service data
+        let data = await userService.loginFacebook(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
 
 
 module.exports = {
@@ -114,4 +145,6 @@ module.exports = {
     getUserLogin,
     verifyEmail,
     accountVerifyPage,
+    loginGoogle,
+    loginFacebook
 }

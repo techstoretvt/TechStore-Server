@@ -24,7 +24,8 @@ const CreateUser = (data) => {
                     pass: hasePass,
                     idTypeUser: 3,
                     keyVerify: keyVerify,
-                    statusUser: 'wait'
+                    statusUser: 'wait',
+                    typeAccount: 'web'
                 },
                 raw: false
             });
@@ -366,6 +367,166 @@ const getUserLogin = (data) => {
     })
 }
 
+const loginGoogle = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.firstName || !data.lastName || !data.idGoogle || !data.avatar || !data.email) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!'
+                })
+            }
+            else {
+                //
+                let [user, created] = await db.User.findOrCreate({
+                    where: { email: data.email },
+                    defaults: {
+                        firstName: data.firstName,
+                        lastName: data.lastName,
+
+                        idTypeUser: 3,
+                        typeAccount: 'google',
+
+                        statusUser: 'true',
+                        avatarGoogle: data.avatar
+                    },
+                    raw: false
+                });
+
+                if (user.statusUser === 'true') {
+                    //create token
+                    let tokens = CreateToken(user);
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'Đăng nhập thành công!',
+                        data: {
+                            accessToken: tokens.accessToken,
+                            refreshToken: tokens.refreshToken
+                        }
+                    })
+                }
+                else if (user.statusUser === 'false') {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Tài khoản đã bị khóa vĩnh viễn!'
+                    })
+                }
+                else if (user.statusUser === 'wait') {
+                    resolve({
+                        errCode: 3,
+                        errMessage: 'Tài khoản chưa được kích hoạt!'
+                    })
+                }
+                else {
+                    const date = new Date().getTime()
+                    if (+user.statusUser > date) {
+                        resolve({
+                            errCode: 4,
+                            errMessage: 'Tài khoản đã bị khóa theo ngày!'
+                        })
+                    }
+                    else {
+                        //create token
+                        let tokens = CreateToken(user);
+                        resolve({
+                            errCode: 0,
+                            errMessage: 'Đăng nhập thành công!',
+                            data: {
+                                accessToken: tokens.accessToken,
+                                refreshToken: tokens.refreshToken
+                            }
+                        })
+                    }
+                }
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const loginFacebook = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.firstName || !data.lastName || !data.idFacebook || !data.avatarFacebook) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!'
+                })
+            }
+            else {
+                //
+                let [user, created] = await db.User.findOrCreate({
+                    where: { idFacebook: data.idFacebook },
+                    defaults: {
+                        firstName: data.firstName,
+                        lastName: data.lastName,
+                        email: 'none',
+                        idTypeUser: 3,
+                        typeAccount: 'facebook',
+
+                        statusUser: 'true',
+                        avatarFacebook: data.avatarFacebook
+                    },
+                    raw: false
+                });
+
+                if (user.statusUser === 'true') {
+                    //create token
+                    let tokens = CreateToken(user);
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'Đăng nhập thành công!',
+                        data: {
+                            accessToken: tokens.accessToken,
+                            refreshToken: tokens.refreshToken
+                        }
+                    })
+                }
+                else if (user.statusUser === 'false') {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Tài khoản đã bị khóa vĩnh viễn!'
+                    })
+                }
+                else if (user.statusUser === 'wait') {
+                    resolve({
+                        errCode: 3,
+                        errMessage: 'Tài khoản chưa được kích hoạt!'
+                    })
+                }
+                else {
+                    const date = new Date().getTime()
+                    if (+user.statusUser > date) {
+                        resolve({
+                            errCode: 4,
+                            errMessage: 'Tài khoản đã bị khóa theo ngày!'
+                        })
+                    }
+                    else {
+                        //create token
+                        let tokens = CreateToken(user);
+                        resolve({
+                            errCode: 0,
+                            errMessage: 'Đăng nhập thành công!',
+                            data: {
+                                accessToken: tokens.accessToken,
+                                refreshToken: tokens.refreshToken
+                            }
+                        })
+                    }
+                }
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 
 module.exports = {
     CreateUser,
@@ -373,4 +534,6 @@ module.exports = {
     userLogin,
     refreshToken,
     getUserLogin,
+    loginGoogle,
+    loginFacebook
 }

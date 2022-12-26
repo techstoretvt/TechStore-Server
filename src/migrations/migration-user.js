@@ -24,11 +24,9 @@ module.exports = {
         type: Sequelize.STRING
       },
       email: {
-        allowNull: false,
         type: Sequelize.STRING
       },
       keyVerify: {
-        allowNull: false,
         type: Sequelize.STRING
       },
       pass: {
@@ -36,6 +34,18 @@ module.exports = {
       },
       avatar: {
         type: Sequelize.BLOB('long')
+      },
+      avatarGoogle: {
+        type: Sequelize.TEXT
+      },
+      avatarFacebook: {
+        type: Sequelize.TEXT
+      },
+      typeAccount: {
+        type: Sequelize.STRING
+      },
+      idFacebook: {
+        type: Sequelize.STRING
       },
       idTypeUser: {
         allowNull: false,
