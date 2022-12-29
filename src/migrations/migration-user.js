@@ -41,10 +41,16 @@ module.exports = {
       avatarFacebook: {
         type: Sequelize.TEXT
       },
+      avatarGithub: {
+        type: Sequelize.TEXT
+      },
       typeAccount: {
         type: Sequelize.STRING
       },
       idFacebook: {
+        type: Sequelize.STRING
+      },
+      idGithub: {
         type: Sequelize.STRING
       },
       idTypeUser: {

@@ -1,21 +1,5 @@
 import userService from '../services/userService'
 
-const ContentController = async (res, inputData, callback) => {
-    try {
-        //call service data
-        let data = await callback(data)
-
-        return res.status(200).json(inputData)
-    }
-    catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-
 const CreateUser = async (req, res) => {
     try {
         //call service data
@@ -136,6 +120,22 @@ const loginFacebook = async (req, res) => {
     }
 }
 
+const loginGithub = async (req, res) => {
+    try {
+        //call service data
+        let data = await userService.loginGithub(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
 
 module.exports = {
     CreateUser,
@@ -146,5 +146,6 @@ module.exports = {
     verifyEmail,
     accountVerifyPage,
     loginGoogle,
-    loginFacebook
+    loginFacebook,
+    loginGithub
 }

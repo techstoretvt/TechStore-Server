@@ -4,9 +4,12 @@ import bodyParser from "body-parser";
 const cors = require('cors');
 const { Server } = require('socket.io')
 const http = require('http');
+const { ApolloServer } = require('apollo-server-express')
 
 import configViewEngine from "./config/viewEngine";
 import initWebRoute from "./Route/web";
+const typeDefs = require('./GraphQL/schema/schema')
+const resolvers = require('./GraphQL/resolver/resolver')
 
 const app = express();
 const server = http.createServer(app);
@@ -18,7 +21,7 @@ const io = new Server(server, {
 });
 
 
-
+//View engine
 configViewEngine(app);
 
 app.use(cors());
@@ -63,8 +66,23 @@ io.on('connection', (socket) => {
     });
 })
 
-const port = process.env.PORT
-server.listen(port, () => {
-    console.log('Runing server succeed!');
-    console.log('Listen from port:', port);
+//graphql
+const serverQL = new ApolloServer({
+    typeDefs,
+    resolvers
 })
+
+
+//run server
+serverQL.start().then(res => {
+    serverQL.applyMiddleware({ app });
+
+    const port = process.env.PORT
+    server.listen(port, () => {
+        console.log('Runing server succeed!');
+        console.log(`Server ready at http://localhost:${port}${serverQL.graphqlPath}`);
+    })
+})
+
+
+

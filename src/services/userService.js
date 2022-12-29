@@ -138,7 +138,7 @@ const CreateToken = (user) => {
         expiresIn: '300s'
     });
     const refreshToken = jwt.sign({ id, lastName, firstName, email }, process.env.REFESH_TOKEN_SECRET, {
-        expiresIn: '24h'
+        expiresIn: '48h'
     });
 
     return { accessToken, refreshToken };
@@ -527,6 +527,85 @@ const loginFacebook = (data) => {
     })
 }
 
+const loginGithub = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.firstName || !data.idGithub || !data.avatarGithub) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!'
+                })
+            }
+            else {
+                //
+                let [user, created] = await db.User.findOrCreate({
+                    where: { idGithub: data.idGithub },
+                    defaults: {
+                        firstName: data.firstName,
+                        lastName: 'none',
+                        email: 'none',
+                        idTypeUser: 3,
+                        typeAccount: 'github',
+
+                        statusUser: 'true',
+                        avatarGithub: data.avatarGithub
+                    },
+                    raw: false
+                });
+
+                if (user.statusUser === 'true') {
+                    //create token
+                    let tokens = CreateToken(user);
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'Đăng nhập thành công!',
+                        data: {
+                            accessToken: tokens.accessToken,
+                            refreshToken: tokens.refreshToken
+                        }
+                    })
+                }
+                else if (user.statusUser === 'false') {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Tài khoản đã bị khóa vĩnh viễn!'
+                    })
+                }
+                else if (user.statusUser === 'wait') {
+                    resolve({
+                        errCode: 3,
+                        errMessage: 'Tài khoản chưa được kích hoạt!'
+                    })
+                }
+                else {
+                    const date = new Date().getTime()
+                    if (+user.statusUser > date) {
+                        resolve({
+                            errCode: 4,
+                            errMessage: 'Tài khoản đã bị khóa theo ngày!'
+                        })
+                    }
+                    else {
+                        //create token
+                        let tokens = CreateToken(user);
+                        resolve({
+                            errCode: 0,
+                            errMessage: 'Đăng nhập thành công!',
+                            data: {
+                                accessToken: tokens.accessToken,
+                                refreshToken: tokens.refreshToken
+                            }
+                        })
+                    }
+                }
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
 
 module.exports = {
     CreateUser,
@@ -535,5 +614,6 @@ module.exports = {
     refreshToken,
     getUserLogin,
     loginGoogle,
-    loginFacebook
+    loginFacebook,
+    loginGithub
 }
