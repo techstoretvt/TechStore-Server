@@ -2,6 +2,8 @@ import express from 'express'
 import userController from '../controllers/userController'
 import adminController from '../controllers/adminController'
 
+const fileUploader = require('../config/cloudinary.config');
+
 let router = express.Router();
 
 const initWebRoute = (app) => {
@@ -24,9 +26,18 @@ const initWebRoute = (app) => {
     router.get('/api/get-all-type-product', adminController.getAllTypeProduct)
     router.delete('/api/delete-type-product-by-id', adminController.deleteTypeProduct)
     router.put('/api/update-type-produt-by-id', adminController.updateTypeProductById)
+
     router.post('/api/add-trademark', adminController.addTrademark)
     router.get('/api/get-all-trademark', adminController.getAllTrademark)
-
+    router.delete('/api/delete-trademark-by-id', adminController.deleteTrademarkById)
+    router.put('/api/update-trademark-by-id', adminController.updateTrademarkById)
+    router.post('/api/create-new-product', adminController.createNewProduct)
+    router.post('/cloudinary-upload', fileUploader.single('file'), adminController.cloudinaryUpload);
+    router.get('/api/get-list-product-by-page', adminController.getListProductByPage)
+    router.put('/api/block-product', adminController.blockProduct)
+    router.put('/api/edit-product-by-id', adminController.editProductById)
+    router.put('/api/edit-image-product', fileUploader.single('file'), adminController.editImageProduct)
+    router.post('/api/swap-image-product', adminController.swapImageProduct)
 
 
     return app.use('/', router);

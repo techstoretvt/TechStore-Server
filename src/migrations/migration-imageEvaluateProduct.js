@@ -15,7 +15,7 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       imagebase64: {
-        type: Sequelize.BLOB('long')
+        type: Sequelize.TEXT
       },
 
       createdAt: {

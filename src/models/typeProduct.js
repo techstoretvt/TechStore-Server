@@ -8,6 +8,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       typeProduct.hasMany(models.trademark, { foreignKey: 'idTypeProduct' })
+      typeProduct.hasMany(models.product, { foreignKey: 'idTypeProduct' })
     }
   }
   typeProduct.init({

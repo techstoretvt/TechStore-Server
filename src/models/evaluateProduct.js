@@ -7,6 +7,10 @@ module.exports = (sequelize, DataTypes) => {
 
     static associate(models) {
       // define association here
+      evaluateProduct.belongsTo(models.User, { foreignKey: 'idUser' })
+      evaluateProduct.belongsTo(models.product, { foreignKey: 'idProduct' })
+      evaluateProduct.hasMany(models.imageEvaluateProduct, { foreignKey: 'idEvaluateProduct' })
+      evaluateProduct.hasMany(models.videoEvaluateProduct, { foreignKey: 'idEvaluateProduct' })
     }
   }
   evaluateProduct.init({

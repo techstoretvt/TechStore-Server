@@ -28,8 +28,8 @@ module.exports = {
       viewBlog: {
         type: Sequelize.INTEGER
       },
-      imagebase64: {
-        type: Sequelize.BLOB('long')
+      descriptionPhoto: {
+        type: Sequelize.TEXT
       },
 
 

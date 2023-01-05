@@ -20,6 +20,9 @@ module.exports = {
       nameClassifyProduct: {
         type: Sequelize.STRING
       },
+      STTImg: {
+        type: Sequelize.INTEGER
+      },
 
 
 

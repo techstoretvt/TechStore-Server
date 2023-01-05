@@ -7,11 +7,13 @@ module.exports = (sequelize, DataTypes) => {
 
     static associate(models) {
       // define association here
+      imageProduct.belongsTo(models.product, { foreignKey: 'idProduct', as: 'imageProduct-product' })
     }
   }
   imageProduct.init({
     idProduct: DataTypes.INTEGER,
-    imagebase64: DataTypes.TEXT
+    imagebase64: DataTypes.TEXT,
+    STTImage: DataTypes.INTEGER
 
 
   }, {

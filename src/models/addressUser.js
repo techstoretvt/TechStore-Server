@@ -7,6 +7,8 @@ module.exports = (sequelize, DataTypes) => {
 
     static associate(models) {
       // define association here
+      addressUser.hasMany(models.bill, { foreignKey: 'idAddressUser' })
+      addressUser.belongsTo(models.User, { foreignKey: 'idUser' })
     }
   }
   addressUser.init({

@@ -33,7 +33,7 @@ module.exports = {
         type: Sequelize.STRING
       },
       avatar: {
-        type: Sequelize.BLOB('long')
+        type: Sequelize.TEXT
       },
       avatarGoogle: {
         type: Sequelize.TEXT

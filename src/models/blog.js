@@ -7,6 +7,9 @@ module.exports = (sequelize, DataTypes) => {
 
     static associate(models) {
       // define association here
+      blog.belongsTo(models.User, { foreignKey: 'idUser' })
+      blog.hasMany(models.commentBlog, { foreignKey: 'idBlog' })
+      blog.hasMany(models.likeBlog, { foreignKey: 'idBlog' })
     }
   }
   blog.init({
@@ -16,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
     idUser: DataTypes.INTEGER,
     timeBlog: DataTypes.STRING,
     viewBlog: DataTypes.INTEGER,
-    imagebase64: DataTypes.TEXT,
+    descriptionPhoto: DataTypes.TEXT,
 
 
   }, {

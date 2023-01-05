@@ -7,12 +7,15 @@ module.exports = (sequelize, DataTypes) => {
 
     static associate(models) {
       // define association here
+      classifyProduct.belongsTo(models.product, { foreignKey: 'idProduct', as: 'classifyProduct-product' })
+      classifyProduct.hasMany(models.cart, { foreignKey: 'idClassifyProduct' })
     }
   }
   classifyProduct.init({
     idProduct: DataTypes.INTEGER,
     amount: DataTypes.INTEGER,
-    nameClassifyProduct: DataTypes.STRING
+    nameClassifyProduct: DataTypes.STRING,
+    STTImg: DataTypes.INTEGER
 
 
   }, {
