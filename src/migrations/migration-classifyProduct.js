@@ -23,6 +23,9 @@ module.exports = {
       STTImg: {
         type: Sequelize.INTEGER
       },
+      priceClassify: {
+        type: Sequelize.INTEGER
+      },
 
 
 

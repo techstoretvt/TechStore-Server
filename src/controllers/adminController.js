@@ -251,6 +251,38 @@ const swapImageProduct = async (req, res) => {
     }
 }
 
+const getProductBySwapAndPage = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.getProductBySwapAndPage(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const addPromotionByIdProduct = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.addPromotionByIdProduct(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
 module.exports = {
     addTypeProduct,
     getAllTypeProduct,
@@ -266,5 +298,7 @@ module.exports = {
     blockProduct,
     editProductById,
     editImageProduct,
-    swapImageProduct
+    swapImageProduct,
+    getProductBySwapAndPage,
+    addPromotionByIdProduct
 }

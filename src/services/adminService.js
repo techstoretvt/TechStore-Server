@@ -379,7 +379,7 @@ const createNewProduct = (data) => {
                     sold: 0
                 })
 
-                console.log('product: ', product.dataValues);
+                // console.log('product: ', product.dataValues);
 
 
                 if (data.listClassify?.length > 0) {
@@ -388,7 +388,8 @@ const createNewProduct = (data) => {
                             idProduct: product.dataValues.id,
                             amount: item.amount,
                             nameClassifyProduct: item.nameClassify.toLowerCase(),
-                            STTImg: item.STTImg ? +item.STTImg : -1
+                            STTImg: item.STTImg ? +item.STTImg : -1,
+                            priceClassify: +item.priceClassify
                         })
                         console.log(`classify ${index}:`, classifyProduct.dataValues);
                     })
@@ -399,7 +400,6 @@ const createNewProduct = (data) => {
                         amount: +data.sl,
                         nameClassifyProduct: 'default',
                     })
-                    console.log(`classify:`, classifyProduct.dataValues);
                 }
 
                 resolve({
@@ -627,9 +627,9 @@ const editProductById = (data) => {
                                 idProduct: data.idProduct,
                                 amount: item.amount,
                                 nameClassifyProduct: item.nameClassify.toLowerCase(),
-                                STTImg: item.STTImg ? +item.STTImg : -1
+                                STTImg: item.STTImg ? +item.STTImg : -1,
+                                priceClassify: item.priceClassify
                             })
-                            console.log(`classify ${index}:`, classifyProduct.dataValues);
                         })
                     }
 
@@ -751,6 +751,106 @@ const swapImageProduct = (data) => {
     })
 }
 
+const getProductBySwapAndPage = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.currentPage || !data.typeSwap) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                })
+            }
+            else {
+                let arr = [
+                    ['id', 'ASC'],
+                    ['id', 'DESC'],
+                    ['nameProduct', 'ASC'],
+                    ['nameProduct', 'DESC']
+                ];
+                let page = +data.currentPage
+                let products = await db.product.findAll({
+                    offset: (page - 1) * 10,
+                    limit: 10,
+                    attributes: ['id', 'nameProduct'],
+                    include: [
+                        { model: db.typeProduct, attributes: ['id', 'nameTypeProduct'] },
+                        { model: db.trademark, attributes: ['id', 'nameTrademark'] },
+                        { model: db.promotionProduct, attributes: ['timePromotion', 'numberPercent'] },
+                    ],
+                    order: [arr[+data.typeSwap - 1]],
+                    nest: true,
+                    raw: false
+                })
+
+                if (products) {
+
+                    let count = await db.product.count()
+
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'ok!',
+                        data: products,
+                        count: count
+                    })
+                }
+                else {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Không tìm thấy sản phẩm nào!',
+                    })
+                }
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const addPromotionByIdProduct = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idProduct || !data.timePromotion || !data.persentPromotion) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                })
+            }
+            else {
+                let [promotion, created] = await db.promotionProduct.findOrCreate({
+                    where: {
+                        idProduct: +data.idProduct
+                    },
+                    defaults: {
+                        timePromotion: data.timePromotion + '',
+                        numberPercent: +data.persentPromotion,
+                    },
+                    raw: false
+                })
+                if (created) {
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'ok',
+                    })
+                }
+                else {
+                    promotion.timePromotion = data.timePromotion;
+                    promotion.numberPercent = +data.persentPromotion;
+                    await promotion.save();
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'ok',
+                    })
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     addTypeProduct,
     getAllTypeProduct,
@@ -766,5 +866,7 @@ module.exports = {
     blockProduct,
     editProductById,
     editImageProduct,
-    swapImageProduct
+    swapImageProduct,
+    getProductBySwapAndPage,
+    addPromotionByIdProduct
 }

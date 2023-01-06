@@ -37,7 +37,9 @@ const initWebRoute = (app) => {
     router.put('/api/block-product', adminController.blockProduct)
     router.put('/api/edit-product-by-id', adminController.editProductById)
     router.put('/api/edit-image-product', fileUploader.single('file'), adminController.editImageProduct)
-    router.post('/api/swap-image-product', adminController.swapImageProduct)
+    router.post('/api/swap-image-product', adminController.swapImageProduct);
+    router.get('/api/get-list-product-by-swap-and-page', adminController.getProductBySwapAndPage);
+    router.post('/api/add-promotion-by-idproduct', adminController.addPromotionByIdProduct)
 
 
     return app.use('/', router);
