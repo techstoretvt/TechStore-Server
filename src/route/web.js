@@ -1,6 +1,7 @@
 import express from 'express'
 import userController from '../controllers/userController'
 import adminController from '../controllers/adminController'
+import appController from '../controllers/appController'
 
 const fileUploader = require('../config/cloudinary.config');
 
@@ -31,6 +32,7 @@ const initWebRoute = (app) => {
     router.get('/api/get-all-trademark', adminController.getAllTrademark)
     router.delete('/api/delete-trademark-by-id', adminController.deleteTrademarkById)
     router.put('/api/update-trademark-by-id', adminController.updateTrademarkById)
+
     router.post('/api/create-new-product', adminController.createNewProduct)
     router.post('/cloudinary-upload', fileUploader.single('file'), adminController.cloudinaryUpload);
     router.get('/api/get-list-product-by-page', adminController.getListProductByPage)
@@ -40,6 +42,10 @@ const initWebRoute = (app) => {
     router.post('/api/swap-image-product', adminController.swapImageProduct);
     router.get('/api/get-list-product-by-swap-and-page', adminController.getProductBySwapAndPage);
     router.post('/api/add-promotion-by-idproduct', adminController.addPromotionByIdProduct)
+
+
+    //app api
+    router.get('/api/v1/get-product-promotion-home', appController.getProductPromotionHome)
 
 
     return app.use('/', router);

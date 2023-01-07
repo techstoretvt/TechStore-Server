@@ -704,44 +704,35 @@ const swapImageProduct = (data) => {
             }
             else {
 
-                if (data.imageProducts.length < 2) {
-                    resolve({
-                        errCode: 2,
-                        errMessage: 'Tối thiểu 2 ảnh!',
+
+                let isDelete = true
+                while (isDelete) {
+                    let imageProduct = await db.imageProduct.findOne({
+                        where: {
+                            idProduct: data.idProduct
+                        },
+                        raw: false
                     })
-                }
-                else {
-                    let isDelete = true
-                    while (isDelete) {
-                        let imageProduct = await db.imageProduct.findOne({
-                            where: {
-                                idProduct: data.idProduct
-                            },
-                            raw: false
-                        })
-                        if (imageProduct) {
-                            await imageProduct.destroy();
-                        }
-                        else {
-                            isDelete = false
-                        }
+                    if (imageProduct) {
+                        await imageProduct.destroy();
                     }
-
-                    data.imageProducts.forEach(async (item, index) => {
-                        await db.imageProduct.create({
-                            idProduct: +data.idProduct,
-                            imagebase64: item.url,
-                            STTImage: +item.num
-                        })
-                    })
-
-                    resolve({
-                        errCode: 0,
-                        errMessage: 'Sắp xếp ảnh thành công!',
-                    })
-
-
+                    else {
+                        isDelete = false
+                    }
                 }
+
+                data.imageProducts.forEach(async (item, index) => {
+                    await db.imageProduct.create({
+                        idProduct: +data.idProduct,
+                        imagebase64: item.url,
+                        STTImage: +item.num
+                    })
+                })
+
+                resolve({
+                    errCode: 0,
+                    errMessage: 'Sắp xếp ảnh thành công!',
+                })
 
             }
         }

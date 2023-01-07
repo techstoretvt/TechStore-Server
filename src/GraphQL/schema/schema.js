@@ -5,6 +5,21 @@ const typeDefs = gql`
         id: ID
         nameTypeProduct: String
     }
+    type product {
+        id: ID
+        nameProduct: String
+        priceProduct: String
+        contentHTML: String
+        isSell: String
+        sold: Int
+        typeProduct: typeProduct
+        trademark: trademark
+    }
+
+    type trademark {
+        nameTrademark: String
+        typeProduct: typeProduct
+    }
 
     # ROOT TYPE
     type Query {

@@ -11,8 +11,10 @@ const resolvers = {
         typeproduct: async (parent, args) => {
             let data = await ListTypeProducts();
             return data.find(item => item.id === +args.id)
-
         },
+        // products: () => {
+        //     return 'hello'
+        // }
         // book: (parent, args) => books.find(book => book.id === +args.id),
         // authors: () => authors,
         // author: (parent, args) => authors.find(author => author.id === +args.id)
