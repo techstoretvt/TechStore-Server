@@ -50,27 +50,17 @@ const getProductPromotionHome = () => {
 
             let listProductTam = [...products]
 
-            console.log('list product:', listProductTam[7].dataValues.promotionProducts[0].dataValues.timePromotion);
-
             listProductTam.forEach(item => {
                 if (listProducts.length < countProduct) {
                     let time = new Date().getTime();
                     let timedb = +item.dataValues.promotionProducts[0].dataValues.timePromotion
                     if (timedb > time) {
-                        // let check = true
-
-                        // listProducts.forEach(item2 => {
-                        //     if (item2.id === item.id) check = false
-                        // })
-
-                        // if (check)
                         listProducts.push(item);
                     }
                 }
             })
 
             if (listProducts.length < countProduct) {
-                console.log("vao");
                 products.forEach(item => {
                     if (listProducts.length < countProduct) {
                         let time = new Date().getTime();
@@ -86,10 +76,150 @@ const getProductPromotionHome = () => {
                 count: listProducts.length,
                 data: listProducts,
             })
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
 
+const getTopSellProduct = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
 
+            let products = await db.product.findAll({
+                attributes: ['id', 'nameProduct', 'priceProduct', 'isSell', 'sold'],
+                include: [
+                    {
+                        model: db.imageProduct, as: 'imageProduct-product',
+                        attributes: {
+                            exclude: ['createdAt', 'updatedAt', 'id']
+                        }
+                    },
+                    {
+                        model: db.trademark,
+                        attributes: {
+                            exclude: ['createdAt', 'updatedAt', 'id']
+                        }
+                    },
+                    {
+                        model: db.typeProduct,
+                        attributes: {
+                            exclude: ['createdAt', 'updatedAt', 'id']
+                        }
+                    },
+                    {
+                        model: db.classifyProduct, as: 'classifyProduct-product',
+                        attributes: {
+                            exclude: ['createdAt', 'updatedAt', 'id']
+                        }
+                    },
+                    {
+                        model: db.promotionProduct,
+                        attributes: {
+                            exclude: ['createdAt', 'updatedAt', 'id']
+                        },
+                    }
+                ],
+                order: [
+                    ['sold', 'DESC'],
+                    [{ model: db.imageProduct, as: 'imageProduct-product' }, 'STTImage', 'asc']
+                ],
+                limit: 10,
+                raw: false,
+                nest: true
+            });
 
+            if (products && products.length > 0) {
+                resolve({
+                    errCode: 0,
+                    data: products
+                })
+            }
+            else {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Không tìm thấy sản phẩm nào!'
+                })
+            }
 
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const getNewCollectionProduct = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.typeProduct) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!'
+                })
+            }
+            else {
+
+                let products = await db.product.findAll({
+                    attributes: ['id', 'nameProduct', 'priceProduct', 'isSell', 'sold'],
+                    include: [
+                        {
+                            model: db.imageProduct, as: 'imageProduct-product',
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'id']
+                            },
+
+                        },
+                        {
+                            model: db.trademark,
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'id']
+                            }
+                        },
+                        {
+                            model: db.typeProduct,
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'id']
+                            },
+                            where: {
+                                nameTypeProduct: data.typeProduct.toLowerCase()
+                            }
+                        },
+                        {
+                            model: db.classifyProduct, as: 'classifyProduct-product',
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'id']
+                            }
+                        },
+                        {
+                            model: db.promotionProduct,
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'id']
+                            },
+                        }
+                    ],
+                    order: [
+                        [{ model: db.imageProduct, as: 'imageProduct-product' }, 'STTImage', 'asc']
+                    ],
+                    limit: 10,
+                    raw: false,
+                    nest: true
+                });
+
+                if (products && products.length > 0) {
+                    resolve({
+                        errCode: 0,
+                        data: products
+                    })
+                }
+                else {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Không tìm thấy sản phẩm nào!'
+                    })
+                }
+            }
 
         }
         catch (e) {
@@ -99,5 +229,7 @@ const getProductPromotionHome = () => {
 }
 
 module.exports = {
-    getProductPromotionHome
+    getProductPromotionHome,
+    getTopSellProduct,
+    getNewCollectionProduct
 }

@@ -394,6 +394,8 @@ const loginGoogle = (data) => {
                 });
 
                 if (user.statusUser === 'true') {
+                    user.avatarGoogle = data.avatar
+                    await user.save();
                     //create token
                     let tokens = CreateToken(user);
                     resolve({
@@ -474,6 +476,8 @@ const loginFacebook = (data) => {
                 });
 
                 if (user.statusUser === 'true') {
+                    user.avatarFacebook = data.avatarFacebook
+                    await user.save();
                     //create token
                     let tokens = CreateToken(user);
                     resolve({
@@ -554,6 +558,7 @@ const loginGithub = (data) => {
                 });
 
                 if (user.statusUser === 'true') {
+                    user.avatarGithub = data.avatarGithub
                     //create token
                     let tokens = CreateToken(user);
                     resolve({

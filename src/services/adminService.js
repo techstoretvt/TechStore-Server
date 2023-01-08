@@ -3,7 +3,7 @@ import db from '../models'
 const addTypeProduct = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.nameTypeProduct) {
+            if (!data.query.nameTypeProduct || !data.file) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!'
@@ -11,10 +11,11 @@ const addTypeProduct = (data) => {
             }
             else {
                 //
-                console.log(data.nameTypeProduct.toLowerCase());
                 let [typeProduct, created] = await db.typeProduct.findOrCreate({
-                    where: { nameTypeProduct: data.nameTypeProduct.toLowerCase() },
-                    defaults: {},
+                    where: { nameTypeProduct: data.query.nameTypeProduct.toLowerCase() },
+                    defaults: {
+                        imageTypeProduct: data.file.path
+                    },
                     raw: false
                 })
 
@@ -27,7 +28,7 @@ const addTypeProduct = (data) => {
                 else {
                     resolve({
                         errCode: 0,
-                        errMessage: 'ok!'
+                        errMessage: 'ok!',
                     })
                 }
             }
@@ -47,7 +48,7 @@ const getAllTypeProduct = () => {
                     ['id', 'ASC'],
                 ],
             });
-            if (typeProducts) {
+            if (typeProducts && typeProducts.length > 0) {
                 resolve({
                     errCode: 0,
                     data: typeProducts
@@ -124,7 +125,7 @@ const updateTypeProductById = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
             console.log(data);
-            if (!data.id || !data.nameTypeProduct) {
+            if (!data.query.idTypeProduct || !data.query.nameTypeProduct) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
@@ -132,7 +133,7 @@ const updateTypeProductById = (data) => {
             }
             else {
                 let typeProduct = await db.typeProduct.findOne({
-                    where: { id: +data.id },
+                    where: { id: +data.query.idTypeProduct },
                     raw: false
                 })
 
@@ -144,17 +145,20 @@ const updateTypeProductById = (data) => {
                 }
                 else {
                     let check = await db.typeProduct.findOne({
-                        where: { nameTypeProduct: data.nameTypeProduct.toLowerCase() },
+                        where: { nameTypeProduct: data.query.nameTypeProduct.toLowerCase() },
                         raw: false
                     })
-                    if (check) {
+                    if (check && check.id !== typeProduct.id) {
                         resolve({
                             errCode: 3,
-                            errMessage: 'Loại sản phẩm đã tồn tại!',
+                            errMessage: 'Tên loại sản phẩm đã tồn tại!',
                         })
                     }
                     else {
-                        typeProduct.nameTypeProduct = data.nameTypeProduct.toLowerCase();
+                        typeProduct.nameTypeProduct = data.query.nameTypeProduct.toLowerCase();
+                        if (data.file) {
+                            typeProduct.imageTypeProduct = data.file.path
+                        }
                         await typeProduct.save();
 
                         resolve({
@@ -220,7 +224,7 @@ const getAllTrademark = () => {
 
             const trademarks = await db.trademark.findAll({
                 include: [
-                    { model: db.typeProduct, attributes: ['nameTypeProduct'] },
+                    { model: db.typeProduct, attributes: ['id', 'nameTypeProduct'] },
                 ],
                 order: [
                     ['idTypeProduct', 'ASC'],

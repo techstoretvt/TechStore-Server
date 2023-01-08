@@ -2,6 +2,7 @@ import express from 'express'
 import userController from '../controllers/userController'
 import adminController from '../controllers/adminController'
 import appController from '../controllers/appController'
+import { runInContext } from 'lodash';
 
 const fileUploader = require('../config/cloudinary.config');
 
@@ -23,10 +24,10 @@ const initWebRoute = (app) => {
     router.post('/api/login-github', userController.loginGithub)
 
     //admin api
-    router.post('/api/add-type-product', adminController.addTypeProduct)
+    router.post('/api/add-type-product', fileUploader.single('file'), adminController.addTypeProduct)
     router.get('/api/get-all-type-product', adminController.getAllTypeProduct)
     router.delete('/api/delete-type-product-by-id', adminController.deleteTypeProduct)
-    router.put('/api/update-type-produt-by-id', adminController.updateTypeProductById)
+    router.put('/api/update-type-produt-by-id', fileUploader.single('file'), adminController.updateTypeProductById)
 
     router.post('/api/add-trademark', adminController.addTrademark)
     router.get('/api/get-all-trademark', adminController.getAllTrademark)
@@ -46,6 +47,8 @@ const initWebRoute = (app) => {
 
     //app api
     router.get('/api/v1/get-product-promotion-home', appController.getProductPromotionHome)
+    router.get('/api/vi/get-top-sell-product', appController.getTopSellProduct)
+    router.get('/api/vi/get-new-collection-product', appController.getNewCollectionProduct)
 
 
     return app.use('/', router);

@@ -3,7 +3,11 @@ import adminService from '../services/adminService'
 const addTypeProduct = async (req, res) => {
     try {
         //call service data
-        let data = await adminService.addTypeProduct(req.body)
+        // let data = await adminService.addTypeProduct(req.body)
+        let data = await adminService.addTypeProduct({
+            file: req.file,
+            query: req.query,
+        })
 
         return res.status(200).json(data)
     }
@@ -51,7 +55,11 @@ const deleteTypeProduct = async (req, res) => {
 const updateTypeProductById = async (req, res) => {
     try {
         //call service data
-        let data = await adminService.updateTypeProductById(req.body)
+        // let data = await adminService.updateTypeProductById(req.query)
+        let data = await adminService.updateTypeProductById({
+            file: req.file,
+            query: req.query,
+        })
 
         return res.status(200).json(data)
     }

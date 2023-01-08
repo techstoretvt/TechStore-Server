@@ -13,6 +13,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   typeProduct.init({
     nameTypeProduct: DataTypes.STRING,
+    imageTypeProduct: DataTypes.STRING
 
   }, {
     sequelize,
