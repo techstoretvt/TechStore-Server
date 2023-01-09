@@ -53,7 +53,7 @@ const getProductPromotionHome = () => {
             listProductTam.forEach(item => {
                 if (listProducts.length < countProduct) {
                     let time = new Date().getTime();
-                    let timedb = +item.dataValues.promotionProducts[0].dataValues.timePromotion
+                    let timedb = +item.dataValues.promotionProducts[0]?.dataValues?.timePromotion
                     if (timedb > time) {
                         listProducts.push(item);
                     }
@@ -64,7 +64,7 @@ const getProductPromotionHome = () => {
                 products.forEach(item => {
                     if (listProducts.length < countProduct) {
                         let time = new Date().getTime();
-                        let timedb = +item.dataValues.promotionProducts[0].dataValues.timePromotion
+                        let timedb = +item.dataValues.promotionProducts[0]?.dataValues?.timePromotion
                         if (timedb < time) {
                             listProducts.push(item);
                         }

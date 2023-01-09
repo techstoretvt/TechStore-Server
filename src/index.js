@@ -7,7 +7,7 @@ const http = require('http');
 const { ApolloServer } = require('apollo-server-express')
 
 import configViewEngine from "./config/viewEngine";
-import initWebRoute from "./Route/web";
+import initWebRoute from "./route/web";
 const typeDefs = require('./GraphQL/schema/schema')
 const resolvers = require('./GraphQL/resolver/resolver')
 

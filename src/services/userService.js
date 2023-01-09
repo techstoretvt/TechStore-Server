@@ -133,11 +133,11 @@ const contentSendEmail = (idUser, keyVerify, firstName) => {
 }
 
 const CreateToken = (user) => {
-    const { id, lastName, firstName, email } = user;
-    const accessToken = jwt.sign({ id, lastName, firstName, email }, process.env.ACCESS_TOKEN_SECRET, {
+    const { id, lastName, firstName, email, idTypeUser } = user;
+    const accessToken = jwt.sign({ id, firstName, email, idTypeUser }, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: '300s'
     });
-    const refreshToken = jwt.sign({ id, lastName, firstName, email }, process.env.REFESH_TOKEN_SECRET, {
+    const refreshToken = jwt.sign({ id, firstName, email, idTypeUser }, process.env.REFESH_TOKEN_SECRET, {
         expiresIn: '48h'
     });
 
