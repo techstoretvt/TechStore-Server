@@ -228,8 +228,80 @@ const getNewCollectionProduct = (data) => {
     })
 }
 
+const getProductFlycam = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            let products = await db.product.findAll({
+                attributes: ['id', 'nameProduct', 'priceProduct', 'isSell', 'sold'],
+                include: [
+                    {
+                        model: db.imageProduct, as: 'imageProduct-product',
+                        attributes: {
+                            exclude: ['createdAt', 'updatedAt', 'id']
+                        },
+
+                    },
+                    {
+                        model: db.trademark,
+                        attributes: {
+                            exclude: ['createdAt', 'updatedAt', 'id']
+                        }
+                    },
+                    {
+                        model: db.typeProduct,
+                        attributes: {
+                            exclude: ['createdAt', 'updatedAt', 'id']
+                        },
+                        where: {
+                            nameTypeProduct: 'điện thoại'
+                        }
+                    },
+                    {
+                        model: db.classifyProduct, as: 'classifyProduct-product',
+                        attributes: {
+                            exclude: ['createdAt', 'updatedAt', 'id']
+                        }
+                    },
+                    {
+                        model: db.promotionProduct,
+                        attributes: {
+                            exclude: ['createdAt', 'updatedAt', 'id']
+                        },
+                    }
+                ],
+                order: [
+                    [{ model: db.imageProduct, as: 'imageProduct-product' }, 'STTImage', 'asc']
+                ],
+                limit: 24,
+                raw: false,
+                nest: true
+            });
+
+            if (products && products.length > 0) {
+                resolve({
+                    errCode: 0,
+                    data: products
+                })
+            }
+            else {
+                resolve({
+                    errCode: 2,
+                    errMessage: 'Không tìm thấy sản phẩm nào!'
+                })
+            }
+
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     getProductPromotionHome,
     getTopSellProduct,
-    getNewCollectionProduct
+    getNewCollectionProduct,
+    getProductFlycam
 }
