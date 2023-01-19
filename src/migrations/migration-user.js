@@ -41,6 +41,9 @@ module.exports = {
       avatarFacebook: {
         type: Sequelize.TEXT
       },
+      idGoogle: {
+        type: Sequelize.STRING
+      },
       avatarGithub: {
         type: Sequelize.TEXT
       },

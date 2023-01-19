@@ -133,11 +133,11 @@ const contentSendEmail = (idUser, keyVerify, firstName) => {
 }
 
 const CreateToken = (user) => {
-    const { id, lastName, firstName, email, idTypeUser } = user;
-    const accessToken = jwt.sign({ id, firstName, email, idTypeUser }, process.env.ACCESS_TOKEN_SECRET, {
+    const { id, idGoogle, firstName, idTypeUser } = user;
+    const accessToken = jwt.sign({ id, idGoogle, firstName, idTypeUser }, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: '300s'
     });
-    const refreshToken = jwt.sign({ id, firstName, email, idTypeUser }, process.env.REFESH_TOKEN_SECRET, {
+    const refreshToken = jwt.sign({ id, idGoogle, firstName, idTypeUser }, process.env.REFESH_TOKEN_SECRET, {
         expiresIn: '48h'
     });
 
@@ -370,7 +370,7 @@ const getUserLogin = (data) => {
 const loginGoogle = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.firstName || !data.lastName || !data.idGoogle || !data.avatar || !data.email) {
+            if (!data.firstName || !data.lastName || !data.idGoogle || !data.avatar) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!'
@@ -379,13 +379,16 @@ const loginGoogle = (data) => {
             else {
                 //
                 let [user, created] = await db.User.findOrCreate({
-                    where: { email: data.email },
+                    where: {
+                        idGoogle: data.idGoogle,
+                        typeAccount: 'google',
+                    },
                     defaults: {
                         firstName: data.firstName,
                         lastName: data.lastName,
 
                         idTypeUser: 3,
-                        typeAccount: 'google',
+
 
                         statusUser: 'true',
                         avatarGoogle: data.avatar
@@ -424,7 +427,7 @@ const loginGoogle = (data) => {
                     if (+user.statusUser > date) {
                         resolve({
                             errCode: 4,
-                            errMessage: 'Tài khoản đã bị khóa theo ngày!'
+                            errMessage: 'Tài khoản đang bị tạm khóa!'
                         })
                     }
                     else {

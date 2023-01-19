@@ -125,7 +125,7 @@ const getTopSellProduct = () => {
                     ['sold', 'DESC'],
                     [{ model: db.imageProduct, as: 'imageProduct-product' }, 'STTImage', 'asc']
                 ],
-                limit: 10,
+                limit: 20,
                 raw: false,
                 nest: true
             });

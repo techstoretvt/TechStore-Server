@@ -25,6 +25,7 @@ module.exports = (sequelize, DataTypes) => {
     avatar: DataTypes.TEXT,
     idTypeUser: DataTypes.INTEGER,
     statusUser: DataTypes.STRING,
+    idGoogle: DataTypes.STRING,
     avatarGoogle: DataTypes.TEXT,
     typeAccount: DataTypes.STRING,
     idFacebook: DataTypes.STRING,
