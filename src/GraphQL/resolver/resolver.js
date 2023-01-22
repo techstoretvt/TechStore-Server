@@ -1,6 +1,5 @@
-import { ListTypeProducts } from '../data/rest'
+import { ListTypeProducts, ListTrademarks, ListProducts } from '../data/rest'
 
-let ListTProducts = ListTypeProducts();
 
 const resolvers = {
     //QUERY
@@ -10,6 +9,10 @@ const resolvers = {
         },
         typeproduct: async (parent, args) => {
             let data = await ListTypeProducts();
+            return data.find(item => item.id === +args.id)
+        },
+        product: async (parent, args) => {
+            let data = await ListProducts();
             return data.find(item => item.id === +args.id)
         },
         // products: () => {

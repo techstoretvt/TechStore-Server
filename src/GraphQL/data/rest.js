@@ -5,7 +5,20 @@ const ListTypeProducts = async () => {
     return data
 }
 
+const ListTrademarks = async () => {
+    let data = await db.trademark.findAll();
+    return data
+}
+
+const ListProducts = async () => {
+    let data = await db.product.findAll();
+    return data
+}
+
+
 
 module.exports = {
-    ListTypeProducts
+    ListTypeProducts,
+    ListTrademarks,
+    ListProducts
 }
