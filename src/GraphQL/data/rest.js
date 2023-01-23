@@ -15,10 +15,29 @@ const ListProducts = async () => {
     return data
 }
 
+const ListImageProducts = async () => {
+    let data = await db.imageProduct.findAll();
+    return data
+}
+
+const ListClassify = async () => {
+    let data = await db.classifyProduct.findAll();
+    return data
+}
+
+const ListPromotions = async () => {
+    let data = await db.promotionProduct.findAll();
+    return data
+}
+
+
 
 
 module.exports = {
     ListTypeProducts,
     ListTrademarks,
-    ListProducts
+    ListProducts,
+    ListImageProducts,
+    ListClassify,
+    ListPromotions,
 }

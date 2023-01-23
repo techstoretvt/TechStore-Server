@@ -12,6 +12,7 @@ const typeDefs = gql`
         contentHTML: String
         isSell: String
         sold: Int
+        
         typeProduct: typeProduct
         trademark: trademark
         imageProduct: [imageProduct]
@@ -30,6 +31,7 @@ const typeDefs = gql`
     }
 
     type classifyProduct {
+        id: ID
         amount: Int
         nameClassifyProduct: String
         STTImg: Int
