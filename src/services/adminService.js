@@ -392,7 +392,7 @@ const createNewProduct = (data) => {
                             idProduct: product.dataValues.id,
                             amount: item.amount,
                             nameClassifyProduct: item.nameClassify.toLowerCase(),
-                            STTImg: item.STTImg ? +item.STTImg : -1,
+                            STTImg: item.STTImg ? +item.STTImg : 100,
                             priceClassify: +item.priceClassify
                         })
                         console.log(`classify ${index}:`, classifyProduct.dataValues);
@@ -631,7 +631,7 @@ const editProductById = (data) => {
                                 idProduct: data.idProduct,
                                 amount: item.amount,
                                 nameClassifyProduct: item.nameClassify.toLowerCase(),
-                                STTImg: item.STTImg ? +item.STTImg : -1,
+                                STTImg: item.STTImg ? +item.STTImg : 100,
                                 priceClassify: item.priceClassify
                             })
                         })
