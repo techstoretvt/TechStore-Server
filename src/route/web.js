@@ -22,6 +22,8 @@ const initWebRoute = (app) => {
     router.post('/api/login-google', userController.loginGoogle)
     router.post('/api/login-facebook', userController.loginFacebook)
     router.post('/api/login-github', userController.loginGithub)
+    router.post('/api/v1/add-product-to-cart', userController.addProductToCart)
+    router.post('/api/v1/add-cart-or-move-cart', userController.addCartOrMoveCart)
 
     //admin api
     router.post('/api/add-type-product', fileUploader.single('file'), adminController.addTypeProduct)
@@ -50,6 +52,7 @@ const initWebRoute = (app) => {
     router.get('/api/vi/get-top-sell-product', appController.getTopSellProduct)
     router.get('/api/vi/get-new-collection-product', appController.getNewCollectionProduct)
     router.get('/api/v1/get-product-type-flycam', appController.getProductFlycam)
+
 
 
     return app.use('/', router);

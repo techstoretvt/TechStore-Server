@@ -18,6 +18,9 @@ const typeDefs = gql`
         imageProduct: [imageProduct]
         classifyProduct: [classifyProduct]
         promotionProduct: promotionProduct
+
+        countEvaluate: Int
+        persentElevate: Float
     }
 
     type trademark {

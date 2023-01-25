@@ -136,6 +136,37 @@ const loginGithub = async (req, res) => {
     }
 }
 
+const addProductToCart = async (req, res) => {
+    try {
+        //call service data
+        let data = await userService.addProductToCart(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const addCartOrMoveCart = async (req, res) => {
+    try {
+        //call service data
+        let data = await userService.addCartOrMoveCart(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
 
 module.exports = {
     CreateUser,
@@ -147,5 +178,7 @@ module.exports = {
     accountVerifyPage,
     loginGoogle,
     loginFacebook,
-    loginGithub
+    loginGithub,
+    addProductToCart,
+    addCartOrMoveCart
 }

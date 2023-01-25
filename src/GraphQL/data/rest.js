@@ -32,6 +32,11 @@ const ListPromotions = async () => {
     return data
 }
 
+const listEvaluates = async () => {
+    let data = await db.evaluateProduct.findAll();
+    return data
+}
+
 
 
 
@@ -42,4 +47,5 @@ module.exports = {
     ListImageProducts,
     ListClassify,
     ListPromotions,
+    listEvaluates
 }

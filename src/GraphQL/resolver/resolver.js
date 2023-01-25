@@ -1,6 +1,6 @@
 import {
     ListTypeProducts, ListTrademarks, ListProducts, ListImageProducts,
-    ListClassify, ListPromotions
+    ListClassify, ListPromotions, listEvaluates
 
 } from '../data/rest'
 
@@ -11,6 +11,7 @@ let listtrademarks
 let listimageproduct
 let listclassify
 let listpromotions
+let listevaluates
 
 async function initList() {
     products = await ListProducts();
@@ -19,6 +20,7 @@ async function initList() {
     listimageproduct = await ListImageProducts();
     listclassify = await ListClassify();
     listpromotions = await ListPromotions();
+    listevaluates = await listEvaluates();
 }
 initList();
 
@@ -50,6 +52,20 @@ const resolvers = {
         },
         promotionProduct: (parent, args) => {
             return listpromotions.find(item => item.idProduct === parent.id)
+        },
+        countEvaluate: (parent, args) => {
+            let data = listevaluates.filter(item => item.idProduct === parent.id);
+            return data.length
+        },
+        persentElevate: (parent, args) => {
+            let data = listevaluates.filter(item => item.idProduct === parent.id);
+            if (data.length === 0) return 0
+
+            let sum = data.reduce((init, item) => {
+                return init + item.starNumber
+            }, 0)
+
+            return sum / data.length;
         },
 
     },

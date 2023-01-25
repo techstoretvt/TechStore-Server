@@ -135,10 +135,10 @@ const contentSendEmail = (idUser, keyVerify, firstName) => {
 const CreateToken = (user) => {
     const { id, idGoogle, firstName, idTypeUser } = user;
     const accessToken = jwt.sign({ id, idGoogle, firstName, idTypeUser }, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: '300s'
+        expiresIn: '24h'
     });
     const refreshToken = jwt.sign({ id, idGoogle, firstName, idTypeUser }, process.env.REFESH_TOKEN_SECRET, {
-        expiresIn: '48h'
+        expiresIn: '100h'
     });
 
     return { accessToken, refreshToken };
@@ -615,6 +615,153 @@ const loginGithub = (data) => {
     })
 }
 
+const addProductToCart = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idProduct || !data.amount || !data.idClassifyProduct || !data.accessToken) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!'
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id;
+
+                    //check exits product and classify
+                    let product = await db.product.findOne({
+                        where: { id: data.idProduct }
+                    })
+                    let classifyProduct = await db.classifyProduct.findOne({
+                        where: {
+                            id: data.idClassifyProduct,
+                            idProduct: data.idProduct
+                        }
+                    })
+                    if (!product || !classifyProduct) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Lỗi không tìm thấy sản phẩm hoặc phân loại, vui lòng thử lại sau!'
+                        })
+                    }
+                    else {
+                        let [cart, create] = await db.cart.findOrCreate({
+                            where: {
+                                idUser: idUser,
+                                idProduct: data.idProduct,
+                                idClassifyProduct: data.idClassifyProduct
+                            },
+                            defaults: {
+                                amount: +data.amount
+                            },
+                            raw: false
+
+                        })
+                        if (!create) {
+                            cart.amount = cart.amount + (data.amount * 1)
+                            await cart.save();
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Đã thêm vào giỏ hàng'
+                            })
+                        }
+                        else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Đã thêm vào giỏ hàng'
+                            })
+                        }
+                    }
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const addCartOrMoveCart = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idProduct || !data.amount || !data.idClassifyProduct || !data.accessToken) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!'
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id;
+
+                    //check exits product and classify
+                    let product = await db.product.findOne({
+                        where: { id: data.idProduct }
+                    })
+                    let classifyProduct = await db.classifyProduct.findOne({
+                        where: {
+                            id: data.idClassifyProduct,
+                            idProduct: data.idProduct
+                        }
+                    })
+                    if (!product || !classifyProduct) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Lỗi không tìm thấy sản phẩm hoặc phân loại, vui lòng thử lại sau!'
+                        })
+                    }
+                    else {
+                        let [cart, create] = await db.cart.findOrCreate({
+                            where: {
+                                idUser: idUser,
+                                idProduct: data.idProduct,
+                                idClassifyProduct: data.idClassifyProduct
+                            },
+                            defaults: {
+                                amount: +data.amount
+                            },
+                            raw: false
+
+                        })
+                        if (!create) {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Sản phẩm đã có trong giỏ hàng'
+                            })
+                        }
+                        else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Đã thêm vào giỏ hàng'
+                            })
+                        }
+                    }
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -623,5 +770,7 @@ module.exports = {
     getUserLogin,
     loginGoogle,
     loginFacebook,
-    loginGithub
+    loginGithub,
+    addProductToCart,
+    addCartOrMoveCart
 }
