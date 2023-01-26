@@ -5,24 +5,22 @@ import {
 } from '../data/rest'
 
 
-let products
-let Listtypeproducts
-let listtrademarks
-let listimageproduct
-let listclassify
-let listpromotions
-let listevaluates
+// let products
+// let listtrademarks
+// let listimageproduct
+// let listclassify
+// let listpromotions
+// let listevaluates
 
-async function initList() {
-    products = await ListProducts();
-    Listtypeproducts = await ListTypeProducts();
-    listtrademarks = await ListTrademarks();
-    listimageproduct = await ListImageProducts();
-    listclassify = await ListClassify();
-    listpromotions = await ListPromotions();
-    listevaluates = await listEvaluates();
-}
-initList();
+// async function initList() {
+
+
+
+
+
+
+// }
+// initList();
 
 const resolvers = {
     //QUERY
@@ -33,31 +31,39 @@ const resolvers = {
         typeproduct: (parent, args) => {
             return Listtypeproducts.find(item => item.id === +args.id)
         },
-        product: (parent, args) => {
+        product: async (parent, args) => {
+            let products = await ListProducts();
             return products.find(item => item.id === +args.id)
         },
     },
     product: {
-        typeProduct: (parent, args) => {
+        typeProduct: async (parent, args) => {
+            let Listtypeproducts = await ListTypeProducts();
             return Listtypeproducts.find(item => item.id === parent.idTypeProduct)
         },
-        trademark: (parent, args) => {
+        trademark: async (parent, args) => {
+            let listtrademarks = await ListTrademarks();
             return listtrademarks.find(item => item.id === parent.idTrademark)
         },
-        imageProduct: (parent, args) => {
+        imageProduct: async (parent, args) => {
+            let listimageproduct = await ListImageProducts();
             return listimageproduct.filter(item => item.idProduct === parent.id)
         },
-        classifyProduct: (parent, args) => {
+        classifyProduct: async (parent, args) => {
+            let listclassify = await ListClassify();
             return listclassify.filter(item => item.idProduct === parent.id)
         },
-        promotionProduct: (parent, args) => {
+        promotionProduct: async (parent, args) => {
+            let listpromotions = await ListPromotions();
             return listpromotions.find(item => item.idProduct === parent.id)
         },
-        countEvaluate: (parent, args) => {
+        countEvaluate: async (parent, args) => {
+            let listevaluates = await listEvaluates();
             let data = listevaluates.filter(item => item.idProduct === parent.id);
             return data.length
         },
-        persentElevate: (parent, args) => {
+        persentElevate: async (parent, args) => {
+            let listevaluates = await listEvaluates();
             let data = listevaluates.filter(item => item.idProduct === parent.id);
             if (data.length === 0) return 0
 
