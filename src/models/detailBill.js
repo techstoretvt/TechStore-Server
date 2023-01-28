@@ -13,8 +13,8 @@ module.exports = (sequelize, DataTypes) => {
   }
   detailBill.init({
 
-    idBill: DataTypes.INTEGER,
-    idProduct: DataTypes.INTEGER,
+    idBill: DataTypes.STRING,
+    idProduct: DataTypes.STRING,
     amount: DataTypes.INTEGER,
     isReviews: DataTypes.STRING
 

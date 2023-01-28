@@ -5,9 +5,9 @@ module.exports = {
     await queryInterface.createTable('trademarks', {
       id: {
         allowNull: false,
-        autoIncrement: true,
+        autoIncrement: false,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
 
 
@@ -21,7 +21,7 @@ module.exports = {
         type: Sequelize.STRING
       },
       idTypeProduct: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
 
 

@@ -5,14 +5,14 @@ module.exports = {
     await queryInterface.createTable('videoEvaluateProducts', {
       id: {
         allowNull: false,
-        autoIncrement: true,
+        autoIncrement: false,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
 
 
       idEvaluateProduct: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       videobase64: {
         type: Sequelize.TEXT

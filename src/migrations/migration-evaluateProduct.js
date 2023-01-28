@@ -5,23 +5,28 @@ module.exports = {
     await queryInterface.createTable('evaluateProducts', {
       id: {
         allowNull: false,
-        autoIncrement: true,
+        autoIncrement: false,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
 
 
       idUser: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       idProduct: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       starNumber: {
         type: Sequelize.INTEGER
       },
       content: {
         type: Sequelize.TEXT
+      },
+      stt: {
+        allowNull: false,
+        autoIncrement: true,
+        type: Sequelize.INTEGER
       },
 
 

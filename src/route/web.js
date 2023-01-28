@@ -44,7 +44,8 @@ const initWebRoute = (app) => {
     router.put('/api/edit-image-product', fileUploader.single('file'), adminController.editImageProduct)
     router.post('/api/swap-image-product', adminController.swapImageProduct);
     router.get('/api/get-list-product-by-swap-and-page', adminController.getProductBySwapAndPage);
-    router.post('/api/add-promotion-by-idproduct', adminController.addPromotionByIdProduct)
+    router.post('/api/add-promotion-by-idproduct', adminController.addPromotionByIdProduct);
+    router.delete('/api/v1/delete-error-product', adminController.deleteErrorProduct)
 
 
     //app api
@@ -54,6 +55,8 @@ const initWebRoute = (app) => {
     router.get('/api/v1/get-product-type-flycam', appController.getProductFlycam)
 
 
+    //test
+    router.get('/api/test-api', adminController.testApi)
 
     return app.use('/', router);
 }

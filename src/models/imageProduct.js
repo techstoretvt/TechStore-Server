@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   imageProduct.init({
-    idProduct: DataTypes.INTEGER,
+    idProduct: DataTypes.STRING,
     imagebase64: DataTypes.TEXT,
     STTImage: DataTypes.INTEGER
 

@@ -1,6 +1,7 @@
 import db from '../models'
 require('dotenv').config();
 import jwt from 'jsonwebtoken'
+import { v4 as uuidv4 } from 'uuid';
 
 import commont from '../services/commont'
 
@@ -22,10 +23,11 @@ const CreateUser = (data) => {
                     firstName: data.firstName,
                     lastName: data.lastName,
                     pass: hasePass,
-                    idTypeUser: 3,
+                    idTypeUser: "3",
                     keyVerify: keyVerify,
                     statusUser: 'wait',
-                    typeAccount: 'web'
+                    typeAccount: 'web',
+                    id: uuidv4()
                 },
                 raw: false
             });
@@ -156,7 +158,7 @@ const verifyCreateUser = (data) => {
             else {
                 let user = await db.User.findOne({
                     where: {
-                        id: +data.id,
+                        id: data.id,
                         keyVerify: data.keyVerify,
                         statusUser: 'wait'
                     },
@@ -387,11 +389,12 @@ const loginGoogle = (data) => {
                         firstName: data.firstName,
                         lastName: data.lastName,
 
-                        idTypeUser: 3,
+                        idTypeUser: "3",
 
 
                         statusUser: 'true',
-                        avatarGoogle: data.avatar
+                        avatarGoogle: data.avatar,
+                        id: uuidv4()
                     },
                     raw: false
                 });
@@ -469,11 +472,12 @@ const loginFacebook = (data) => {
                         firstName: data.firstName,
                         lastName: data.lastName,
                         email: 'none',
-                        idTypeUser: 3,
+                        idTypeUser: "3",
                         typeAccount: 'facebook',
 
                         statusUser: 'true',
-                        avatarFacebook: data.avatarFacebook
+                        avatarFacebook: data.avatarFacebook,
+                        id: uuidv4()
                     },
                     raw: false
                 });
@@ -657,10 +661,11 @@ const addProductToCart = (data) => {
                             where: {
                                 idUser: idUser,
                                 idProduct: data.idProduct,
-                                idClassifyProduct: data.idClassifyProduct
+                                idClassifyProduct: data.idClassifyProduct,
                             },
                             defaults: {
-                                amount: +data.amount
+                                amount: +data.amount,
+                                id: uuidv4()
                             },
                             raw: false
 

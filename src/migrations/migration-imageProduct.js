@@ -5,9 +5,9 @@ module.exports = {
     await queryInterface.createTable('imageProducts', {
       id: {
         allowNull: false,
-        autoIncrement: true,
+        autoIncrement: false,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
 
 
@@ -18,7 +18,7 @@ module.exports = {
 
       idProduct: {
         allowNull: false,
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       imagebase64: {
         type: Sequelize.TEXT

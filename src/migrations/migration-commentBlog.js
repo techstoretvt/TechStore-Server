@@ -5,17 +5,17 @@ module.exports = {
     await queryInterface.createTable('commentBlogs', {
       id: {
         allowNull: false,
-        autoIncrement: true,
+        autoIncrement: false,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
 
 
       idUser: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       idBlog: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       timeCommentBlog: {
         type: Sequelize.STRING
@@ -23,6 +23,12 @@ module.exports = {
       content: {
         type: Sequelize.TEXT
       },
+      stt: {
+        allowNull: false,
+        autoIncrement: true,
+        type: Sequelize.INTEGER
+      },
+
 
       createdAt: {
         allowNull: false,

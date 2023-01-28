@@ -23,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
     keyVerify: DataTypes.STRING,
     pass: DataTypes.STRING,
     avatar: DataTypes.TEXT,
-    idTypeUser: DataTypes.INTEGER,
+    idTypeUser: DataTypes.STRING,
     statusUser: DataTypes.STRING,
     idGoogle: DataTypes.STRING,
     avatarGoogle: DataTypes.TEXT,

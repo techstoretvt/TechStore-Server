@@ -5,9 +5,9 @@ module.exports = {
     await queryInterface.createTable('blogs', {
       id: {
         allowNull: false,
-        autoIncrement: true,
+        autoIncrement: false,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
 
       titleBlog: {
@@ -20,7 +20,7 @@ module.exports = {
         type: Sequelize.TEXT
       },
       idUser: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       timeBlog: {
         type: Sequelize.STRING
@@ -30,6 +30,11 @@ module.exports = {
       },
       descriptionPhoto: {
         type: Sequelize.TEXT
+      },
+      stt: {
+        allowNull: false,
+        autoIncrement: true,
+        type: Sequelize.INTEGER
       },
 
 

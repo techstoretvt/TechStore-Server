@@ -15,10 +15,10 @@ module.exports = (sequelize, DataTypes) => {
   }
   bill.init({
 
-    idUser: DataTypes.INTEGER,
+    idUser: DataTypes.STRING,
     timeBill: DataTypes.STRING,
-    idStatusBill: DataTypes.INTEGER,
-    idAddressUser: DataTypes.INTEGER
+    idStatusBill: DataTypes.STRING,
+    idAddressUser: DataTypes.STRING
 
 
   }, {

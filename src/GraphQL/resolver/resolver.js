@@ -33,7 +33,7 @@ const resolvers = {
         },
         product: async (parent, args) => {
             let products = await ListProducts();
-            return products.find(item => item.id === +args.id)
+            return products.find(item => item.id === args.id)
         },
     },
     product: {

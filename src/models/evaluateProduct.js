@@ -15,10 +15,11 @@ module.exports = (sequelize, DataTypes) => {
   }
   evaluateProduct.init({
 
-    idUser: DataTypes.INTEGER,
-    idProduct: DataTypes.INTEGER,
+    idUser: DataTypes.STRING,
+    idProduct: DataTypes.STRING,
     starNumber: DataTypes.INTEGER,
-    content: DataTypes.TEXT
+    content: DataTypes.TEXT,
+    stt: DataTypes.INTEGER,
 
 
   }, {

@@ -8,12 +8,17 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       trademark.belongsTo(models.typeProduct, { foreignKey: 'idTypeProduct' })
+
+
+
+
+
       trademark.hasMany(models.product, { foreignKey: 'idTrademark' })
     }
   }
   trademark.init({
     nameTrademark: DataTypes.STRING,
-    idTypeProduct: DataTypes.INTEGER,
+    idTypeProduct: DataTypes.STRING,
 
   }, {
     sequelize,

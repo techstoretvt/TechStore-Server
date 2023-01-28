@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   classifyProduct.init({
-    idProduct: DataTypes.INTEGER,
+    idProduct: DataTypes.STRING,
     amount: DataTypes.INTEGER,
     nameClassifyProduct: DataTypes.STRING,
     STTImg: DataTypes.INTEGER,

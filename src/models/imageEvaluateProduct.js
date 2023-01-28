@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   imageEvaluateProduct.init({
 
-    idEvaluateProduct: DataTypes.INTEGER,
+    idEvaluateProduct: DataTypes.STRING,
     imagebase64: DataTypes.TEXT,
 
 

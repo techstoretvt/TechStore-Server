@@ -1,4 +1,5 @@
 import db from '../models'
+import { v4 as uuidv4 } from 'uuid';
 
 const addTypeProduct = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -14,7 +15,8 @@ const addTypeProduct = (data) => {
                 let [typeProduct, created] = await db.typeProduct.findOrCreate({
                     where: { nameTypeProduct: data.query.nameTypeProduct.toLowerCase() },
                     defaults: {
-                        imageTypeProduct: data.file.path
+                        imageTypeProduct: data.file.path,
+                        id: uuidv4()
                     },
                     raw: false
                 })
@@ -38,7 +40,6 @@ const addTypeProduct = (data) => {
         }
     })
 }
-
 
 const getAllTypeProduct = () => {
     return new Promise(async (resolve, reject) => {
@@ -133,7 +134,7 @@ const updateTypeProductById = (data) => {
             }
             else {
                 let typeProduct = await db.typeProduct.findOne({
-                    where: { id: +data.query.idTypeProduct },
+                    where: { id: data.query.idTypeProduct },
                     raw: false
                 })
 
@@ -190,10 +191,10 @@ const addTrademark = (data) => {
                 let [trademark, created] = await db.trademark.findOrCreate({
                     where: {
                         nameTrademark: data.nameTrademark.toLowerCase(),
-                        idTypeProduct: +data.idTypeProduct
+                        idTypeProduct: data.idTypeProduct,
                     },
-                    default: {
-
+                    defaults: {
+                        id: uuidv4()
                     }
                 })
 
@@ -315,14 +316,14 @@ const updateTrademarkById = (data) => {
 
                 let trademarkEdit = await db.trademark.findOne({
                     where: {
-                        id: +data.id,
+                        id: data.id,
                     },
                     raw: false
                 })
                 if (trademarkEdit) {
                     let check = await db.trademark.findOne({
                         where: {
-                            idTypeProduct: +data.idTypeProduct,
+                            idTypeProduct: data.idTypeProduct,
                             nameTrademark: data.nameTrademark.toLowerCase()
                         },
                         raw: false
@@ -336,7 +337,7 @@ const updateTrademarkById = (data) => {
                     }
                     else {
                         trademarkEdit.nameTrademark = data.nameTrademark.toLowerCase();
-                        trademarkEdit.idTypeProduct = +data.idTypeProduct;
+                        trademarkEdit.idTypeProduct = data.idTypeProduct;
                         await trademarkEdit.save();
 
                         resolve({
@@ -375,12 +376,13 @@ const createNewProduct = (data) => {
                 let product = await db.product.create({
                     nameProduct: data.nameProduct.toLowerCase(),
                     priceProduct: data.priceProduct,
-                    idTypeProduct: +data.idTypeProduct,
-                    idTrademark: +data.idTrademark,
+                    idTypeProduct: data.idTypeProduct,
+                    idTrademark: data.idTrademark,
                     contentHTML: data.contentHTML,
                     contentMarkdown: data.contentMarkdown,
                     isSell: 'true',
-                    sold: 0
+                    sold: 0,
+                    id: uuidv4()
                 })
 
                 // console.log('product: ', product.dataValues);
@@ -393,9 +395,9 @@ const createNewProduct = (data) => {
                             amount: item.amount,
                             nameClassifyProduct: item.nameClassify.toLowerCase(),
                             STTImg: item.STTImg ? +item.STTImg : 100,
-                            priceClassify: +item.priceClassify
+                            priceClassify: +item.priceClassify,
+                            id: uuidv4()
                         })
-                        console.log(`classify ${index}:`, classifyProduct.dataValues);
                     })
                 }
                 else {
@@ -403,6 +405,7 @@ const createNewProduct = (data) => {
                         idProduct: product.dataValues.id,
                         amount: +data.sl,
                         nameClassifyProduct: 'default',
+                        id: uuidv4()
                     })
                 }
 
@@ -431,9 +434,10 @@ const cloudinaryUpload = (data) => {
             }
             else {
                 let imageProduct = await db.imageProduct.create({
-                    idProduct: +data.query.idProduct,
+                    idProduct: data.query.idProduct,
                     imagebase64: data.file.path,
-                    STTImage: +data.query.num
+                    STTImage: +data.query.num,
+                    id: uuidv4()
                 })
                 console.log(`imgproduct ${data.query.num}: `, imageProduct.dataValues);
 
@@ -482,7 +486,7 @@ const getListProductByPage = (data) => {
                         },
                     ],
                     order: [
-                        ['id', 'DESC'],
+                        ['stt', 'DESC'],
                         [{ model: db.imageProduct, as: 'imageProduct-product' }, 'STTImage', 'asc']
                     ],
                     nest: true,
@@ -560,7 +564,7 @@ const editProductById = (data) => {
             else {
                 let product = await db.product.findOne({
                     where: {
-                        id: +data.idProduct
+                        id: data.idProduct
                     },
                     raw: false
                 })
@@ -582,59 +586,38 @@ const editProductById = (data) => {
                     await product.save();
 
                     if (data.listClassify.length === 0) {
-                        let isDelete = true
-
-                        while (isDelete) {
-                            let classifyProduct = await db.classifyProduct.findOne({
-                                where: {
-                                    idProduct: +data.idProduct
-                                },
-                                raw: false
-                            })
-
-                            if (classifyProduct) {
-                                await classifyProduct.destroy()
+                        await db.classifyProduct.destroy({
+                            where: {
+                                idProduct: data.idProduct
                             }
-                            else {
-                                isDelete = false
-                            }
-                        }
+                        })
 
                         await db.classifyProduct.create({
-                            idProduct: +data.idProduct,
+                            idProduct: data.idProduct,
                             amount: +data.sl,
                             nameClassifyProduct: 'default',
+                            id: uuidv4()
                         })
 
                     }
                     else {
-                        let isDelete = true
-
-                        while (isDelete) {
-                            let classifyProduct = await db.classifyProduct.findOne({
-                                where: {
-                                    idProduct: +data.idProduct
-                                },
-                                raw: false
-                            })
-
-                            if (classifyProduct) {
-                                await classifyProduct.destroy()
+                        await db.classifyProduct.destroy({
+                            where: {
+                                idProduct: data.idProduct
                             }
-                            else {
-                                isDelete = false
-                            }
-                        }
+                        })
 
-                        data.listClassify.forEach(async (item, index) => {
-                            let classifyProduct = await db.classifyProduct.create({
+                        let arrClassify = data.listClassify.map((item, index) => {
+                            return {
                                 idProduct: data.idProduct,
-                                amount: item.amount,
+                                amount: +item.amount,
                                 nameClassifyProduct: item.nameClassify.toLowerCase(),
                                 STTImg: item.STTImg ? +item.STTImg : 100,
-                                priceClassify: item.priceClassify
-                            })
+                                priceClassify: item.priceClassify,
+                                id: uuidv4().toString()
+                            }
                         })
+                        await db.classifyProduct.bulkCreate(arrClassify, { individualHooks: true })
                     }
 
                     resolve({
@@ -664,7 +647,7 @@ const editImageProduct = (data) => {
 
                 let imageProduct = await db.imageProduct.findOne({
                     where: {
-                        idProduct: +data.query.idProduct,
+                        idProduct: data.query.idProduct,
                         STTImage: +data.query.num,
                     },
                     raw: false
@@ -680,9 +663,10 @@ const editImageProduct = (data) => {
                 }
                 else {
                     await db.imageProduct.create({
-                        idProduct: +data.query.idProduct,
+                        idProduct: data.query.idProduct,
                         imagebase64: data.file.path,
-                        STTImage: +data.query.num
+                        STTImage: +data.query.num,
+                        id: uuidv4()
                     })
                     resolve({
                         errCode: 0,
@@ -708,30 +692,22 @@ const swapImageProduct = (data) => {
             }
             else {
 
-
-                let isDelete = true
-                while (isDelete) {
-                    let imageProduct = await db.imageProduct.findOne({
-                        where: {
-                            idProduct: data.idProduct
-                        },
-                        raw: false
-                    })
-                    if (imageProduct) {
-                        await imageProduct.destroy();
+                await db.imageProduct.destroy({
+                    where: {
+                        idProduct: data.idProduct
                     }
-                    else {
-                        isDelete = false
-                    }
-                }
-
-                data.imageProducts.forEach(async (item, index) => {
-                    await db.imageProduct.create({
-                        idProduct: +data.idProduct,
-                        imagebase64: item.url,
-                        STTImage: +item.num
-                    })
                 })
+
+                let arrImageProduct = data.imageProducts.map((item) => {
+                    return {
+                        idProduct: data.idProduct,
+                        imagebase64: item.url,
+                        STTImage: +item.num,
+                        id: uuidv4()
+                    }
+                })
+
+                await db.imageProduct.bulkCreate(arrImageProduct, { individualHooks: true })
 
                 resolve({
                     errCode: 0,
@@ -815,11 +791,12 @@ const addPromotionByIdProduct = (data) => {
             else {
                 let [promotion, created] = await db.promotionProduct.findOrCreate({
                     where: {
-                        idProduct: +data.idProduct
+                        idProduct: data.idProduct
                     },
                     defaults: {
                         timePromotion: data.timePromotion + '',
                         numberPercent: +data.persentPromotion,
+                        id: uuidv4()
                     },
                     raw: false
                 })
@@ -846,6 +823,72 @@ const addPromotionByIdProduct = (data) => {
     })
 }
 
+const testApi = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            let datas = await db.typeProduct.findAll({
+                include: [
+                    { model: db.trademark },
+                ],
+                // nest: true,
+                // raw: false
+            })
+
+            resolve({
+                data: datas
+            })
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const deleteErrorProduct = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.id) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                })
+            }
+            else {
+                await db.product.destroy({
+                    where: {
+                        id: data.id
+                    }
+                })
+
+                await db.classifyProduct.destroy({
+                    where: {
+                        idProduct: data.id
+                    }
+                })
+
+                await db.imageProduct.destroy({
+                    where: {
+                        idProduct: data.id
+                    }
+                })
+
+
+
+                resolve({
+                    errCode: 0,
+                    errMessage: 'da xoa all',
+                })
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+
 module.exports = {
     addTypeProduct,
     getAllTypeProduct,
@@ -863,5 +906,7 @@ module.exports = {
     editImageProduct,
     swapImageProduct,
     getProductBySwapAndPage,
-    addPromotionByIdProduct
+    addPromotionByIdProduct,
+    testApi,
+    deleteErrorProduct
 }

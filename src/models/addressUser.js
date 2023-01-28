@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   addressUser.init({
-    idUser: DataTypes.INTEGER,
+    idUser: DataTypes.STRING,
     isDefault: DataTypes.STRING,
     fullname: DataTypes.STRING,
     sdt: DataTypes.STRING,

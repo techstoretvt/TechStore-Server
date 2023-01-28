@@ -13,8 +13,8 @@ module.exports = (sequelize, DataTypes) => {
   }
   likeBlog.init({
 
-    idUser: DataTypes.INTEGER,
-    idBlog: DataTypes.INTEGER
+    idUser: DataTypes.STRING,
+    idBlog: DataTypes.STRING
 
 
   }, {

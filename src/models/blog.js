@@ -16,10 +16,11 @@ module.exports = (sequelize, DataTypes) => {
     titleBlog: DataTypes.STRING,
     contentHTML: DataTypes.TEXT,
     contentMarkdown: DataTypes.TEXT,
-    idUser: DataTypes.INTEGER,
+    idUser: DataTypes.STRING,
     timeBlog: DataTypes.STRING,
     viewBlog: DataTypes.INTEGER,
     descriptionPhoto: DataTypes.TEXT,
+    stt: DataTypes.INTEGER,
 
 
   }, {

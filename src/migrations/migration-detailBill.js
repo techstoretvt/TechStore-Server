@@ -5,17 +5,17 @@ module.exports = {
     await queryInterface.createTable('detailBills', {
       id: {
         allowNull: false,
-        autoIncrement: true,
+        autoIncrement: false,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
 
 
       idBill: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       idProduct: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       amount: {
         type: Sequelize.INTEGER

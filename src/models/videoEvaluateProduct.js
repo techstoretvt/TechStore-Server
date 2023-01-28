@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   videoEvaluateProduct.init({
 
-    idEvaluateProduct: DataTypes.INTEGER,
+    idEvaluateProduct: DataTypes.STRING,
     videobase64: DataTypes.TEXT,
 
 

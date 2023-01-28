@@ -5,21 +5,26 @@ module.exports = {
     await queryInterface.createTable('carts', {
       id: {
         allowNull: false,
-        autoIncrement: true,
+        autoIncrement: false,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
 
       idUser: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       idProduct: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       amount: {
         type: Sequelize.INTEGER
       },
       idClassifyProduct: {
+        type: Sequelize.STRING
+      },
+      stt: {
+        allowNull: false,
+        autoIncrement: true,
         type: Sequelize.INTEGER
       },
 
