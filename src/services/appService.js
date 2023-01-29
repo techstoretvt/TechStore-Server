@@ -1,13 +1,14 @@
 import db from '../models'
+const { Op } = require("sequelize");
 
 const getProductPromotionHome = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            let countProduct = 10
-            let listProducts = []
+            let date = new Date().getTime()
 
             let products = await db.product.findAll({
                 attributes: ['id', 'nameProduct', 'priceProduct', 'isSell', 'sold'],
+                limit: 10,
                 include: [
                     {
                         model: db.imageProduct, as: 'imageProduct-product',
@@ -38,6 +39,12 @@ const getProductPromotionHome = () => {
                         attributes: {
                             exclude: ['createdAt', 'updatedAt', 'id']
                         },
+                        where: {
+                            [Op.and]: [
+                                { numberPercent: { [Op.ne]: 0 } },
+                                { timePromotion: { [Op.gt]: date } }
+                            ]
+                        }
                     }
                 ],
                 order: [
@@ -48,33 +55,61 @@ const getProductPromotionHome = () => {
                 nest: true
             });
 
-            let listProductTam = [...products]
-
-            listProductTam.forEach(item => {
-                if (listProducts.length < countProduct) {
-                    let time = new Date().getTime();
-                    let timedb = +item.dataValues.promotionProducts[0]?.dataValues?.timePromotion
-                    if (timedb > time) {
-                        listProducts.push(item);
-                    }
-                }
-            })
-
-            if (listProducts.length < countProduct) {
-                products.forEach(item => {
-                    if (listProducts.length < countProduct) {
-                        let time = new Date().getTime();
-                        let timedb = +item.dataValues.promotionProducts[0]?.dataValues?.timePromotion
-                        if (timedb < time) {
-                            listProducts.push(item);
+            let products2 = await db.product.findAll({
+                attributes: ['id', 'nameProduct', 'priceProduct', 'isSell', 'sold'],
+                limit: 10 - products.length,
+                include: [
+                    {
+                        model: db.imageProduct, as: 'imageProduct-product',
+                        attributes: {
+                            exclude: ['createdAt', 'updatedAt', 'id']
+                        }
+                    },
+                    {
+                        model: db.trademark,
+                        attributes: {
+                            exclude: ['createdAt', 'updatedAt', 'id']
+                        }
+                    },
+                    {
+                        model: db.typeProduct,
+                        attributes: {
+                            exclude: ['createdAt', 'updatedAt', 'id']
+                        }
+                    },
+                    {
+                        model: db.classifyProduct, as: 'classifyProduct-product',
+                        attributes: {
+                            exclude: ['createdAt', 'updatedAt', 'id']
+                        }
+                    },
+                    {
+                        model: db.promotionProduct,
+                        attributes: {
+                            exclude: ['createdAt', 'updatedAt', 'id']
+                        },
+                        where: {
+                            [Op.or]: [
+                                { numberPercent: { [Op.eq]: 0 } },
+                                { timePromotion: { [Op.lte]: date } }
+                            ]
                         }
                     }
-                })
-            }
+                ],
+                order: [
+                    ['id', 'ASC'],
+                    [{ model: db.imageProduct, as: 'imageProduct-product' }, 'STTImage', 'asc']
+                ],
+                raw: false,
+                nest: true
+            });
+
+            products.concat(products2)
+
             resolve({
                 errCode: 0,
-                count: listProducts.length,
-                data: listProducts,
+                count: products.length,
+                data: products,
             })
         }
         catch (e) {

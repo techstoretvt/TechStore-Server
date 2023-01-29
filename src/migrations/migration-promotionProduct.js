@@ -15,7 +15,7 @@ module.exports = {
         type: Sequelize.STRING
       },
       timePromotion: {
-        type: Sequelize.STRING
+        type: Sequelize.DOUBLE
       },
       numberPercent: {
         type: Sequelize.INTEGER

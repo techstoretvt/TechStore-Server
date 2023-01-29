@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
   promotionProduct.init({
 
     idProduct: DataTypes.STRING,
-    timePromotion: DataTypes.STRING,
+    timePromotion: DataTypes.DOUBLE,
     numberPercent: DataTypes.INTEGER,
 
 

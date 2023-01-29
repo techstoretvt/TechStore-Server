@@ -386,6 +386,12 @@ const createNewProduct = (data) => {
                 })
 
                 // console.log('product: ', product.dataValues);
+                await db.promotionProduct.create({
+                    idProduct: product.dataValues.id,
+                    timePromotion: 0,
+                    numberPercent: 0,
+                    id: uuidv4()
+                })
 
 
                 if (data.listClassify?.length > 0) {
