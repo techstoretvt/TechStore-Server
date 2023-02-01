@@ -27,6 +27,9 @@ module.exports = {
         autoIncrement: true,
         type: Sequelize.INTEGER
       },
+      isChoose: {
+        type: Sequelize.STRING
+      },
 
 
       createdAt: {

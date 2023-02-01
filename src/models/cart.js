@@ -18,6 +18,7 @@ module.exports = (sequelize, DataTypes) => {
     amount: DataTypes.INTEGER,
     idClassifyProduct: DataTypes.STRING,
     stt: DataTypes.INTEGER,
+    isChoose: DataTypes.STRING
 
 
   }, {

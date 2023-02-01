@@ -168,6 +168,183 @@ const addCartOrMoveCart = async (req, res) => {
     }
 }
 
+const addNewAddressUser = async (req, res) => {
+    try {
+        //call service data
+        let data = await userService.addNewAddressUser(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const getAddressUser = async (req, res) => {
+    try {
+        //call service data
+        let data = await userService.getAddressUser(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const setDefaultAddress = async (req, res) => {
+    try {
+        //call service data
+        let data = await userService.setDefaultAddress(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const deleteAddressUser = async (req, res) => {
+    try {
+        //call service data
+        let data = await userService.deleteAddressUser(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const editAddressUser = async (req, res) => {
+    try {
+        //call service data
+        let data = await userService.editAddressUser(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const getListCartUser = async (req, res) => {
+    try {
+        //call service data
+        let data = await userService.getListCartUser(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const editAmountCartUser = async (req, res) => {
+    try {
+        //call service data
+        let data = await userService.editAmountCartUser(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const chooseProductInCart = async (req, res) => {
+    try {
+        //call service data
+        let data = await userService.chooseProductInCart(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const deleteProductInCart = async (req, res) => {
+    try {
+        //call service data
+        let data = await userService.deleteProductInCart(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const updateClassifyProductInCart = async (req, res) => {
+    try {
+        //call service data
+        let data = await userService.updateClassifyProductInCart(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const createNewBill = async (req, res) => {
+    try {
+        //call service data
+        let data = await userService.createNewBill(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -180,5 +357,16 @@ module.exports = {
     loginFacebook,
     loginGithub,
     addProductToCart,
-    addCartOrMoveCart
+    addCartOrMoveCart,
+    addNewAddressUser,
+    getAddressUser,
+    setDefaultAddress,
+    deleteAddressUser,
+    editAddressUser,
+    getListCartUser,
+    editAmountCartUser,
+    chooseProductInCart,
+    deleteProductInCart,
+    updateClassifyProductInCart,
+    createNewBill
 }

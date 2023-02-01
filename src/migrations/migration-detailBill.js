@@ -23,6 +23,9 @@ module.exports = {
       isReviews: {
         type: Sequelize.STRING
       },
+      idClassifyProduct: {
+        type: Sequelize.STRING
+      },
 
 
 

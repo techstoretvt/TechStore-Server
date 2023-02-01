@@ -24,6 +24,17 @@ const initWebRoute = (app) => {
     router.post('/api/login-github', userController.loginGithub)
     router.post('/api/v1/add-product-to-cart', userController.addProductToCart)
     router.post('/api/v1/add-cart-or-move-cart', userController.addCartOrMoveCart)
+    router.post('/api/v1/add-new-address-user', userController.addNewAddressUser)
+    router.get('/api/v1/get-address-user', userController.getAddressUser)
+    router.put('/api/v1/set-default-address', userController.setDefaultAddress)
+    router.delete('/api/v1/delete-address-user', userController.deleteAddressUser)
+    router.put('/api/v1/edit-address-user', userController.editAddressUser)
+    router.get('/api/v1/get-list-cart-user', userController.getListCartUser)
+    router.put('/api/v1/edit-amount-cart-user', userController.editAmountCartUser)
+    router.put('/api/v1/choose-product-in-cart', userController.chooseProductInCart)
+    router.delete('/api/v1/delete-product-in-cart', userController.deleteProductInCart)
+    router.put('/api/v1/update-classify-product-in-cart', userController.updateClassifyProductInCart)
+    router.post('/api/v1/create-new-bill', userController.createNewBill)
 
     //admin api
     router.post('/api/add-type-product', fileUploader.single('file'), adminController.addTypeProduct)

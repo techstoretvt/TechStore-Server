@@ -3,6 +3,7 @@ require('dotenv').config();
 import jwt from 'jsonwebtoken'
 import { v4 as uuidv4 } from 'uuid';
 const Verifier = require("email-verifier");
+const { Op } = require("sequelize");
 
 
 import commont from '../services/commont'
@@ -700,6 +701,7 @@ const addProductToCart = (data) => {
                             },
                             defaults: {
                                 amount: +data.amount,
+                                isChoose: 'false',
                                 id: uuidv4()
                             },
                             raw: false
@@ -809,6 +811,777 @@ const addCartOrMoveCart = (data) => {
     })
 }
 
+const addNewAddressUser = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (data.country === '-1' || data.district === "-1" || !data.nameAddress || !data.nameUser || !data.sdtUser || !data.addressText || !data.accessToken) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!'
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id;
+
+                    let [addressUser, create] = await db.addressUser.findOrCreate({
+                        where: {
+                            idUser,
+                            nameAddress: data.nameAddress.toLowerCase(),
+                        },
+                        defaults: {
+                            isDefault: 'false',
+                            fullname: data.nameUser,
+                            sdt: data.sdtUser,
+                            country: data.country,
+                            district: data.district,
+                            addressText: data.addressText,
+                            id: uuidv4()
+                        },
+                        raw: false
+                    })
+
+                    if (!create) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Tên địa chỉ này đã tồn tại!',
+                        })
+                    }
+                    else {
+                        let updateAddress = await db.addressUser.findOne({
+                            where: {
+                                idUser,
+                                isDefault: 'true',
+                            },
+                            raw: false
+                        })
+                        if (updateAddress) {
+                            updateAddress.isDefault = 'false'
+                            await updateAddress.save()
+                        }
+
+                        addressUser.isDefault = 'true'
+                        await addressUser.save();
+
+                        resolve({
+                            errCode: 0,
+                            errMessage: 'Thêm địa chỉ thành công.',
+                        })
+
+                    }
+
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const getAddressUser = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!'
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id;
+
+                    let addressUser = await db.addressUser.findAll({
+                        where: {
+                            idUser
+                        },
+                        order: [['id', 'ASC']]
+                    })
+
+                    if (addressUser) {
+                        resolve({
+                            errCode: 0,
+                            data: addressUser
+                        })
+                    }
+                    else {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Not found!',
+                        })
+                    }
+
+                }
+            }
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const setDefaultAddress = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.id) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id;
+
+                    let address = await db.addressUser.findOne({
+                        where: {
+                            idUser,
+                            isDefault: 'true'
+                        },
+                        raw: false
+                    })
+                    if (address) {
+                        address.isDefault = 'false'
+                        await address.save()
+                    }
+
+                    let addressUser = await db.addressUser.findOne({
+                        where: {
+                            id: data.id
+                        },
+                        raw: false
+                    })
+
+                    if (addressUser) {
+                        addressUser.isDefault = 'true'
+                        addressUser.save()
+
+                        resolve({
+                            errCode: 0,
+                            errMessage: 'success',
+                        })
+                    }
+                    else {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Không tìm thấy địa chỉ này!',
+                            decode
+                        })
+                    }
+
+                }
+            }
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const deleteAddressUser = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.id) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id;
+
+                    let address = await db.addressUser.findOne({
+                        where: {
+                            idUser,
+                            id: data.id
+                        },
+                        raw: false
+                    })
+                    if (address) {
+                        await address.destroy()
+
+                        let addressDefault = await db.addressUser.findOne({
+                            where: {
+                                idUser,
+                                isDefault: 'true'
+                            }
+                        })
+                        if (!addressDefault) {
+                            let addressDefault2 = await db.addressUser.findOne({
+                                where: {
+                                    idUser,
+                                    isDefault: 'false'
+                                },
+                                raw: false
+                            })
+
+                            if (addressDefault2) {
+                                addressDefault2.isDefault = 'true'
+                                await addressDefault2.save();
+                            }
+                        }
+
+                        resolve({
+                            errCode: 0,
+                        })
+                    }
+                    else {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Không tìm thấy địa chỉ này!',
+                        })
+                    }
+                }
+            }
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const editAddressUser = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.id || data.country === '-1' || data.district === '-1' || !data.nameUser ||
+                !data.nameAddress || !data.sdtUser || !data.addressText) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id;
+
+                    let check = await db.addressUser.findOne({
+                        where: {
+                            idUser,
+                            nameAddress: data.nameAddress,
+                            id: {
+                                [Op.ne]: data.id
+                            }
+                        }
+                    })
+
+                    if (!check) {
+                        let address = await db.addressUser.findOne({
+                            where: {
+                                idUser,
+                                id: data.id
+                            },
+                            raw: false
+                        })
+
+                        if (address) {
+                            address.nameAddress = data.nameAddress
+                            address.fullname = data.nameUser
+                            address.sdt = data.sdtUser
+                            address.country = data.country
+                            address.district = data.district
+                            address.addressText = data.addressText
+
+                            await address.save()
+
+                            resolve({
+                                errCode: 0,
+                            })
+                        }
+                        else {
+                            resolve({
+                                errCode: 3,
+                                errMessage: 'Không tìm thấy địa chỉ này',
+                            })
+                        }
+                    }
+                    else {
+                        resolve({
+                            errCode: 4,
+                            errMessage: 'Tên địa chỉ này đã tồn tại!',
+                        })
+                    }
+
+                }
+            }
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const getListCartUser = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id;
+
+                    let carts = await db.cart.findAll({
+                        where: {
+                            idUser
+                        },
+                        include: [
+                            {
+                                model: db.classifyProduct,
+                            },
+                            {
+                                model: db.product,
+                                include: [
+                                    {
+                                        model: db.imageProduct, as: 'imageProduct-product',
+                                        attributes: {
+                                            exclude: ['createdAt', 'updatedAt', 'id']
+                                        }
+                                    },
+                                    {
+                                        model: db.promotionProduct,
+                                        attributes: {
+                                            exclude: ['createdAt', 'updatedAt', 'id']
+                                        },
+                                    },
+                                    {
+                                        model: db.classifyProduct, as: 'classifyProduct-product',
+                                        attributes: {
+                                            exclude: ['createdAt', 'updatedAt']
+                                        }
+                                    },
+                                ],
+                                raw: false,
+                                nest: true
+                            },
+                        ],
+                        order: [['stt', 'DESC']],
+                        raw: false,
+                        nest: true
+                    })
+
+                    resolve({
+                        errCode: 0,
+                        data: carts
+                    })
+
+                }
+            }
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const editAmountCartUser = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.id || !data.typeEdit) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id;
+
+                    let cart = await db.cart.findOne({
+                        where: {
+                            idUser,
+                            id: data.id
+                        },
+                        raw: false
+                    })
+
+                    if (cart) {
+                        let cartTemp = await db.cart.findOne({
+                            where: {
+                                idUser,
+                                id: data.id
+                            }
+                        })
+
+                        if (data.typeEdit === 'prev') {
+                            if (cartTemp.amount !== 1) {
+                                cart.amount = cart.amount - 1
+                                await cart.save();
+                            }
+                            resolve({
+                                errCode: 0,
+                            })
+                        }
+                        else if (data.typeEdit === 'next') {
+                            let classifyProduct = await db.classifyProduct.findOne({
+                                where: {
+                                    id: cartTemp.idClassifyProduct
+                                }
+                            })
+
+                            let sl = classifyProduct.amount
+
+                            if (cartTemp.amount < sl) {
+                                cart.amount = cart.amount + 1
+                                await cart.save()
+                            }
+                            resolve({
+                                errCode: 0,
+                            })
+                        }
+                    }
+                    else {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Không tìm thấy sản phẩm trong giỏ hàng!',
+                        })
+                    }
+                }
+            }
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const chooseProductInCart = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.id) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id;
+
+                    let cart = await db.cart.findOne({
+                        where: {
+                            idUser,
+                            id: data.id
+                        },
+                        raw: false
+                    })
+                    if (!cart) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Không tìm thấy sản phẩm này trong giỏ hàng!',
+                        })
+                    }
+                    else {
+                        cart.isChoose = cart.isChoose === 'true' ? 'false' : 'true'
+                        await cart.save()
+
+                        resolve({
+                            errCode: 0,
+                        })
+                    }
+
+                }
+            }
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const deleteProductInCart = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.id) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id;
+
+                    let cart = await db.cart.findOne({
+                        where: {
+                            idUser,
+                            id: data.id
+                        },
+                        raw: false
+                    })
+                    if (!cart) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Không tìm thấy sản phẩm này trong giỏ hàng!',
+                        })
+                    }
+                    else {
+                        await cart.destroy()
+
+                        resolve({
+                            errCode: 0,
+                        })
+                    }
+
+                }
+            }
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const updateClassifyProductInCart = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idCart || !data.idClassify) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id;
+
+                    let classifyProduct = await db.classifyProduct.findOne({
+                        where: {
+                            id: data.idClassify
+                        }
+                    })
+
+                    if (classifyProduct) {
+                        let cart = await db.cart.findOne({
+                            where: {
+                                idUser,
+                                id: data.idCart
+                            },
+                            raw: false
+                        })
+
+                        if (cart) {
+                            cart.idClassifyProduct = classifyProduct.id
+                            cart.amount = 1
+                            await cart.save()
+                        }
+
+                        resolve({
+                            errCode: 0,
+                        })
+                    }
+                    else {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Không tìm thấy loại sản phẩm!',
+                        })
+                    }
+                }
+            }
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const createNewBill = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.Totals) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id;
+
+                    let addressUser = await db.addressUser.findOne({
+                        where: {
+                            idUser,
+                            isDefault: 'true'
+                        }
+                    })
+
+                    let cart = await db.cart.findAll({
+                        where: {
+                            idUser,
+                            isChoose: 'true'
+                        }
+                    })
+
+                    if (!addressUser) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Vui lòng chọn địa chỉ nhận hàng!',
+                        })
+                        return;
+                    }
+
+                    if (cart.length === 0) {
+                        resolve({
+                            errCode: 4,
+                            errMessage: 'Vui lòng chọn sản phẩm bạn muốn mua!',
+                        })
+                        return;
+                    }
+
+                    let bill = await db.bill.create({
+                        id: uuidv4(),
+                        idUser,
+                        timeBill: new Date().getTime() + '',
+                        idStatusBill: '1',
+                        idAddressUser: addressUser.id,
+                        note: data.note || '',
+                        totals: +data.Totals
+                    })
+
+                    let arrayDetailBill = cart.map(item => {
+                        return {
+                            id: uuidv4(),
+                            idBill: bill.id,
+                            idProduct: item.idProduct,
+                            amount: item.amount,
+                            isReviews: 'false',
+                            idClassifyProduct: item.idClassifyProduct,
+                        }
+                    })
+
+                    await db.detailBill.bulkCreate(arrayDetailBill, { individualHooks: true })
+
+                    // await db.cart.destroy({
+                    //     where: {
+                    //         idUser,
+                    //         isChoose: 'true'
+                    //     }
+                    // })
+
+                    resolve({
+                        errCode: 0,
+                        idBill: bill.id
+                    })
+
+                }
+            }
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
 
 module.exports = {
     CreateUser,
@@ -820,5 +1593,16 @@ module.exports = {
     loginFacebook,
     loginGithub,
     addProductToCart,
-    addCartOrMoveCart
+    addCartOrMoveCart,
+    addNewAddressUser,
+    getAddressUser,
+    setDefaultAddress,
+    deleteAddressUser,
+    editAddressUser,
+    getListCartUser,
+    editAmountCartUser,
+    chooseProductInCart,
+    deleteProductInCart,
+    updateClassifyProductInCart,
+    createNewBill
 }

@@ -13,6 +13,9 @@ module.exports = {
       idUser: {
         type: Sequelize.STRING
       },
+      nameAddress: {
+        type: Sequelize.STRING
+      },
       isDefault: {
         type: Sequelize.STRING
       },

@@ -23,6 +23,12 @@ module.exports = {
       idAddressUser: {
         type: Sequelize.STRING
       },
+      note: {
+        type: Sequelize.STRING
+      },
+      totals: {
+        type: Sequelize.DOUBLE
+      },
 
       createdAt: {
         allowNull: false,

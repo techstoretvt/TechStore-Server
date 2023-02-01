@@ -16,7 +16,8 @@ module.exports = (sequelize, DataTypes) => {
     idBill: DataTypes.STRING,
     idProduct: DataTypes.STRING,
     amount: DataTypes.INTEGER,
-    isReviews: DataTypes.STRING
+    isReviews: DataTypes.STRING, //md: false
+    idClassifyProduct: DataTypes.STRING,
 
 
   }, {
