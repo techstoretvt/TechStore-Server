@@ -1299,6 +1299,43 @@ const editAmountCartUser = (data) => {
                                 errCode: 0,
                             })
                         }
+                        else if (data.typeEdit === 'value') {
+                            let classifyProduct = await db.classifyProduct.findOne({
+                                where: {
+                                    id: cartTemp.idClassifyProduct
+                                }
+                            })
+
+                            let sl = classifyProduct.amount
+                            if (Number.isInteger(+data.value)) {
+                                if (+data.value < 1) {
+                                    cart.amount = 1
+                                    await cart.save()
+                                    resolve({
+                                        errCode: 0,
+                                    })
+                                }
+                                else if (+data.value > sl) {
+                                    cart.amount = sl
+                                    await cart.save()
+                                    resolve({
+                                        errCode: 4,
+                                        errMessage: `Rất tiếc số lượng trong kho chỉ còn ${sl} sản phẩm!`
+                                    })
+                                }
+                                else {
+                                    cart.amount = +data.value
+                                    await cart.save()
+                                    resolve({
+                                        errCode: 0,
+                                    })
+                                }
+                            }
+                            else {
+                                cart.amount = 1
+                                await cart.save()
+                            }
+                        }
                     }
                     else {
                         resolve({
@@ -1561,16 +1598,63 @@ const createNewBill = (data) => {
 
                     await db.detailBill.bulkCreate(arrayDetailBill, { individualHooks: true })
 
-                    // await db.cart.destroy({
-                    //     where: {
-                    //         idUser,
-                    //         isChoose: 'true'
-                    //     }
-                    // })
+                    await db.cart.destroy({
+                        where: {
+                            idUser,
+                            isChoose: 'true'
+                        }
+                    })
 
                     resolve({
                         errCode: 0,
                         idBill: bill.id
+                    })
+
+                }
+            }
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const chooseAllProductInCart = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id;
+
+                    await db.cart.update(
+                        {
+                            isChoose: data.type ? 'true' : 'false'
+                        },
+                        {
+                            where: {
+                                idUser
+                            }
+                        }
+                    )
+
+                    resolve({
+                        errCode: 0,
                     })
 
                 }
@@ -1604,5 +1688,6 @@ module.exports = {
     chooseProductInCart,
     deleteProductInCart,
     updateClassifyProductInCart,
-    createNewBill
+    createNewBill,
+    chooseAllProductInCart
 }
