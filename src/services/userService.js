@@ -692,6 +692,14 @@ const addProductToCart = (data) => {
                             return;
                         }
 
+                        if (+data.amount > classifyProduct.amount) {
+                            resolve({
+                                errCode: 5,
+                                errMessage: 'Hàng trong kho không còn đủ!'
+                            })
+                            return;
+                        }
+
 
                         let [cart, create] = await db.cart.findOrCreate({
                             where: {
@@ -708,7 +716,8 @@ const addProductToCart = (data) => {
 
                         })
                         if (!create) {
-                            cart.amount = cart.amount + (data.amount * 1)
+                            cart.amount = (cart.amount + (data.amount * 1)) <= classifyProduct.amount ?
+                                (cart.amount + (data.amount * 1)) : classifyProduct.amount
                             await cart.save();
                             resolve({
                                 errCode: 0,
@@ -790,6 +799,10 @@ const addCartOrMoveCart = (data) => {
 
                         })
                         if (!create) {
+                            let sl = classifyProduct.amount
+                            cart.amount = (cart.amount + +data.amount) <= sl ? (cart.amount + +data.amount) : sl
+                            await cart.save()
+
                             resolve({
                                 errCode: 0,
                                 errMessage: 'Sản phẩm đã có trong giỏ hàng'
@@ -1293,11 +1306,19 @@ const editAmountCartUser = (data) => {
 
                             if (cartTemp.amount < sl) {
                                 cart.amount = cart.amount + 1
-                                await cart.save()
+                                await cart.save();
+                                resolve({
+                                    errCode: 0,
+                                })
                             }
-                            resolve({
-                                errCode: 0,
-                            })
+                            else {
+                                resolve({
+                                    errCode: 4,
+                                    errMessage: 'Xin lỗi, số lượng sản phẩm trong kho không còn đủ!'
+                                })
+                                return;
+                            }
+
                         }
                         else if (data.typeEdit === 'value') {
                             let classifyProduct = await db.classifyProduct.findOne({

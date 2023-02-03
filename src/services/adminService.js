@@ -399,7 +399,8 @@ const createNewProduct = (data) => {
                         let classifyProduct = await db.classifyProduct.create({
                             idProduct: product.dataValues.id,
                             amount: item.amount,
-                            nameClassifyProduct: item.nameClassify.toLowerCase(),
+                            nameClassifyProduct: item.nameClassify.toLowerCase() !== 'default' ?
+                                item.nameClassify.toLowerCase() : 'Mặt định',
                             STTImg: item.STTImg ? +item.STTImg : 100,
                             priceClassify: +item.priceClassify,
                             id: uuidv4()
@@ -626,6 +627,12 @@ const editProductById = (data) => {
                         await db.classifyProduct.bulkCreate(arrClassify, { individualHooks: true })
                     }
 
+                    await db.cart.destroy({
+                        where: {
+                            idProduct: data.idProduct
+                        }
+                    })
+
                     resolve({
                         errCode: 0,
                         errMessage: 'ok!',
@@ -739,8 +746,8 @@ const getProductBySwapAndPage = (data) => {
             }
             else {
                 let arr = [
-                    ['id', 'ASC'],
-                    ['id', 'DESC'],
+                    ['stt', 'DESC'],
+                    ['stt', 'ASC'],
                     ['nameProduct', 'ASC'],
                     ['nameProduct', 'DESC']
                 ];
