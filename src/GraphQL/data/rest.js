@@ -37,6 +37,29 @@ const listEvaluates = async () => {
     return data
 }
 
+const productSearch = async () => {
+    let data = await db.product.findAll({
+        include: [
+            {
+                model: db.typeProduct,
+                attributes: {
+                    exclude: ['createdAt', 'updatedAt']
+                }
+            },
+            {
+                model: db.trademark,
+                attributes: {
+                    exclude: ['createdAt', 'updatedAt']
+                }
+            },
+        ],
+        raw: false,
+        nest: true
+    });
+    return data
+}
+
+
 
 
 
@@ -47,5 +70,6 @@ module.exports = {
     ListImageProducts,
     ListClassify,
     ListPromotions,
-    listEvaluates
+    listEvaluates,
+    productSearch
 }

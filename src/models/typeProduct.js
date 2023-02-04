@@ -11,20 +11,12 @@ module.exports = (sequelize, DataTypes) => {
 
 
 
-
-
-
-
-
-
-
-
-
       typeProduct.hasMany(models.product, { foreignKey: 'idTypeProduct' })
     }
   }
   typeProduct.init({
     nameTypeProduct: DataTypes.STRING,
+    nameTypeProductEn: DataTypes.STRING,
     imageTypeProduct: DataTypes.STRING
 
   }, {

@@ -16,7 +16,10 @@ const addTypeProduct = (data) => {
                     where: { nameTypeProduct: data.query.nameTypeProduct.toLowerCase() },
                     defaults: {
                         imageTypeProduct: data.file.path,
-                        id: uuidv4()
+                        id: uuidv4(),
+                        nameTypeProductEn: data.query.nameTypeProduct.toLowerCase().normalize('NFD')
+                            .replace(/[\u0300-\u036f]/g, '')
+                            .replace(/đ/g, 'd').replace(/Đ/g, 'D')
                     },
                     raw: false
                 })
@@ -157,6 +160,9 @@ const updateTypeProductById = (data) => {
                     }
                     else {
                         typeProduct.nameTypeProduct = data.query.nameTypeProduct.toLowerCase();
+                        typeProduct.nameTypeProductEn = data.query.nameTypeProduct.toLowerCase().normalize('NFD')
+                            .replace(/[\u0300-\u036f]/g, '')
+                            .replace(/đ/g, 'd').replace(/Đ/g, 'D')
                         if (data.file) {
                             typeProduct.imageTypeProduct = data.file.path
                         }
@@ -194,7 +200,10 @@ const addTrademark = (data) => {
                         idTypeProduct: data.idTypeProduct,
                     },
                     defaults: {
-                        id: uuidv4()
+                        id: uuidv4(),
+                        nameTrademarkEn: data.nameTrademark.toLowerCase().normalize('NFD')
+                            .replace(/[\u0300-\u036f]/g, '')
+                            .replace(/đ/g, 'd').replace(/Đ/g, 'D')
                     }
                 })
 
@@ -337,6 +346,9 @@ const updateTrademarkById = (data) => {
                     }
                     else {
                         trademarkEdit.nameTrademark = data.nameTrademark.toLowerCase();
+                        trademarkEdit.nameTrademarkEn = data.nameTrademark.toLowerCase().normalize('NFD')
+                            .replace(/[\u0300-\u036f]/g, '')
+                            .replace(/đ/g, 'd').replace(/Đ/g, 'D');
                         trademarkEdit.idTypeProduct = data.idTypeProduct;
                         await trademarkEdit.save();
 
@@ -375,6 +387,9 @@ const createNewProduct = (data) => {
 
                 let product = await db.product.create({
                     nameProduct: data.nameProduct.toLowerCase(),
+                    nameProductEn: data.nameProduct.toLowerCase().normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '')
+                        .replace(/đ/g, 'd').replace(/Đ/g, 'D'),
                     priceProduct: data.priceProduct,
                     idTypeProduct: data.idTypeProduct,
                     idTrademark: data.idTrademark,
@@ -583,7 +598,10 @@ const editProductById = (data) => {
                     })
                 }
                 else {
-                    product.nameProduct = data.nameProduct;
+                    product.nameProduct = data.nameProduct.toLowerCase();
+                    product.nameProductEn = data.nameProduct.toLowerCase().normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '')
+                        .replace(/đ/g, 'd').replace(/Đ/g, 'D');
                     product.priceProduct = data.priceProduct;
                     product.idTypeProduct = data.idTypeProduct;
                     product.idTrademark = data.idTrademark;

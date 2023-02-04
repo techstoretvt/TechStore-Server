@@ -51,7 +51,7 @@ const typeDefs = gql`
         typeproducts: [typeProduct]
         typeproduct (id: ID!): typeProduct
         product (id: String!): product
-        
+        searchProduct (keyword: String!): [product]
     }
 
     # type Mutation {

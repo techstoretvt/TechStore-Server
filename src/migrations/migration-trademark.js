@@ -20,6 +20,9 @@ module.exports = {
       nameTrademark: {
         type: Sequelize.STRING
       },
+      nameTrademarkEn: {
+        type: Sequelize.STRING
+      },
       idTypeProduct: {
         type: Sequelize.STRING
       },

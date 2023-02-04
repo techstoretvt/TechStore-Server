@@ -13,6 +13,9 @@ module.exports = {
       nameProduct: {
         type: Sequelize.STRING
       },
+      nameProductEn: {
+        type: Sequelize.STRING
+      },
       priceProduct: {
         type: Sequelize.STRING
       },

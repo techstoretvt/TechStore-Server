@@ -18,6 +18,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   trademark.init({
     nameTrademark: DataTypes.STRING,
+    nameTrademarkEn: DataTypes.STRING,
     idTypeProduct: DataTypes.STRING,
 
   }, {

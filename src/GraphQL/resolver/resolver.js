@@ -1,8 +1,9 @@
 import {
     ListTypeProducts, ListTrademarks, ListProducts, ListImageProducts,
-    ListClassify, ListPromotions, listEvaluates
+    ListClassify, ListPromotions, listEvaluates, productSearch
 
 } from '../data/rest'
+import FuzzySearch from 'fuzzy-search';
 
 
 // let products
@@ -34,6 +35,21 @@ const resolvers = {
         product: async (parent, args) => {
             let products = await ListProducts();
             return products.find(item => item.id === args.id)
+        },
+        searchProduct: async (parent, args) => {
+            let products = await productSearch();
+
+            const searcher = new FuzzySearch(products, ['nameProductEn', 'typeProduct.nameTypeProductEn', 'trademark.nameTrademarkEn'], {
+                caseSensitive: false,
+                sort: true
+            });
+            let key = args.keyword.normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/đ/g, 'd').replace(/Đ/g, 'D');
+
+            const result = searcher.search(key);
+
+            return result
         },
     },
     product: {
