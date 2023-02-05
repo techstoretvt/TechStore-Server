@@ -164,7 +164,7 @@ const contentSendEmail = (idUser, keyVerify, firstName) => {
 const CreateToken = (user) => {
     const { id, idGoogle, firstName, idTypeUser } = user;
     const accessToken = jwt.sign({ id, idGoogle, firstName, idTypeUser }, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: '24h'
+        expiresIn: '600s'
     });
     const refreshToken = jwt.sign({ id, idGoogle, firstName, idTypeUser }, process.env.REFESH_TOKEN_SECRET, {
         expiresIn: '100h'
@@ -395,6 +395,90 @@ const getUserLogin = (data) => {
         }
     })
 }
+
+const getUserLoginRefreshToken = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.refreshToken) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!'
+                })
+            }
+            else {
+                //decode accessToken
+                let decoded = commont.decodeToken(data.refreshToken, process.env.REFESH_TOKEN_SECRET);
+
+                if (decoded !== null) {
+
+                    let user = await db.User.findOne({
+                        where: {
+                            id: decoded.id
+                        },
+                        attributes: {
+                            exclude: ['pass', 'keyVerify', 'createdAt', 'updatedAt']
+                        }
+                    })
+
+                    if (user) {
+                        let date = new Date().getTime();
+                        if (user.statusUser !== 'wait' && user.statusUser !== 'false') {
+                            if (user.statusUser === 'true') {
+
+                                resolve({
+                                    errCode: 0,
+                                    errMessage: 'Get user succeed!',
+                                    data: user,
+                                    tokens: CreateToken(user)
+                                });
+                            }
+                            else {
+                                if (+user.statusUser < date) {
+                                    resolve({
+                                        errCode: 0,
+                                        errMessage: 'Get user succeed!',
+                                        data: user,
+                                        tokens: CreateToken(user)
+                                    });
+                                }
+                                else {
+                                    resolve({
+                                        errCode: 3,
+                                        errMessage: 'Not found user!',
+                                    });
+                                }
+                            }
+
+                        }
+                        else {
+                            resolve({
+                                errCode: 3,
+                                errMessage: 'Not found user!',
+                            });
+                        }
+
+                    }
+                    else {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Not found user!',
+                        });
+                    }
+                }
+                else {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'refreshToken đã hết hạn hoặc không thể giải mã!'
+                    });
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 
 const loginGoogle = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -1710,5 +1794,6 @@ module.exports = {
     deleteProductInCart,
     updateClassifyProductInCart,
     createNewBill,
-    chooseAllProductInCart
+    chooseAllProductInCart,
+    getUserLoginRefreshToken
 }

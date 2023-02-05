@@ -337,7 +337,7 @@ const getProductFlycam = () => {
 const getListProductMayLike = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.nameTypeProduct) {
+            if (!data.nameTypeProduct || !data.id) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!'
@@ -346,6 +346,11 @@ const getListProductMayLike = (data) => {
             else {
                 let products = await db.product.findAll({
                     attributes: ['id', 'nameProduct', 'priceProduct', 'isSell', 'sold'],
+                    where: {
+                        id: {
+                            [Op.ne]: data.id
+                        }
+                    },
                     include: [
                         {
                             model: db.imageProduct, as: 'imageProduct-product',
