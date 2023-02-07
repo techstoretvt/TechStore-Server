@@ -164,7 +164,7 @@ const contentSendEmail = (idUser, keyVerify, firstName) => {
 const CreateToken = (user) => {
     const { id, idGoogle, firstName, idTypeUser } = user;
     const accessToken = jwt.sign({ id, idGoogle, firstName, idTypeUser }, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: '600s'
+        expiresIn: '60s'
     });
     const refreshToken = jwt.sign({ id, idGoogle, firstName, idTypeUser }, process.env.REFESH_TOKEN_SECRET, {
         expiresIn: '100h'
@@ -1772,6 +1772,125 @@ const chooseAllProductInCart = (data) => {
     })
 }
 
+const getListBillByType = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.type) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id;
+
+                    if (data.type !== '0') {
+                        let listBills = await db.bill.findAll({
+                            where: {
+                                idUser,
+                                idStatusBill: data.type,
+                            },
+                            limit: 5,
+                            offset: data.offset,
+                            include: [
+                                {
+                                    model: db.detailBill,
+                                    include: [
+                                        {
+                                            model: db.product,
+                                            include: [
+                                                {
+                                                    model: db.imageProduct, as: 'imageProduct-product',
+                                                },
+                                                { model: db.promotionProduct },
+                                            ],
+                                        },
+                                        {
+                                            model: db.classifyProduct,
+                                        },
+                                    ],
+                                }
+                            ],
+                            raw: false,
+                            nest: true
+
+                        })
+                        let count = await db.bill.count({
+                            where: {
+                                idUser,
+                                idStatusBill: data.type,
+                            }
+                        })
+                        resolve({
+                            errCode: 0,
+                            data: listBills,
+                            count
+                        })
+                    }
+
+                    else {
+                        let listBills = await db.bill.findAll({
+                            where: {
+                                idUser,
+                            },
+                            limit: 5,
+                            offset: data.offset,
+                            include: [
+                                {
+                                    model: db.detailBill,
+                                    include: [
+                                        {
+                                            model: db.product,
+                                            include: [
+                                                { model: db.imageProduct, as: 'imageProduct-product' },
+                                                { model: db.promotionProduct },
+                                            ],
+                                        },
+                                        {
+                                            model: db.classifyProduct,
+                                        },
+
+                                    ],
+                                }
+                            ],
+                            raw: false,
+                            nest: true
+
+                        })
+
+                        let count = await db.bill.count({
+                            where: {
+                                idUser
+                            }
+                        })
+                        resolve({
+                            errCode: 0,
+                            data: listBills,
+                            count
+                        })
+                    }
+
+
+                }
+            }
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -1795,5 +1914,6 @@ module.exports = {
     updateClassifyProductInCart,
     createNewBill,
     chooseAllProductInCart,
-    getUserLoginRefreshToken
+    getUserLoginRefreshToken,
+    getListBillByType
 }

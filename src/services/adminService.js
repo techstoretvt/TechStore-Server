@@ -501,6 +501,7 @@ const getListProductByPage = (data) => {
                         { model: db.trademark, attributes: ['id', 'nameTrademark'] },
                         {
                             model: db.imageProduct, as: 'imageProduct-product',
+
                         },
                         {
                             model: db.classifyProduct,

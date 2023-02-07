@@ -9,6 +9,7 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       detailBill.belongsTo(models.bill, { foreignKey: 'idBill' })
       detailBill.belongsTo(models.product, { foreignKey: 'idProduct' })
+      detailBill.belongsTo(models.classifyProduct, { foreignKey: 'idClassifyProduct' })
     }
   }
   detailBill.init({

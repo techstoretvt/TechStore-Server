@@ -16,13 +16,14 @@ module.exports = {
           ssl: {
             require: true,
             rejectUnauthorized: false
-          }
+          },
+          "useUTC": false
         } : {}
     ,
     query: {
       "raw": true
     },
-    "timezone": "+07:00"
+    timezone: "+07:00"
   },
   "test": {
     "username": "root",

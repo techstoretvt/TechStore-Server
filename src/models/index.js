@@ -22,7 +22,8 @@ const customizeConfig = {
         ssl: {
           require: true,
           rejectUnauthorized: false
-        }
+        },
+        "useUTC": false
       } : {}
   ,
   query: {
