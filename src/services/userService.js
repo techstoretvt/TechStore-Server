@@ -164,10 +164,10 @@ const contentSendEmail = (idUser, keyVerify, firstName) => {
 const CreateToken = (user) => {
     const { id, idGoogle, firstName, idTypeUser } = user;
     const accessToken = jwt.sign({ id, idGoogle, firstName, idTypeUser }, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: '60s'
+        expiresIn: '1d'
     });
     const refreshToken = jwt.sign({ id, idGoogle, firstName, idTypeUser }, process.env.REFESH_TOKEN_SECRET, {
-        expiresIn: '100h'
+        expiresIn: '3d'
     });
 
     return { accessToken, refreshToken };
@@ -1793,6 +1793,18 @@ const getListBillByType = (data) => {
                 }
                 else {
                     let idUser = decode.id;
+                    let countType1 = await db.bill.count({
+                        where: {
+                            idUser,
+                            idStatusBill: '1',
+                        },
+                    })
+                    let countType2 = await db.bill.count({
+                        where: {
+                            idUser,
+                            idStatusBill: '2',
+                        },
+                    })
 
                     if (data.type !== '0') {
                         let listBills = await db.bill.findAll({
@@ -1834,7 +1846,9 @@ const getListBillByType = (data) => {
                         resolve({
                             errCode: 0,
                             data: listBills,
-                            count
+                            count,
+                            countType1,
+                            countType2
                         })
                     }
 
@@ -1876,7 +1890,9 @@ const getListBillByType = (data) => {
                         resolve({
                             errCode: 0,
                             data: listBills,
-                            count
+                            count,
+                            countType1,
+                            countType2
                         })
                     }
 
