@@ -46,12 +46,43 @@ const typeDefs = gql`
         numberPercent: Int
     }
 
+    type bill {
+        id: String
+        idUser: String
+        timeBill: String
+        idStatusBill: String
+        idAddressUser: String
+        note: String
+        totals: Int
+        detailBill: [detailBill]
+        addressUser: addressUser
+    }
+
+    type detailBill {
+        idBill: String
+        amount: Int
+        isReviews: String
+        product: product
+        classifyProduct: classifyProduct
+    }
+
+    type addressUser {
+        id: String
+        fullname: String,
+        sdt: String,
+        country: String,
+        district: String,
+        addressText: String,
+    }
+
+
     # ROOT TYPE
     type Query {
         typeproducts: [typeProduct]
         typeproduct (id: ID!): typeProduct
         product (id: String!): product
         searchProduct (keyword: String!): [product]
+        listBillByType (type: String!): [bill]
     }
 
     # type Mutation {

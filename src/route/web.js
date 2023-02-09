@@ -59,7 +59,11 @@ const initWebRoute = (app) => {
     router.post('/api/swap-image-product', adminController.swapImageProduct);
     router.get('/api/get-list-product-by-swap-and-page', adminController.getProductBySwapAndPage);
     router.post('/api/add-promotion-by-idproduct', adminController.addPromotionByIdProduct);
-    router.delete('/api/v1/delete-error-product', adminController.deleteErrorProduct)
+    router.delete('/api/v1/delete-error-product', adminController.deleteErrorProduct);
+
+    router.put('/api/v1/confirm-bill-by-id', adminController.confirmBillById)
+    router.put('/api/v1/cancel-bill-by-id', adminController.cancelBillById)
+
 
 
     //app api

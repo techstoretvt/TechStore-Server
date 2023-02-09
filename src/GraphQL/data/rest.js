@@ -59,7 +59,24 @@ const productSearch = async () => {
     return data
 }
 
+const listBills = async () => {
+    let data = await db.bill.findAll({
+        order: [
+            ['createdAt', 'DESC']
+        ]
+    });
+    return data
+}
 
+const listDetailBills = async () => {
+    let data = await db.detailBill.findAll();
+    return data
+}
+
+const listAddressUser = async () => {
+    let data = await db.addressUser.findAll();
+    return data
+}
 
 
 
@@ -71,5 +88,8 @@ module.exports = {
     ListClassify,
     ListPromotions,
     listEvaluates,
-    productSearch
+    productSearch,
+    listBills,
+    listDetailBills,
+    listAddressUser
 }

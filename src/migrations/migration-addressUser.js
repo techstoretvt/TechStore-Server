@@ -34,6 +34,9 @@ module.exports = {
       addressText: {
         type: Sequelize.TEXT
       },
+      status: {
+        type: Sequelize.STRING
+      },
 
 
       createdAt: {

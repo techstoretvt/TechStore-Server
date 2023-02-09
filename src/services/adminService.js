@@ -774,7 +774,7 @@ const getProductBySwapAndPage = (data) => {
                 let products = await db.product.findAll({
                     offset: (page - 1) * 10,
                     limit: 10,
-                    attributes: ['id', 'nameProduct'],
+                    attributes: ['id', 'nameProduct', 'stt'],
                     include: [
                         { model: db.typeProduct, attributes: ['id', 'nameTypeProduct'] },
                         { model: db.trademark, attributes: ['id', 'nameTrademark'] },
@@ -920,6 +920,88 @@ const deleteErrorProduct = (data) => {
     })
 }
 
+const confirmBillById = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.id) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                })
+            }
+            else {
+                let bill = await db.bill.findOne({
+                    where: {
+                        id: data.id
+                    },
+                    raw: false
+                })
+
+                if (bill) {
+                    bill.idStatusBill = '2'
+                    await bill.save()
+                    resolve({
+                        errCode: 0,
+                    })
+                }
+                else {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Bill not found!',
+                    })
+                }
+
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+
+const cancelBillById = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.id || !data.note) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                })
+            }
+            else {
+                let bill = await db.bill.findOne({
+                    where: {
+                        id: data.id
+                    },
+                    raw: false
+                })
+
+                if (bill) {
+                    bill.idStatusBill = '4'
+                    bill.noteCancel = data.note
+                    await bill.save()
+                    resolve({
+                        errCode: 0,
+                    })
+                }
+                else {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Bill not found!',
+                    })
+                }
+
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 
 module.exports = {
     addTypeProduct,
@@ -940,5 +1022,7 @@ module.exports = {
     getProductBySwapAndPage,
     addPromotionByIdProduct,
     testApi,
-    deleteErrorProduct
+    deleteErrorProduct,
+    confirmBillById,
+    cancelBillById
 }

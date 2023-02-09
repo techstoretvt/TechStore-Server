@@ -323,6 +323,38 @@ const deleteErrorProduct = async (req, res) => {
     }
 }
 
+const confirmBillById = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.confirmBillById(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const cancelBillById = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.cancelBillById(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
 module.exports = {
     addTypeProduct,
     getAllTypeProduct,
@@ -342,5 +374,7 @@ module.exports = {
     getProductBySwapAndPage,
     addPromotionByIdProduct,
     testApi,
-    deleteErrorProduct
+    deleteErrorProduct,
+    confirmBillById,
+    cancelBillById
 }

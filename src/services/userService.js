@@ -744,7 +744,7 @@ const addProductToCart = (data) => {
                 if (decode === null) {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
                         decode
                     })
                 }
@@ -838,7 +838,7 @@ const addCartOrMoveCart = (data) => {
                 if (decode === null) {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
                         decode
                     })
                 }
@@ -922,7 +922,7 @@ const addNewAddressUser = (data) => {
                 if (decode === null) {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
                         decode
                     })
                 }
@@ -941,16 +941,55 @@ const addNewAddressUser = (data) => {
                             country: data.country,
                             district: data.district,
                             addressText: data.addressText,
-                            id: uuidv4()
+                            id: uuidv4(),
+                            status: 'true'
                         },
                         raw: false
                     })
 
                     if (!create) {
-                        resolve({
-                            errCode: 3,
-                            errMessage: 'Tên địa chỉ này đã tồn tại!',
+                        let checkStatusAdress = await db.addressUser.findOne({
+                            where: {
+                                idUser,
+                                nameAddress: data.nameAddress.toLowerCase(),
+                            }
                         })
+
+                        if (checkStatusAdress.status === 'true') {
+                            resolve({
+                                errCode: 3,
+                                errMessage: 'Tên địa chỉ này đã tồn tại!',
+                            })
+                        }
+                        else {
+                            let updateAddress = await db.addressUser.findOne({
+                                where: {
+                                    idUser,
+                                    isDefault: 'true',
+                                    status: 'true'
+                                },
+                                raw: false
+                            })
+                            if (updateAddress) {
+                                updateAddress.isDefault = 'false'
+                                await updateAddress.save()
+                            }
+
+                            addressUser.status = 'true'
+                            addressUser.isDefault = 'true'
+                            addressUser.fullname = data.nameUser
+                            addressUser.sdt = data.sdtUser
+                            addressUser.country = data.country
+                            addressUser.district = data.district
+                            addressUser.addressText = data.addressText
+
+                            await addressUser.save();
+
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Thêm địa chỉ thành công.',
+                            })
+                        }
                     }
                     else {
                         let updateAddress = await db.addressUser.findOne({
@@ -998,7 +1037,7 @@ const getAddressUser = (data) => {
                 if (decode === null) {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
                         decode
                     })
                 }
@@ -1007,7 +1046,8 @@ const getAddressUser = (data) => {
 
                     let addressUser = await db.addressUser.findAll({
                         where: {
-                            idUser
+                            idUser,
+                            status: 'true'
                         },
                         order: [['id', 'ASC']]
                     })
@@ -1050,7 +1090,7 @@ const setDefaultAddress = (data) => {
                 if (decode === null) {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
                         decode
                     })
                 }
@@ -1118,7 +1158,7 @@ const deleteAddressUser = (data) => {
                 if (decode === null) {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
                         decode
                     })
                 }
@@ -1133,19 +1173,23 @@ const deleteAddressUser = (data) => {
                         raw: false
                     })
                     if (address) {
-                        await address.destroy()
+                        address.isDefault = 'false'
+                        address.status = 'false'
+                        await address.save()
 
                         let addressDefault = await db.addressUser.findOne({
                             where: {
                                 idUser,
-                                isDefault: 'true'
+                                isDefault: 'true',
+                                status: 'true'
                             }
                         })
                         if (!addressDefault) {
                             let addressDefault2 = await db.addressUser.findOne({
                                 where: {
                                     idUser,
-                                    isDefault: 'false'
+                                    isDefault: 'false',
+                                    status: 'true'
                                 },
                                 raw: false
                             })
@@ -1192,7 +1236,7 @@ const editAddressUser = (data) => {
                 if (decode === null) {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
                         decode
                     })
                 }
@@ -1205,11 +1249,13 @@ const editAddressUser = (data) => {
                             nameAddress: data.nameAddress,
                             id: {
                                 [Op.ne]: data.id
-                            }
+                            },
+                            status: 'true'
                         }
                     })
 
                     if (!check) {
+
                         let address = await db.addressUser.findOne({
                             where: {
                                 idUser,
@@ -1271,7 +1317,7 @@ const getListCartUser = (data) => {
                 if (decode === null) {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
                         decode
                     })
                 }
@@ -1347,7 +1393,7 @@ const editAmountCartUser = (data) => {
                 if (decode === null) {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
                         decode
                     })
                 }
@@ -1473,7 +1519,7 @@ const chooseProductInCart = (data) => {
                 if (decode === null) {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
                         decode
                     })
                 }
@@ -1527,7 +1573,7 @@ const deleteProductInCart = (data) => {
                 if (decode === null) {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
                         decode
                     })
                 }
@@ -1580,7 +1626,7 @@ const updateClassifyProductInCart = (data) => {
                 if (decode === null) {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
                         decode
                     })
                 }
@@ -1643,7 +1689,7 @@ const createNewBill = (data) => {
                 if (decode === null) {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
                         decode
                     })
                 }
@@ -1740,7 +1786,7 @@ const chooseAllProductInCart = (data) => {
                 if (decode === null) {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
                         decode
                     })
                 }
@@ -1787,7 +1833,7 @@ const getListBillByType = (data) => {
                 if (decode === null) {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Có lỗi xảy ra, vui lòng tải lại trang và thử lại!',
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
                         decode
                     })
                 }

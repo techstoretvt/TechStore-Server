@@ -29,6 +29,9 @@ module.exports = {
       totals: {
         type: Sequelize.DOUBLE
       },
+      noteCancel: {
+        type: Sequelize.STRING
+      },
 
       createdAt: {
         allowNull: false,

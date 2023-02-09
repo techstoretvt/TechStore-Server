@@ -1,6 +1,8 @@
 import {
     ListTypeProducts, ListTrademarks, ListProducts, ListImageProducts,
-    ListClassify, ListPromotions, listEvaluates, productSearch
+    ListClassify, ListPromotions, listEvaluates, productSearch,
+    listBills, listDetailBills,
+    listAddressUser
 
 } from '../data/rest'
 import FuzzySearch from 'fuzzy-search';
@@ -51,6 +53,11 @@ const resolvers = {
 
             return result
         },
+
+        listBillByType: async (parent, args) => {
+            let listBill = await listBills();
+            return listBill.filter(item => item.idStatusBill === args.type)
+        }
     },
     product: {
         typeProduct: async (parent, args) => {
@@ -91,6 +98,26 @@ const resolvers = {
         },
 
     },
+    bill: {
+        detailBill: async (parent, args) => {
+            let listDetailBill = await listDetailBills();
+            return listDetailBill.filter(item => item.idBill === parent.id)
+        },
+        addressUser: async (parent, args) => {
+            let listAddressUsers = await listAddressUser();
+            return listAddressUsers.find(item => item.id == parent.idAddressUser)
+        },
+    },
+    detailBill: {
+        classifyProduct: async (parent, args) => {
+            let listclassifys = await ListClassify();
+            return listclassifys.find(item => item.id === parent.idClassifyProduct)
+        },
+        product: async (parent, args) => {
+            let ListProduct = await ListProducts();
+            return ListProduct.find(item => item.id === parent.idProduct)
+        },
+    }
 
 
 

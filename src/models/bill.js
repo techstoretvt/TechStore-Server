@@ -24,7 +24,8 @@ module.exports = (sequelize, DataTypes) => {
 
     idAddressUser: DataTypes.STRING,
     note: DataTypes.STRING,
-    totals: DataTypes.DOUBLE
+    totals: DataTypes.DOUBLE,
+    noteCancel: DataTypes.STRING
 
 
   }, {
