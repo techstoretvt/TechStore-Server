@@ -1879,6 +1879,9 @@ const getListBillByType = (data) => {
                                     ],
                                 }
                             ],
+                            order: [
+                                ['updatedAt', 'DESC']
+                            ],
                             raw: false,
                             nest: true
 
@@ -1894,7 +1897,7 @@ const getListBillByType = (data) => {
                             data: listBills,
                             count,
                             countType1,
-                            countType2
+                            countType2,
                         })
                     }
 
@@ -1923,6 +1926,9 @@ const getListBillByType = (data) => {
                                     ],
                                 }
                             ],
+                            order: [
+                                ['updatedAt', 'DESC']
+                            ],
                             raw: false,
                             nest: true
 
@@ -1938,11 +1944,75 @@ const getListBillByType = (data) => {
                             data: listBills,
                             count,
                             countType1,
-                            countType2
+                            countType2,
                         })
                     }
 
 
+                }
+            }
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const userCancelBill = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.id || !data.note) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id;
+
+                    let bill = await db.bill.findOne({
+                        where: {
+                            id: data.id
+                        },
+                        include: [
+                            {
+                                model: db.User,
+                                where: {
+                                    id: idUser
+                                }
+                            }
+                        ],
+                        raw: false,
+                        nest: true
+                    })
+
+                    if (!bill) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Không tìm thấy hóa đơn!',
+                            decode
+                        })
+                    }
+                    else {
+                        bill.idStatusBill = '4'
+                        bill.noteCancel = data.note
+                        await bill.save();
+
+                        resolve({
+                            errCode: 0,
+                        })
+                    }
                 }
             }
 
@@ -1977,5 +2047,6 @@ module.exports = {
     createNewBill,
     chooseAllProductInCart,
     getUserLoginRefreshToken,
-    getListBillByType
+    getListBillByType,
+    userCancelBill
 }

@@ -1,5 +1,6 @@
 import db from '../models'
 import { v4 as uuidv4 } from 'uuid';
+import { sendEmail } from './commont'
 
 const addTypeProduct = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -940,6 +941,26 @@ const confirmBillById = (data) => {
                 if (bill) {
                     bill.idStatusBill = '2'
                     await bill.save()
+
+                    let user = await db.User.findOne({
+                        include: [
+                            {
+                                model: db.bill,
+                                where: {
+                                    id: data.id
+                                }
+                            }
+                        ],
+                        raw: false,
+                        nest: true
+                    })
+
+                    if (user && user.typeAccount === 'web') {
+                        console.log('giong');
+                        sendEmail(user.email, 'Đơn hàng của bạn đã được xác nhận và đang tiến hành giao hàng',
+                            `<h2>Đang giao hàng nha! Chịu thì chịu hong chịu thì chịu.</h2>`
+                        )
+                    }
                     resolve({
                         errCode: 0,
                     })
@@ -982,6 +1003,28 @@ const cancelBillById = (data) => {
                     bill.idStatusBill = '4'
                     bill.noteCancel = data.note
                     await bill.save()
+
+                    let user = await db.User.findOne({
+                        include: [
+                            {
+                                model: db.bill,
+                                where: {
+                                    id: data.id
+                                }
+                            }
+                        ],
+                        raw: false,
+                        nest: true
+                    })
+
+                    if (user && user.typeAccount === 'web') {
+                        console.log('giong');
+                        sendEmail(user.email, 'Đơn hàng của bạn đã bị hủy',
+                            `<h2>Lý do hủy đơn: ${data.note}</h2>`
+                        )
+                    }
+
+
                     resolve({
                         errCode: 0,
                     })

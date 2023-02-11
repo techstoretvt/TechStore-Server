@@ -38,6 +38,7 @@ const initWebRoute = (app) => {
     router.put('/api/v1/choose-all-product-in-cart', userController.chooseAllProductInCart)
     router.get('/api/v1/get-user-login-refresh-token', userController.getUserLoginRefreshToken)
     router.get('/api/v1/get-list-bill-by-type', userController.getListBillByType)
+    router.put('/api/v1/user-cancel-bill', userController.userCancelBill)
 
     //admin api
     router.post('/api/add-type-product', fileUploader.single('file'), adminController.addTypeProduct)
