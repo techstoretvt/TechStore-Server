@@ -955,10 +955,38 @@ const confirmBillById = (data) => {
                         nest: true
                     })
 
+                    let date = new Date().getDate() + '/' + (new Date().getMonth() + 1) + '/' + new Date().getFullYear()
+
+                    let contentHTML = `
+                    <div style="margin: 20px auto 0;width: min(100%,500px);padding: 10px;border: 1px solid #000;">
+        <img src="https://res.cloudinary.com/dultkpqjp/image/upload/v1676188615/logo-full_yrga3v.png" alt="logo"
+            style="width: min(50%,120px);margin: 0 auto;display: block;" />
+
+        <br>
+        <div>Xin chào ${user.firstName + " " + user.lastName},</div>
+        <br>
+        <div>
+            Đơn hàng
+            <span style="color: red;text-transform: uppercase;"> #${bill.id} </span>
+            của bạn đã được duyệt và đang tiến hành giao hàng ngày ${date}.
+        </div>
+        <br>
+        <div>
+            Vui lòng đăng nhập TechStoreTvT để xem thông tin đơn hàng. Vui lòng kiểm tra cuộc gọi từ Shipper để nhận
+            hàng trong thời gian sắp tới. Xin cảm ơn quý khách.
+        </div>
+
+        <a href="${process.env.LINK_FONTEND}" style="margin: 0 auto;display: block;background-color: red;color: #fff;border: none;
+        padding: 10px 20px;border-radius: 4px;cursor: pointer;width: fit-content;text-decoration: none;">Ghé thăm
+            website</a>
+
+    </div>
+                    `
+
                     if (user && user.typeAccount === 'web') {
                         console.log('giong');
                         sendEmail(user.email, 'Đơn hàng của bạn đã được xác nhận và đang tiến hành giao hàng',
-                            `<h2>Đang giao hàng nha! Chịu thì chịu hong chịu thì chịu.</h2>`
+                            contentHTML
                         )
                     }
                     resolve({
@@ -1016,11 +1044,39 @@ const cancelBillById = (data) => {
                         raw: false,
                         nest: true
                     })
+                    let date = new Date().getDate() + '/' + (new Date().getMonth() + 1) + '/' + new Date().getFullYear();
+
+                    let contentHTML = `
+                    <div style="margin: 20px auto 0;width: min(100%,500px);padding: 10px;border: 1px solid #000;">
+        <img src="https://res.cloudinary.com/dultkpqjp/image/upload/v1676188615/logo-full_yrga3v.png" alt="logo"
+            style="width: min(50%,120px);margin: 0 auto;display: block;" />
+
+        <br>
+        <div>Xin chào ${user.firstName + " " + user.lastName},</div>
+        <br>
+        <div>
+            Đơn hàng
+            <span style="color: red;text-transform: uppercase;"> #${bill.id} </span>
+            của bạn đã bị hủy ngày ${date}.
+        </div>
+        <br>
+        <div>
+            <b>Với lý do: </b>
+            ${data.note}
+        </div>
+        <br>
+        <div>
+            TechStoreTvT rất tiếc vì không thể phục vụ quý khác đúng như mong đợi, cảm ơn quý khác đã ghé thắm và tin
+            tưởng sử dụng dịch vụ của chúng tôi. Xin cảm ơn.
+        </div>
+
+    </div>
+                    `
 
                     if (user && user.typeAccount === 'web') {
                         console.log('giong');
                         sendEmail(user.email, 'Đơn hàng của bạn đã bị hủy',
-                            `<h2>Lý do hủy đơn: ${data.note}</h2>`
+                            contentHTML
                         )
                     }
 

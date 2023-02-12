@@ -1726,6 +1726,36 @@ const createNewBill = (data) => {
                         return;
                     }
 
+                    //check isSell product
+                    let IsSell = true;
+                    let nameProductIsSell
+                    cart.foreach(async item => {
+                        let product = await db.product.findOne({
+                            where: {
+                                id: item.idProduct,
+                                isSell: "false",
+                            }
+                        })
+                        if (product) {
+                            IsSell = false;
+                            nameProductIsSell = product.nameProduct
+                        }
+                    })
+
+                    if (!IsSell) {
+                        resolve({
+                            errCode: 5,
+                            errMessage: `Sản phâm "${nameProductIsSell}" đã không còn bán nửa.`
+                        })
+
+                        return;
+                    }
+
+
+
+
+                    //handle buy product
+
                     let bill = await db.bill.create({
                         id: uuidv4(),
                         idUser,
@@ -2023,6 +2053,85 @@ const userCancelBill = (data) => {
     })
 }
 
+const userRepurchaseBill = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.id) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id;
+
+                    let bill = await db.bill.findOne({
+                        where: {
+                            id: data.id
+                        },
+                        include: [
+                            {
+                                model: db.User,
+                                where: {
+                                    id: idUser
+                                }
+                            }
+                        ],
+                        raw: false,
+                        nest: true
+                    })
+
+                    if (!bill) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Không tìm thấy hóa đơn!',
+                            decode
+                        })
+                    }
+                    else {
+                        let detailBill = await db.detailBill.findAll({
+                            where: {
+                                idBill: bill.id
+                            },
+                        })
+
+                        let array = detailBill.map(item => {
+                            return {
+                                id: uuidv4(),
+                                idUser,
+                                idProduct: item.idProduct,
+                                amount: item.amount,
+                                idClassifyProduct: item.idClassifyProduct,
+                                isChoose: 'false'
+                            }
+                        });
+
+                        await db.cart.bulkCreate(array, { individualHooks: true })
+
+                        resolve({
+                            errCode: 0,
+                        })
+                    }
+                }
+            }
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -2048,5 +2157,6 @@ module.exports = {
     chooseAllProductInCart,
     getUserLoginRefreshToken,
     getListBillByType,
-    userCancelBill
+    userCancelBill,
+    userRepurchaseBill
 }
