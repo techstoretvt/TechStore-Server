@@ -2132,6 +2132,120 @@ const userRepurchaseBill = (data) => {
     })
 }
 
+const getCodeVeridyForgetPass = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.email) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let user = await db.User.findOne({
+                    where: {
+                        email: data.email
+                    },
+                    raw: false
+                })
+                if (!user) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Email không chính xác hoặc chưa được đăng kí!',
+                    })
+                }
+                else {
+                    let timeCurrent = new Date().getTime();
+                    if (user.statusUser === 'false') {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Tài khoản đã bị khóa vĩnh viễn!',
+                        })
+                        return;
+                    }
+                    else if (user.statusUser !== 'true' && +user.statusUser > timeCurrent) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Tài khoản đang bị tạm khóa!',
+                        })
+                        return;
+                    }
+
+                    //gửi email
+                    let rd = Math.floor(Math.random() * 900000) + 100000;
+                    user.keyVerify = rd.toString();
+                    await user.save();
+
+                    // commont.sendEmail(
+                    //     data.email,
+                    //     "Mã xác nhận TechStoreTvT",
+                    //     `<h3>Mã xác nhận của bạn là: ${rd}</h3>
+                    //     <div>Lưu ý: không gửi mã này cho bất kì ai.</div>
+                    //     `
+                    // )
+
+                    resolve({
+                        errCode: 0,
+                        keyVerify: rd.toString()
+                    })
+
+
+
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+
+const changePassForget = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.email || !data.keyVerify || !data.pass) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let user = await db.User.findOne({
+                    where: {
+                        email: data.email,
+                        keyVerify: data.keyVerify
+                    },
+                    raw: false
+                })
+                if (!user) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Email không chính xác hoặc chưa được đăng kí!',
+                    })
+                }
+                else {
+                    let hasePass = commont.hashPassword(data.pass);
+
+                    user.pass = hasePass
+                    await user.save();
+
+                    resolve({
+                        errCode: 0,
+                    })
+
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -2158,5 +2272,7 @@ module.exports = {
     getUserLoginRefreshToken,
     getListBillByType,
     userCancelBill,
-    userRepurchaseBill
+    userRepurchaseBill,
+    getCodeVeridyForgetPass,
+    changePassForget
 }

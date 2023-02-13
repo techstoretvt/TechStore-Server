@@ -424,6 +424,38 @@ const userRepurchaseBill = async (req, res) => {
     }
 }
 
+const getCodeVeridyForgetPass = async (req, res) => {
+    try {
+        //call service data
+        let data = await userService.getCodeVeridyForgetPass(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const changePassForget = async (req, res) => {
+    try {
+        //call service data
+        let data = await userService.changePassForget(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -452,5 +484,7 @@ module.exports = {
     getUserLoginRefreshToken,
     getListBillByType,
     userCancelBill,
-    userRepurchaseBill
+    userRepurchaseBill,
+    getCodeVeridyForgetPass,
+    changePassForget
 }

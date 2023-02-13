@@ -40,6 +40,8 @@ const initWebRoute = (app) => {
     router.get('/api/v1/get-list-bill-by-type', userController.getListBillByType)
     router.put('/api/v1/user-cancel-bill', userController.userCancelBill)
     router.post('/api/v1/user-repurchase-bill', userController.userRepurchaseBill)
+    router.put('/apt/v1/get-code-verify-forget-pass', userController.getCodeVeridyForgetPass)
+    router.put('/api/v1/change-pass-forget', userController.changePassForget)
 
     //admin api
     router.post('/api/add-type-product', fileUploader.single('file'), adminController.addTypeProduct)
