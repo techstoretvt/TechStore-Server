@@ -1707,7 +1707,8 @@ const createNewBill = (data) => {
                         where: {
                             idUser,
                             isChoose: 'true'
-                        }
+                        },
+                        raw: true
                     })
 
                     if (!addressUser) {
@@ -1729,7 +1730,7 @@ const createNewBill = (data) => {
                     //check isSell product
                     let IsSell = true;
                     let nameProductIsSell
-                    cart.foreach(async item => {
+                    cart.forEach(async item => {
                         let product = await db.product.findOne({
                             where: {
                                 id: item.idProduct,
@@ -2177,17 +2178,17 @@ const getCodeVeridyForgetPass = (data) => {
                     user.keyVerify = rd.toString();
                     await user.save();
 
-                    // commont.sendEmail(
-                    //     data.email,
-                    //     "Mã xác nhận TechStoreTvT",
-                    //     `<h3>Mã xác nhận của bạn là: ${rd}</h3>
-                    //     <div>Lưu ý: không gửi mã này cho bất kì ai.</div>
-                    //     `
-                    // )
+                    commont.sendEmail(
+                        data.email,
+                        "Mã xác nhận TechStoreTvT",
+                        `<h3>Mã xác nhận của bạn là: ${rd}</h3>
+                        <div>Lưu ý: không gửi mã này cho bất kì ai.</div>
+                        `
+                    )
 
                     resolve({
                         errCode: 0,
-                        keyVerify: rd.toString()
+                        // keyVerify: rd.toString()
                     })
 
 
@@ -2223,7 +2224,7 @@ const changePassForget = (data) => {
                 if (!user) {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Email không chính xác hoặc chưa được đăng kí!',
+                        errMessage: 'Có lỗi xảy ra vui lòng thử lại sau!',
                     })
                 }
                 else {
@@ -2235,6 +2236,97 @@ const changePassForget = (data) => {
                     resolve({
                         errCode: 0,
                     })
+
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const checkKeyVerify = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.email || !data.keyVerify) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let user = await db.User.findOne({
+                    where: {
+                        email: data.email,
+                        keyVerify: data.keyVerify
+                    },
+                    raw: false
+                })
+                if (!user) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Mã xác nhận không chính xác!',
+                    })
+                }
+                else {
+                    resolve({
+                        errCode: 0,
+                    })
+
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const hasReceivedProduct = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.id) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id;
+                    let bill = await db.bill.findOne({
+                        where: {
+                            idUser,
+                            id: data.id
+                        },
+                        raw: false
+                    })
+
+                    if (!bill) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Lỗi không tìm thấy đơn hàng!',
+                        })
+                    }
+                    else {
+                        bill.idStatusBill = '3'
+                        await bill.save();
+
+                        resolve({
+                            errCode: 0,
+                        })
+                    }
 
                 }
             }
@@ -2274,5 +2366,7 @@ module.exports = {
     userCancelBill,
     userRepurchaseBill,
     getCodeVeridyForgetPass,
-    changePassForget
+    changePassForget,
+    checkKeyVerify,
+    hasReceivedProduct
 }

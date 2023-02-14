@@ -42,6 +42,8 @@ const initWebRoute = (app) => {
     router.post('/api/v1/user-repurchase-bill', userController.userRepurchaseBill)
     router.put('/apt/v1/get-code-verify-forget-pass', userController.getCodeVeridyForgetPass)
     router.put('/api/v1/change-pass-forget', userController.changePassForget)
+    router.post('/api/v1/check-key-verify', userController.checkKeyVerify)
+    router.put('/api/v1/has-received-product', userController.hasReceivedProduct)
 
     //admin api
     router.post('/api/add-type-product', fileUploader.single('file'), adminController.addTypeProduct)
