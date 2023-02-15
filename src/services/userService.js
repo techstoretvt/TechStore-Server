@@ -5,8 +5,17 @@ import { v4 as uuidv4 } from 'uuid';
 const Verifier = require("email-verifier");
 const { Op } = require("sequelize");
 
-
+const paypal = require('paypal-rest-sdk');
 import commont from '../services/commont'
+
+paypal.configure({
+    'mode': 'sandbox', //sandbox or live
+    'client_id': process.env.PAYPAL_CLIENT_ID,
+    'client_secret': process.env.PAYPAL_CLIENT_SECRET
+});
+
+
+
 
 let verifier_email = new Verifier(process.env.API_KEY_VERIFY_EMAIL, {
     checkCatchAll: false,
@@ -1764,7 +1773,8 @@ const createNewBill = (data) => {
                         idStatusBill: '1',
                         idAddressUser: addressUser.id,
                         note: data.note || '',
-                        totals: +data.Totals
+                        totals: +data.Totals,
+                        payment: 'hand'
                     })
 
                     let arrayDetailBill = cart.map(item => {
@@ -2202,7 +2212,6 @@ const getCodeVeridyForgetPass = (data) => {
     })
 }
 
-
 const changePassForget = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -2337,6 +2346,280 @@ const hasReceivedProduct = (data) => {
     })
 }
 
+const buyProductByCard = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id;
+
+
+                    let addressUser = await db.addressUser.findOne({
+                        where: {
+                            idUser,
+                            isDefault: 'true'
+                        }
+                    })
+
+                    let cart = await db.cart.findAll({
+                        where: {
+                            idUser,
+                            isChoose: 'true'
+                        },
+                        raw: true
+                    })
+
+                    if (!addressUser) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Vui lòng chọn địa chỉ nhận hàng!',
+                        })
+                        return;
+                    }
+
+                    if (cart.length === 0) {
+                        resolve({
+                            errCode: 4,
+                            errMessage: 'Vui lòng chọn sản phẩm bạn muốn mua!',
+                        })
+                        return;
+                    }
+
+                    //check isSell product
+                    let IsSell = true;
+                    let nameProductIsSell
+                    cart.forEach(async item => {
+                        let product = await db.product.findOne({
+                            where: {
+                                id: item.idProduct,
+                                isSell: "false",
+                            }
+                        })
+                        if (product) {
+                            IsSell = false;
+                            nameProductIsSell = product.nameProduct
+                        }
+                    })
+
+                    if (!IsSell) {
+                        resolve({
+                            errCode: 5,
+                            errMessage: `Sản phâm "${nameProductIsSell}" đã không còn bán nửa.`
+                        })
+                        return;
+                    }
+
+                    let cart2 = await db.cart.findAll({
+                        where: {
+                            idUser,
+                            isChoose: 'true'
+                        },
+                        include: [
+                            {
+                                model: db.product
+                            },
+                            {
+                                model: db.classifyProduct
+                            }
+                        ],
+                        raw: false,
+                        nest: true
+                    })
+
+                    let totals = 0;
+
+                    let arrayProduct = cart.map((item, index) => {
+
+                        let price;
+                        if (cart2[index].classifyProduct.nameClassifyProduct === 'default')
+                            price = +cart2[index].product.priceProduct
+                        else
+                            price = cart2[index].classifyProduct.priceClassify
+
+
+                        totals = totals + (Math.floor(price / 23000) * +item.amount)
+                        price = Math.floor(price / 23000) + '.00'
+
+
+                        return {
+                            name: cart2[index].product.nameProduct,
+                            sku: cart2[index].classifyProduct.nameClassifyProduct,
+                            price: price,
+                            currency: "USD",
+                            quantity: +item.amount
+                        }
+                    })
+
+                    console.log("array ", arrayProduct);
+                    console.log('totals: ', totals + '.00');
+
+                    const create_payment_json = {
+                        "intent": "sale",
+                        "payer": {
+                            "payment_method": "paypal"
+                        },
+                        "redirect_urls": {
+                            "return_url":
+                                `${process.env.LINK_BACKEND}/api/v1/buy-product-by-card/success?price=${totals + '.00'}&accessToken=${data.accessToken}&totalsReq=${data.totalsReq}`,
+                            "cancel_url": `${process.env.LINK_BACKEND}/api/v1/buy-product-by-card/cancel`
+                        },
+                        "transactions": [{
+                            "item_list": {
+                                "items": arrayProduct
+                            },
+                            "amount": {
+                                "currency": "USD",
+                                "total": totals + '.00'
+                            },
+                            "description": "Shop TechStoreTvT siêu tiện siêu rẽ."
+                        }]
+                    };
+
+                    paypal.payment.create(create_payment_json, function (error, payment) {
+                        if (error) {
+                            throw error;
+                        } else {
+                            for (let i = 0; i < payment.links.length; i++) {
+                                if (payment.links[i].rel === 'approval_url') {
+                                    // res.redirect(payment.links[i].href);
+                                    resolve({
+                                        errCode: 0,
+                                        errMessage: 'ok',
+                                        link: payment.links[i].href
+                                    })
+                                }
+                            }
+
+                        }
+                    });
+
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const buyProductByCardSucess = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id;
+
+                    const payerId = data.PayerID;
+                    const paymentId = data.paymentId;
+                    const price = data.price
+
+                    const execute_payment_json = {
+                        "payer_id": payerId,
+                        "transactions": [{
+                            "amount": {
+                                "currency": "USD",
+                                "total": price
+                            }
+                        }]
+                    };
+                    paypal.payment.execute(paymentId, execute_payment_json, async function (error, payment) {
+                        if (error) {
+                            console.log(error.response);
+                            throw error;
+                        } else {
+                            console.log('mua thanh cong');
+
+                            let addressUser = await db.addressUser.findOne({
+                                where: {
+                                    idUser,
+                                    isDefault: 'true'
+                                }
+                            })
+
+                            let cart = await db.cart.findAll({
+                                where: {
+                                    idUser,
+                                    isChoose: 'true'
+                                },
+                                raw: true
+                            })
+
+                            //handle buy product
+
+                            let bill = await db.bill.create({
+                                id: uuidv4(),
+                                idUser,
+                                timeBill: new Date().getTime() + '',
+                                idStatusBill: '1',
+                                idAddressUser: addressUser.id,
+                                note: data.note || '',
+                                totals: +data.totalsReq,
+                                payment: 'card'
+                            })
+
+                            let arrayDetailBill = cart.map(item => {
+                                return {
+                                    id: uuidv4(),
+                                    idBill: bill.id,
+                                    idProduct: item.idProduct,
+                                    amount: item.amount,
+                                    isReviews: 'false',
+                                    idClassifyProduct: item.idClassifyProduct,
+                                }
+                            })
+
+                            await db.detailBill.bulkCreate(arrayDetailBill, { individualHooks: true })
+
+                            await db.cart.destroy({
+                                where: {
+                                    idUser,
+                                    isChoose: 'true'
+                                }
+                            })
+
+                            resolve({
+                                errCode: 0,
+                            })
+                        }
+                    });
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
 
 module.exports = {
     CreateUser,
@@ -2368,5 +2651,7 @@ module.exports = {
     getCodeVeridyForgetPass,
     changePassForget,
     checkKeyVerify,
-    hasReceivedProduct
+    hasReceivedProduct,
+    buyProductByCard,
+    buyProductByCardSucess
 }

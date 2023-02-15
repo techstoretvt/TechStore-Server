@@ -1,4 +1,6 @@
 import userService from '../services/userService'
+require('dotenv').config();
+
 
 const CreateUser = async (req, res) => {
     try {
@@ -488,6 +490,45 @@ const hasReceivedProduct = async (req, res) => {
     }
 }
 
+const buyProductByCard = async (req, res) => {
+    try {
+        //call service data
+        let data = await userService.buyProductByCard(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const buyProductByCardSucess = async (req, res) => {
+    try {
+        //call service data
+        let data = await userService.buyProductByCardSucess(req.query)
+
+        if (data.errCode === 0) {
+            res.redirect(`${process.env.LINK_FONTEND}/cart/notifycation`);
+        }
+        else {
+            return res.status(200).json(data)
+        }
+
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -520,5 +561,7 @@ module.exports = {
     getCodeVeridyForgetPass,
     changePassForget,
     checkKeyVerify,
-    hasReceivedProduct
+    hasReceivedProduct,
+    buyProductByCard,
+    buyProductByCardSucess
 }

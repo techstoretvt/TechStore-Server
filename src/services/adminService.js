@@ -942,6 +942,44 @@ const confirmBillById = (data) => {
                     bill.idStatusBill = '2'
                     await bill.save()
 
+                    //update amount product
+                    let detailBill = await db.detailBill.findAll({
+                        where: {
+                            idBill: bill.id
+                        }
+                    })
+
+                    let classifyProduct = await db.classifyProduct.findAll({
+                        include: [
+                            {
+                                model: db.detailBill,
+                                where: {
+                                    idBill: bill.id
+                                }
+                            }
+                        ],
+                        raw: false,
+                        nest: true
+                    })
+                    let check = true
+                    detailBill.forEach((item, index) => {
+                        if (classifyProduct[index].amount < item.amount) check = false
+                        classifyProduct[index].amount = classifyProduct[index].amount - item.amount
+                    })
+
+                    if (!check) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Số lượng sản phẩm trong kho không còn đủ!',
+                        })
+                        return;
+                    }
+
+                    await classifyProduct.save()
+
+
+
+                    //send email
                     let user = await db.User.findOne({
                         include: [
                             {

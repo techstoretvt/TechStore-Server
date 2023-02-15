@@ -2,7 +2,7 @@ import express from 'express'
 import userController from '../controllers/userController'
 import adminController from '../controllers/adminController'
 import appController from '../controllers/appController'
-import { runInContext } from 'lodash';
+const paypal = require('paypal-rest-sdk');
 
 const fileUploader = require('../config/cloudinary.config');
 
@@ -44,6 +44,11 @@ const initWebRoute = (app) => {
     router.put('/api/v1/change-pass-forget', userController.changePassForget)
     router.post('/api/v1/check-key-verify', userController.checkKeyVerify)
     router.put('/api/v1/has-received-product', userController.hasReceivedProduct)
+    router.post('/api/v1/buy-product-by-card', userController.buyProductByCard)
+
+    router.get('/api/v1/buy-product-by-card/success', userController.buyProductByCardSucess);
+
+    router.get('/cancel', (req, res) => res.send('Cancelled (Đơn hàng đã hủy)'));
 
     //admin api
     router.post('/api/add-type-product', fileUploader.single('file'), adminController.addTypeProduct)
