@@ -2,7 +2,6 @@ import express from 'express'
 import userController from '../controllers/userController'
 import adminController from '../controllers/adminController'
 import appController from '../controllers/appController'
-const paypal = require('paypal-rest-sdk');
 
 const fileUploader = require('../config/cloudinary.config');
 
