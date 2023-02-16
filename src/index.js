@@ -12,6 +12,14 @@ const typeDefs = require('./GraphQL/schema/schema')
 const resolvers = require('./GraphQL/resolver/resolver')
 
 const app = express();
+
+var corsOptions = {
+    origin: process.env.LINK_FONTEND,
+    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
+
+app.use(cors(corsOptions));
+
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
@@ -24,7 +32,7 @@ const io = new Server(server, {
 //View engine
 configViewEngine(app);
 
-app.use(cors());
+
 // app.use(cors({ origin: true }))
 // app.use(function (req, res, next) {
 
