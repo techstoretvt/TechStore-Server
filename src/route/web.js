@@ -2,7 +2,6 @@ import express from 'express'
 import userController from '../controllers/userController'
 import adminController from '../controllers/adminController'
 import appController from '../controllers/appController'
-
 const fileUploader = require('../config/cloudinary.config');
 
 let router = express.Router();
