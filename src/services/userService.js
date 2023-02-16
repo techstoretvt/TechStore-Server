@@ -2,7 +2,7 @@ import db from '../models'
 require('dotenv').config();
 import jwt from 'jsonwebtoken'
 import { v4 as uuidv4 } from 'uuid';
-const Verifier = require("email-verifier");
+// import Verifier from 'email-verifier'
 const { Op } = require("sequelize");
 
 const paypal = require('paypal-rest-sdk');
@@ -17,13 +17,13 @@ paypal.configure({
 
 
 
-let verifier_email = new Verifier(process.env.API_KEY_VERIFY_EMAIL, {
-    checkCatchAll: false,
-    checkDisposable: false,
-    checkFree: false,
-    validateDNS: false,
-    validateSMTP: true,
-});
+// let verifier_email = new Verifier(process.env.API_KEY_VERIFY_EMAIL, {
+//     checkCatchAll: false,
+//     checkDisposable: false,
+//     checkFree: false,
+//     validateDNS: false,
+//     validateSMTP: true,
+// });
 
 const CreateUser = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -38,92 +38,92 @@ const CreateUser = (data) => {
             let keyVerify = commont.randomString();
 
 
-            verifier_email.verify(data.email, { hardRefresh: true }, async (err, res) => {
-                if (err) throw err;
-                if (res.smtpCheck === 'false') {
-                    resolve({
-                        errCode: 3,
-                        errMessage: 'Email này không tồn tại, vui lòng kiểm tra lỗi chính tả!'
-                    })
-                    return;
-                }
-                else {
-                    let [user, created] = await db.User.findOrCreate({
-                        where: { email: data.email },
-                        defaults: {
-                            firstName: data.firstName,
-                            lastName: data.lastName,
-                            pass: hasePass,
-                            idTypeUser: "3",
-                            keyVerify: keyVerify,
-                            statusUser: 'wait',
-                            typeAccount: 'web',
-                            id: uuidv4()
-                        },
-                        raw: false
-                    });
+            // verifier_email.verify(data.email, { hardRefresh: true }, async (err, res) => {
+            //     if (err) throw err;
+            //     if (res.smtpCheck === 'false') {
+            //         resolve({
+            //             errCode: 3,
+            //             errMessage: 'Email này không tồn tại, vui lòng kiểm tra lỗi chính tả!'
+            //         })
+            //         return;
+            //     }
+            //     else {
+            //         let [user, created] = await db.User.findOrCreate({
+            //             where: { email: data.email },
+            //             defaults: {
+            //                 firstName: data.firstName,
+            //                 lastName: data.lastName,
+            //                 pass: hasePass,
+            //                 idTypeUser: "3",
+            //                 keyVerify: keyVerify,
+            //                 statusUser: 'wait',
+            //                 typeAccount: 'web',
+            //                 id: uuidv4()
+            //             },
+            //             raw: false
+            //         });
 
-                    if (!created) {
+            //         if (!created) {
 
-                        //Tài khoản đã tồn tại
-                        if (user.statusUser === 'true') {
-                            resolve({
-                                errCode: 2,
-                                errMessage: 'Tài khoản này đã tồn tại!'
-                            })
-                        }
-                        //Tài khoản chưa được xác nhận
-                        else if (user.statusUser === 'wait') {
+            //             //Tài khoản đã tồn tại
+            //             if (user.statusUser === 'true') {
+            //                 resolve({
+            //                     errCode: 2,
+            //                     errMessage: 'Tài khoản này đã tồn tại!'
+            //                 })
+            //             }
+            //             //Tài khoản chưa được xác nhận
+            //             else if (user.statusUser === 'wait') {
 
-                            //update data
-                            user.firstName = data.firstName
-                            user.lastName = data.lastName
-                            user.pass = hasePass
-                            user.keyVerify = keyVerify
-                            await user.save();
+            //                 //update data
+            //                 user.firstName = data.firstName
+            //                 user.lastName = data.lastName
+            //                 user.pass = hasePass
+            //                 user.keyVerify = keyVerify
+            //                 await user.save();
 
-                            //create token
-                            let tokens = CreateToken(user);
+            //                 //create token
+            //                 let tokens = CreateToken(user);
 
-                            //send email
-                            let title = 'Xác nhận tạo tài khoản TechStoreTvT';
-                            let contentHtml = contentSendEmail(user.id, user.keyVerify, user.firstName);
-                            commont.sendEmail(user.email, title, contentHtml)
+            //                 //send email
+            //                 let title = 'Xác nhận tạo tài khoản TechStoreTvT';
+            //                 let contentHtml = contentSendEmail(user.id, user.keyVerify, user.firstName);
+            //                 commont.sendEmail(user.email, title, contentHtml)
 
-                            resolve({
-                                errCode: 0,
-                                errMessage: 'Tài khoản chưa được xác nhận',
-                                data: {
-                                    accessToken: tokens.accessToken,
-                                    refreshToken: tokens.refreshToken,
-                                    keyVerify
-                                }
-                            })
-                        }
+            //                 resolve({
+            //                     errCode: 0,
+            //                     errMessage: 'Tài khoản chưa được xác nhận',
+            //                     data: {
+            //                         accessToken: tokens.accessToken,
+            //                         refreshToken: tokens.refreshToken,
+            //                         keyVerify
+            //                     }
+            //                 })
+            //             }
 
-                    }
-                    else {
-                        //create token
-                        let tokens = CreateToken(user);
+            //         }
+            //         else {
+            //             //create token
+            //             let tokens = CreateToken(user);
 
-                        //send email
-                        let title = 'Xác nhận tạo tài khoản TechStoreTvT';
-                        let contentHtml = contentSendEmail(user.id, user.keyVerify, user.firstName);
-                        commont.sendEmail(user.email, title, contentHtml)
+            //             //send email
+            //             let title = 'Xác nhận tạo tài khoản TechStoreTvT';
+            //             let contentHtml = contentSendEmail(user.id, user.keyVerify, user.firstName);
+            //             commont.sendEmail(user.email, title, contentHtml)
 
-                        resolve({
-                            errCode: 0,
-                            errMessage: 'Đã tạo tài khoản',
-                            data: {
-                                accessToken: tokens.accessToken,
-                                refreshToken: tokens.refreshToken,
-                                keyVerify
-                            }
-                        })
-                    }
-                }
+            //             resolve({
+            //                 errCode: 0,
+            //                 errMessage: 'Đã tạo tài khoản',
+            //                 data: {
+            //                     accessToken: tokens.accessToken,
+            //                     refreshToken: tokens.refreshToken,
+            //                     keyVerify
+            //                 }
+            //             })
+            //         }
+            //     }
 
-            });
+            // });
 
 
         }
