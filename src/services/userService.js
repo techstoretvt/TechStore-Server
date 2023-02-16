@@ -5,14 +5,14 @@ import { v4 as uuidv4 } from 'uuid';
 const Verifier = require("email-verifier");
 const { Op } = require("sequelize");
 
-// const paypal = require('paypal-rest-sdk');
+const paypal = require('paypal-rest-sdk');
 import commont from '../services/commont'
 
-// paypal.configure({
-//     'mode': 'sandbox', //sandbox or live
-//     'client_id': process.env.PAYPAL_CLIENT_ID,
-//     'client_secret': process.env.PAYPAL_CLIENT_SECRET
-// });
+paypal.configure({
+    'mode': 'sandbox', //sandbox or live
+    'client_id': process.env.PAYPAL_CLIENT_ID,
+    'client_secret': process.env.PAYPAL_CLIENT_SECRET
+});
 
 
 
@@ -2490,23 +2490,23 @@ const buyProductByCard = (data) => {
                         }]
                     };
 
-                    // paypal.payment.create(create_payment_json, function (error, payment) {
-                    //     if (error) {
-                    //         throw error;
-                    //     } else {
-                    //         for (let i = 0; i < payment.links.length; i++) {
-                    //             if (payment.links[i].rel === 'approval_url') {
-                    //                 // res.redirect(payment.links[i].href);
-                    //                 resolve({
-                    //                     errCode: 0,
-                    //                     errMessage: 'ok',
-                    //                     link: payment.links[i].href
-                    //                 })
-                    //             }
-                    //         }
+                    paypal.payment.create(create_payment_json, function (error, payment) {
+                        if (error) {
+                            throw error;
+                        } else {
+                            for (let i = 0; i < payment.links.length; i++) {
+                                if (payment.links[i].rel === 'approval_url') {
+                                    // res.redirect(payment.links[i].href);
+                                    resolve({
+                                        errCode: 0,
+                                        errMessage: 'ok',
+                                        link: payment.links[i].href
+                                    })
+                                }
+                            }
 
-                    //     }
-                    // });
+                        }
+                    });
 
                 }
             }
@@ -2552,66 +2552,66 @@ const buyProductByCardSucess = (data) => {
                             }
                         }]
                     };
-                    // paypal.payment.execute(paymentId, execute_payment_json, async function (error, payment) {
-                    //     if (error) {
-                    //         console.log(error.response);
-                    //         throw error;
-                    //     } else {
-                    //         console.log('mua thanh cong');
+                    paypal.payment.execute(paymentId, execute_payment_json, async function (error, payment) {
+                        if (error) {
+                            console.log(error.response);
+                            throw error;
+                        } else {
+                            console.log('mua thanh cong');
 
-                    //         let addressUser = await db.addressUser.findOne({
-                    //             where: {
-                    //                 idUser,
-                    //                 isDefault: 'true'
-                    //             }
-                    //         })
+                            let addressUser = await db.addressUser.findOne({
+                                where: {
+                                    idUser,
+                                    isDefault: 'true'
+                                }
+                            })
 
-                    //         let cart = await db.cart.findAll({
-                    //             where: {
-                    //                 idUser,
-                    //                 isChoose: 'true'
-                    //             },
-                    //             raw: true
-                    //         })
+                            let cart = await db.cart.findAll({
+                                where: {
+                                    idUser,
+                                    isChoose: 'true'
+                                },
+                                raw: true
+                            })
 
-                    //         //handle buy product
+                            //handle buy product
 
-                    //         let bill = await db.bill.create({
-                    //             id: uuidv4(),
-                    //             idUser,
-                    //             timeBill: new Date().getTime() + '',
-                    //             idStatusBill: '1',
-                    //             idAddressUser: addressUser.id,
-                    //             note: data.note || '',
-                    //             totals: +data.totalsReq,
-                    //             payment: 'card'
-                    //         })
+                            let bill = await db.bill.create({
+                                id: uuidv4(),
+                                idUser,
+                                timeBill: new Date().getTime() + '',
+                                idStatusBill: '1',
+                                idAddressUser: addressUser.id,
+                                note: data.note || '',
+                                totals: +data.totalsReq,
+                                payment: 'card'
+                            })
 
-                    //         let arrayDetailBill = cart.map(item => {
-                    //             return {
-                    //                 id: uuidv4(),
-                    //                 idBill: bill.id,
-                    //                 idProduct: item.idProduct,
-                    //                 amount: item.amount,
-                    //                 isReviews: 'false',
-                    //                 idClassifyProduct: item.idClassifyProduct,
-                    //             }
-                    //         })
+                            let arrayDetailBill = cart.map(item => {
+                                return {
+                                    id: uuidv4(),
+                                    idBill: bill.id,
+                                    idProduct: item.idProduct,
+                                    amount: item.amount,
+                                    isReviews: 'false',
+                                    idClassifyProduct: item.idClassifyProduct,
+                                }
+                            })
 
-                    //         await db.detailBill.bulkCreate(arrayDetailBill, { individualHooks: true })
+                            await db.detailBill.bulkCreate(arrayDetailBill, { individualHooks: true })
 
-                    //         await db.cart.destroy({
-                    //             where: {
-                    //                 idUser,
-                    //                 isChoose: 'true'
-                    //             }
-                    //         })
+                            await db.cart.destroy({
+                                where: {
+                                    idUser,
+                                    isChoose: 'true'
+                                }
+                            })
 
-                    //         resolve({
-                    //             errCode: 0,
-                    //         })
-                    //     }
-                    // });
+                            resolve({
+                                errCode: 0,
+                            })
+                        }
+                    });
                 }
             }
         }
