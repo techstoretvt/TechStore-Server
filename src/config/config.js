@@ -17,7 +17,7 @@ module.exports = {
             require: true,
             rejectUnauthorized: false
           },
-          "useUTC": false
+          useUTC: false
         } : {}
     ,
     query: {

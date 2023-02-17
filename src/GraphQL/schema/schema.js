@@ -56,9 +56,13 @@ const typeDefs = gql`
         totals: Int
         detailBill: [detailBill]
         addressUser: addressUser
+        updatedAt: String
+        createdAt: String
+        payment: String
     }
 
     type detailBill {
+        id: String
         idBill: String
         amount: Int
         isReviews: String
@@ -83,6 +87,7 @@ const typeDefs = gql`
         product (id: String!): product
         searchProduct (keyword: String!): [product]
         listBillByType (type: String!): [bill]
+        BillById(id: String!): bill
     }
 
     # type Mutation {

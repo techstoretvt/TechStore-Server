@@ -57,7 +57,11 @@ const resolvers = {
         listBillByType: async (parent, args) => {
             let listBill = await listBills();
             return listBill.filter(item => item.idStatusBill === args.type)
-        }
+        },
+        BillById: async (parent, args) => {
+            let listBill = await listBills();
+            return listBill.find(item => item.id === args.id)
+        },
     },
     product: {
         typeProduct: async (parent, args) => {
@@ -115,7 +119,7 @@ const resolvers = {
         },
         product: async (parent, args) => {
             let ListProduct = await ListProducts();
-            return ListProduct.find(item => item.id === parent.idProduct)
+            return ListProduct.find(item => item.id === parent.idProduct.toLowerCase())
         },
     }
 
