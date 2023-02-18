@@ -62,6 +62,7 @@ const productSearch = async () => {
 const listBills = async () => {
     let data = await db.bill.findAll({
         order: [
+            ['payment', 'ASC'],
             ['createdAt', 'DESC']
         ]
     });
