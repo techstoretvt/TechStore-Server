@@ -2621,6 +2621,123 @@ const buyProductByCardSucess = (data) => {
     })
 }
 
+const createNewEvaluateProduct = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idDetailProduct || !data.star) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id;
+
+                    let detailBill = await db.detailBill.findOne({
+                        where: {
+                            id: data.idDetailProduct,
+                        },
+                        include: [
+                            {
+                                model: db.bill,
+                                where: {
+                                    idUser
+                                }
+                            }
+                        ],
+                        raw: false,
+                        nest: true
+                    })
+
+                    if (!detailBill || detailBill.isReviews === 'true') {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Không tìm thấy hoặc bạn không được phép thực hiện tính năng này!',
+                        })
+                    }
+                    else {
+                        let evaluateProduct = await db.evaluateProduct.create({
+                            id: uuidv4(),
+                            idUser,
+                            idProduct: detailBill.idProduct,
+                            starNumber: data.star,
+                            content: data.content || '',
+                            displayname: '' + data.displayName || 'true'
+                        })
+
+                        detailBill.isReviews = 'true'
+                        await detailBill.save();
+
+                        resolve({
+                            errCode: 0,
+                            data: {
+                                id: evaluateProduct.id
+                            }
+                        })
+                    }
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+
+const uploadVideoEvaluateProduct = (id, url) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            await db.videoEvaluateProduct.create({
+                id: uuidv4(),
+                idEvaluateProduct: id,
+                videobase64: '/video/' + url
+            })
+
+            resolve({
+                errCode: 0,
+            })
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const uploadImagesEvaluateProduct = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            let array = data.file.map(item => {
+                return {
+                    id: uuidv4(),
+                    imagebase64: item.path,
+                    idEvaluateProduct: data.query.id
+                }
+            })
+            await db.imageEvaluateProduct.bulkCreate(array, { individualHooks: true })
+
+            resolve({
+                errCode: 0,
+            })
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -2653,5 +2770,8 @@ module.exports = {
     checkKeyVerify,
     hasReceivedProduct,
     buyProductByCard,
-    buyProductByCardSucess
+    buyProductByCardSucess,
+    createNewEvaluateProduct,
+    uploadVideoEvaluateProduct,
+    uploadImagesEvaluateProduct
 }

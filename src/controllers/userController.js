@@ -1,5 +1,8 @@
+import multer from 'multer';
 import userService from '../services/userService'
 require('dotenv').config();
+
+const upload = multer().single('video');
 
 
 const CreateUser = async (req, res) => {
@@ -528,6 +531,66 @@ const buyProductByCardSucess = async (req, res) => {
     }
 }
 
+const createNewEvaluateProduct = async (req, res) => {
+    try {
+        //call service data
+        let data = await userService.createNewEvaluateProduct(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const uploadVideoEvaluateProduct = async (req, res) => {
+    try {
+        upload(req, res, function (err) {
+            if (req.fileValidationError) {
+                return res.send(req.fileValidationError)
+            }
+            else if (!req.file) {
+                return res.send('aaaaaaa')
+            }
+            else if (err instanceof multer.MulterError) {
+                return res.send(err);
+            }
+        })
+
+        let data = await userService.uploadVideoEvaluateProduct(req.query.id, req.file.filename)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const uploadImagesEvaluateProduct = async (req, res) => {
+    try {
+        let data = await userService.uploadImagesEvaluateProduct({
+            file: req.files,
+            query: req.query,
+        })
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
 
 module.exports = {
     CreateUser,
@@ -563,5 +626,8 @@ module.exports = {
     checkKeyVerify,
     hasReceivedProduct,
     buyProductByCard,
-    buyProductByCardSucess
+    buyProductByCardSucess,
+    createNewEvaluateProduct,
+    uploadVideoEvaluateProduct,
+    uploadImagesEvaluateProduct
 }

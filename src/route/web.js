@@ -3,11 +3,29 @@ import userController from '../controllers/userController'
 import adminController from '../controllers/adminController'
 import appController from '../controllers/appController'
 const fileUploader = require('../config/cloudinary.config');
+import multer from 'multer';
+import path from 'path'
 
 let router = express.Router();
 
+let appRoot = require('app-root-path')
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, appRoot + '/src/public/video/')
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+    }
+})
+
+let upload = multer({ storage })
+
+
 const initWebRoute = (app) => {
-    router.get('/', (req, res, next) => { res.send('Hello backend') })
+    router.get('/', (req, res, next) => {
+        res.send('Hello backend -- Link frontend: <a href="techstoretvt.vercel.app">go to the website</a>')
+    })
     router.get('/account', userController.accountVerifyPage)
     router.get('/verify-email', userController.verifyEmail)
 
@@ -43,10 +61,11 @@ const initWebRoute = (app) => {
     router.post('/api/v1/check-key-verify', userController.checkKeyVerify)
     router.put('/api/v1/has-received-product', userController.hasReceivedProduct)
     router.post('/api/v1/buy-product-by-card', userController.buyProductByCard)
-
     router.get('/api/v1/buy-product-by-card/success', userController.buyProductByCardSucess);
-
     router.get('/cancel', (req, res) => res.send('Cancelled (Đơn hàng đã hủy)'));
+    router.post('/api/v1/create-new-evaluate-product', userController.createNewEvaluateProduct)
+    router.post('/apit/v1/upload-video-evaluate-product', upload.single('video'), userController.uploadVideoEvaluateProduct)
+    router.post('/apit/v1/upload-images-evaluate-product', fileUploader.array('file'), userController.uploadImagesEvaluateProduct)
 
     //admin api
     router.post('/api/add-type-product', fileUploader.single('file'), adminController.addTypeProduct)
