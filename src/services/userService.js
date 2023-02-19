@@ -2771,7 +2771,6 @@ const uploadVideoEvaluateProduct = (id, url) => {
     return new Promise(async (resolve, reject) => {
         try {
             let urlVideo = await that.uploadFile(url)
-            console.log('url backend: ', urlVideo);
 
             await db.videoEvaluateProduct.create({
                 id: uuidv4(),
@@ -2781,6 +2780,7 @@ const uploadVideoEvaluateProduct = (id, url) => {
 
             resolve({
                 errCode: 0,
+                url: url
             })
 
         }
