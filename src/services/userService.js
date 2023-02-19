@@ -7,13 +7,85 @@ const { Op } = require("sequelize");
 
 const paypal = require('paypal-rest-sdk');
 import commont from '../services/commont'
+const { google } = require('googleapis');
+const fs = require('fs');
+const path = require('path');
 
 paypal.configure({
     'mode': 'sandbox', //sandbox or live
     'client_id': process.env.PAYPAL_CLIENT_ID,
     'client_secret': process.env.PAYPAL_CLIENT_SECRET
 });
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
+const REDIRECT_URI = process.env.REDIRECT_URI;
+const REFRESH_TOKEN = process.env.REFRESH_TOKEN;
 
+
+const oauth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
+oauth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+
+const drive = google.drive({
+    version: 'v3',
+    auth: oauth2Client
+})
+
+let that = {
+    setFilePublic: async (fileId) => {
+        try {
+            await drive.permissions.create({
+                fileId,
+                requestBody: {
+                    role: 'reader',
+                    type: 'anyone'
+                }
+            })
+
+            const getUrl = await drive.files.get({
+                fileId,
+                fields: 'webViewLink, webContentLink'
+            })
+
+            return getUrl;
+        } catch (error) {
+            console.error(error);
+        }
+    },
+    uploadFile: async (name) => {
+        try {
+            const createFile = await drive.files.create({
+                requestBody: {
+                    name: "iloveyou_anh1.jpg",
+                    mimeType: 'video/mp4'
+                },
+                media: {
+                    mimeType: 'video/mp4',
+                    body: fs.createReadStream(path.join(__dirname, `../public/video/${name}`))
+                }
+            })
+            const fileId = createFile.data.id;
+            console.log(createFile.data)
+            const getUrl = await that.setFilePublic(fileId);
+
+            console.log(getUrl.data);
+            return getUrl.data.webViewLink
+
+        } catch (error) {
+            console.error(error);
+        }
+    },
+    deleteFile: async (fileId) => {
+        try {
+            console.log('Delete File:::', fileId);
+            const deleteFile = await drive.files.delete({
+                fileId: fileId
+            })
+            console.log(deleteFile.data, deleteFile.status)
+        } catch (error) {
+            console.error(error);
+        }
+    }
+}
 
 
 
@@ -2698,10 +2770,13 @@ const createNewEvaluateProduct = (data) => {
 const uploadVideoEvaluateProduct = (id, url) => {
     return new Promise(async (resolve, reject) => {
         try {
+            let urlVideo = await that.uploadFile(url)
+            console.log('url backend: ', urlVideo);
+
             await db.videoEvaluateProduct.create({
                 id: uuidv4(),
                 idEvaluateProduct: id,
-                videobase64: '/video/' + url
+                videobase64: urlVideo
             })
 
             resolve({
