@@ -14,6 +14,7 @@ module.exports = (sequelize, DataTypes) => {
 
     idEvaluateProduct: DataTypes.STRING,
     videobase64: DataTypes.TEXT,
+    idGGDrive: DataTypes.STRING
 
 
   }, {

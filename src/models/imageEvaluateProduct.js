@@ -14,6 +14,7 @@ module.exports = (sequelize, DataTypes) => {
 
     idEvaluateProduct: DataTypes.STRING,
     imagebase64: DataTypes.TEXT,
+    idCloudinary: DataTypes.STRING
 
 
   }, {

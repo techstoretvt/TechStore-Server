@@ -560,7 +560,6 @@ const uploadVideoEvaluateProduct = async (req, res) => {
                 return res.send(err);
             }
         })
-
         let data = await userService.uploadVideoEvaluateProduct(req.query.id, req.file.filename)
 
         return res.status(200).json(data)
@@ -577,7 +576,7 @@ const uploadVideoEvaluateProduct = async (req, res) => {
 const uploadImagesEvaluateProduct = async (req, res) => {
     try {
         let data = await userService.uploadImagesEvaluateProduct({
-            file: req.files,
+            files: req.files,
             query: req.query,
         })
 

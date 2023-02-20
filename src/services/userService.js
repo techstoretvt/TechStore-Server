@@ -10,6 +10,8 @@ import commont from '../services/commont'
 const { google } = require('googleapis');
 const fs = require('fs');
 const path = require('path');
+// var cloudinary = require('cloudinary');
+// await cloudinary.v2.uploader.destroy('vznd4hds4kudr0zbvfop')
 
 paypal.configure({
     'mode': 'sandbox', //sandbox or live
@@ -30,7 +32,7 @@ const drive = google.drive({
     auth: oauth2Client
 })
 
-let that = {
+let GG_Drive = {
     setFilePublic: async (fileId) => {
         try {
             await drive.permissions.create({
@@ -55,20 +57,21 @@ let that = {
         try {
             const createFile = await drive.files.create({
                 requestBody: {
-                    name: "iloveyou_anh1.jpg",
+                    name: "iloveyou_anh1.mp4",
                     mimeType: 'video/mp4'
                 },
                 media: {
                     mimeType: 'video/mp4',
-                    body: fs.createReadStream(path.join(__dirname, `../public/video/${name}`))
+                    body: fs.createReadStream(path.join(__dirname, `../public/videoTam/${name}`))
                 }
             })
             const fileId = createFile.data.id;
-            console.log(createFile.data)
-            const getUrl = await that.setFilePublic(fileId);
+            const getUrl = await GG_Drive.setFilePublic(fileId);
 
-            console.log(getUrl.data);
-            return getUrl.data.webViewLink
+            return {
+                url: getUrl.data.webViewLink,
+                id: createFile.data.id
+            }
 
         } catch (error) {
             console.error(error);
@@ -1951,6 +1954,7 @@ const getListBillByType = (data) => {
                     })
                 }
                 else {
+
                     let idUser = decode.id;
                     let countType1 = await db.bill.count({
                         where: {
@@ -2770,17 +2774,17 @@ const createNewEvaluateProduct = (data) => {
 const uploadVideoEvaluateProduct = (id, url) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let urlVideo = await that.uploadFile(url)
+            let urlVideo = await GG_Drive.uploadFile(url)
 
             await db.videoEvaluateProduct.create({
                 id: uuidv4(),
                 idEvaluateProduct: id,
-                videobase64: urlVideo
+                videobase64: urlVideo.url,
+                idGGDrive: urlVideo.id
             })
 
             resolve({
                 errCode: 0,
-                url: url
             })
 
         }
@@ -2793,12 +2797,12 @@ const uploadVideoEvaluateProduct = (id, url) => {
 const uploadImagesEvaluateProduct = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-
-            let array = data.file.map(item => {
+            let array = data.files.map(item => {
                 return {
                     id: uuidv4(),
                     imagebase64: item.path,
-                    idEvaluateProduct: data.query.id
+                    idEvaluateProduct: data.query.id,
+                    idCloudinary: item.filename
                 }
             })
             await db.imageEvaluateProduct.bulkCreate(array, { individualHooks: true })

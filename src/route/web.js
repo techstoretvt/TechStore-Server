@@ -12,7 +12,7 @@ let appRoot = require('app-root-path')
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, appRoot + '/src/public/video/')
+        cb(null, appRoot + '/src/public/videoTam/')
     },
     filename: function (req, file, cb) {
         cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
@@ -79,7 +79,7 @@ const initWebRoute = (app) => {
     router.put('/api/update-trademark-by-id', adminController.updateTrademarkById)
 
     router.post('/api/create-new-product', adminController.createNewProduct)
-    router.post('/cloudinary-upload', fileUploader.single('file'), adminController.cloudinaryUpload);
+    router.post('/cloudinary-upload', fileUploader.array('file'), adminController.cloudinaryUpload);
     router.get('/api/get-list-product-by-page', adminController.getListProductByPage)
     router.put('/api/block-product', adminController.blockProduct)
     router.put('/api/edit-product-by-id', adminController.editProductById)

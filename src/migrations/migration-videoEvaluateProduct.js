@@ -17,7 +17,9 @@ module.exports = {
       videobase64: {
         type: Sequelize.TEXT
       },
-
+      idGGDrive: {
+        type: Sequelize.STRING
+      },
 
       createdAt: {
         allowNull: false,

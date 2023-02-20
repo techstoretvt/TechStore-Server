@@ -17,6 +17,9 @@ module.exports = {
       imagebase64: {
         type: Sequelize.TEXT
       },
+      idCloudinary: {
+        type: Sequelize.STRING
+      },
 
       createdAt: {
         allowNull: false,

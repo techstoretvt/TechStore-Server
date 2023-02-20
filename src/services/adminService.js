@@ -449,30 +449,28 @@ const createNewProduct = (data) => {
 const cloudinaryUpload = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.file || !data.query.num || !data.query.idProduct) {
+            if (!data.files || !data.query.idProduct) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
                 })
             }
             else {
-                let imageProduct = await db.imageProduct.create({
-                    idProduct: data.query.idProduct,
-                    imagebase64: data.file.path,
-                    STTImage: +data.query.num,
-                    id: uuidv4()
+
+                let array = data.files.map((item, index) => {
+                    return {
+                        id: uuidv4(),
+                        imagebase64: item.path,
+                        idProduct: data.query.idProduct,
+                        STTImage: index + 1,
+                    }
                 })
-                console.log(`imgproduct ${data.query.num}: `, imageProduct.dataValues);
 
-
+                await db.imageProduct.bulkCreate(array, { individualHooks: true })
                 resolve({
                     errCode: 0,
                     errMessage: 'ok',
-                    data: {
-                        secure_url: data.file.path,
-                        num: data.query.num,
-                        idProduct: data.query.idProduct
-                    }
+
                 })
 
             }

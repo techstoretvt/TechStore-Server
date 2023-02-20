@@ -152,16 +152,10 @@ const createNewProduct = async (req, res) => {
 }
 
 const cloudinaryUpload = async (req, res) => {
-    // if (!req.file) {
-    //     next(new Error('No file uploaded!'));
-    //     return;
-    // }
-
-    // res.json({ secure_url: req.file.path, num: req.query.num });
     try {
         //call service data
         let data = await adminService.cloudinaryUpload({
-            file: req.file,
+            files: req.files,
             query: req.query
         })
 
