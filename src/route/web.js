@@ -66,6 +66,10 @@ const initWebRoute = (app) => {
     router.post('/api/v1/create-new-evaluate-product', userController.createNewEvaluateProduct)
     router.post('/apit/v1/upload-video-evaluate-product', upload.single('video'), userController.uploadVideoEvaluateProduct)
     router.post('/apit/v1/upload-images-evaluate-product', fileUploader.array('file'), userController.uploadImagesEvaluateProduct)
+    router.delete('/api/v2/create-new-evaluate-product-failed', userController.createNewEvaluateProductFailed)
+    router.put('/api/v1/update-evaluate-product', userController.updataEvaluateProduct)
+    router.delete('/api/v2/delete-video-evaluate', userController.deleteVideoEvaluate)
+    router.post('/api/v1/update-video-evaluate', upload.single('video'), userController.updateVideoEvaluate)
 
     //admin api
     router.post('/api/add-type-product', fileUploader.single('file'), adminController.addTypeProduct)

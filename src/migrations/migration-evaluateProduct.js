@@ -31,6 +31,9 @@ module.exports = {
       displayname: {
         type: Sequelize.STRING
       },
+      idDetailBill: {
+        type: Sequelize.STRING
+      },
 
       createdAt: {
         allowNull: false,

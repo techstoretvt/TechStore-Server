@@ -66,8 +66,10 @@ const typeDefs = gql`
         idBill: String
         amount: Int
         isReviews: String
+        idProduct: String
         product: product
         classifyProduct: classifyProduct
+        evaluateProduct:evaluateProduct
     }
 
     type addressUser {
@@ -79,6 +81,33 @@ const typeDefs = gql`
         addressText: String,
     }
 
+    type evaluateProduct {
+        id: String
+        idUser: String
+        idProduct: String
+        starNumber: Int
+        content: String
+        stt: Int
+        displayname: String
+        imageEvaluateProduct: [imageEvaluateProduct]
+        videoEvaluateProduct: videoEvaluateProduct
+        idDetailBill: String
+    }
+
+    type imageEvaluateProduct {
+        id: String
+        idEvaluateProduct: String
+        imagebase64: String
+        idCloudinary: String
+    }
+
+    type videoEvaluateProduct {
+        id: String
+        idEvaluateProduct: String
+        videobase64: String
+        idGGDrive: String
+    }
+
 
     # ROOT TYPE
     type Query {
@@ -88,6 +117,7 @@ const typeDefs = gql`
         searchProduct (keyword: String!): [product]
         listBillByType (type: String!): [bill]
         BillById(id: String!): bill
+        detailBillById(id: String): detailBill
     }
 
     # type Mutation {

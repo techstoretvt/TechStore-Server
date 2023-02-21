@@ -79,6 +79,17 @@ const listAddressUser = async () => {
     return data
 }
 
+const listImageEvaluate = async () => {
+    let data = await db.imageEvaluateProduct.findAll();
+    return data
+}
+
+const listVideoEvaluate = async () => {
+    let data = await db.videoEvaluateProduct.findAll();
+    return data
+}
+
+
 
 
 module.exports = {
@@ -92,5 +103,7 @@ module.exports = {
     productSearch,
     listBills,
     listDetailBills,
-    listAddressUser
+    listAddressUser,
+    listImageEvaluate,
+    listVideoEvaluate
 }

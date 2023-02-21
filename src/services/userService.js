@@ -10,7 +10,7 @@ import commont from '../services/commont'
 const { google } = require('googleapis');
 const fs = require('fs');
 const path = require('path');
-// var cloudinary = require('cloudinary');
+var cloudinary = require('cloudinary');
 // await cloudinary.v2.uploader.destroy('vznd4hds4kudr0zbvfop')
 
 paypal.configure({
@@ -79,11 +79,9 @@ let GG_Drive = {
     },
     deleteFile: async (fileId) => {
         try {
-            console.log('Delete File:::', fileId);
             const deleteFile = await drive.files.delete({
                 fileId: fileId
             })
-            console.log(deleteFile.data, deleteFile.status)
         } catch (error) {
             console.error(error);
         }
@@ -2700,7 +2698,7 @@ const buyProductByCardSucess = (data) => {
 const createNewEvaluateProduct = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.accessToken || !data.idDetailProduct || !data.star) {
+            if (!data.accessToken || !data.idDetailBill || !data.star) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
@@ -2721,7 +2719,7 @@ const createNewEvaluateProduct = (data) => {
 
                     let detailBill = await db.detailBill.findOne({
                         where: {
-                            id: data.idDetailProduct,
+                            id: data.idDetailBill,
                         },
                         include: [
                             {
@@ -2748,7 +2746,8 @@ const createNewEvaluateProduct = (data) => {
                             idProduct: detailBill.idProduct,
                             starNumber: data.star,
                             content: data.content || '',
-                            displayname: '' + data.displayName || 'true'
+                            displayname: '' + data.displayName || 'true',
+                            idDetailBill: data.idDetailBill
                         })
 
                         detailBill.isReviews = 'true'
@@ -2769,7 +2768,6 @@ const createNewEvaluateProduct = (data) => {
         }
     })
 }
-
 
 const uploadVideoEvaluateProduct = (id, url) => {
     return new Promise(async (resolve, reject) => {
@@ -2817,6 +2815,222 @@ const uploadImagesEvaluateProduct = (data) => {
     })
 }
 
+const createNewEvaluateProductFailed = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let detailbill = await db.detailBill.findOne({
+                where: {
+                    id: data.idDetailBill
+                },
+                raw: false
+            })
+            if (!detailbill) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'not found detail bill'
+                })
+            }
+            else {
+                detailbill.isReviews = 'false'
+                await detailbill.save()
+
+                await db.evaluateProduct.destroy({
+                    where: {
+                        id: data.idEvaluate
+                    }
+                })
+
+                await db.imageEvaluateProduct.destroy({
+                    where: {
+                        idEvaluateProduct: data.idEvaluate
+                    }
+                })
+
+                await db.videoEvaluateProduct.destroy({
+                    where: {
+                        idEvaluateProduct: data.idEvaluate
+                    }
+                })
+
+
+
+                resolve({
+                    errCode: 0,
+                })
+            }
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const updataEvaluateProduct = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idDetailBill || !data.listImage || !data.star
+            ) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id;
+
+                    let evaluateProduct = await db.evaluateProduct.findOne({
+                        where: {
+                            idUser,
+                            idDetailBill: data.idDetailBill
+                        },
+                        raw: false
+                    })
+                    if (!evaluateProduct) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Không tìm thấy hoặc bạn không được phép thực hiện tính năng này!',
+                        })
+                    }
+                    else {
+                        evaluateProduct.starNumber = data.star
+                        evaluateProduct.content = data.text
+                        evaluateProduct.displayname = data.displayname
+                        await evaluateProduct.save();
+
+                        let imageEvaluateProduct = await db.imageEvaluateProduct.findAll({
+                            where: {
+                                idEvaluateProduct: evaluateProduct.id,
+                                imagebase64: {
+                                    [Op.notIn]: data.listImage
+                                }
+                            }
+                        })
+                        imageEvaluateProduct.forEach(async item => {
+                            await cloudinary.v2.uploader.destroy(item.idCloudinary)
+                        })
+
+                        await db.imageEvaluateProduct.destroy({
+                            where: {
+                                idEvaluateProduct: evaluateProduct.id,
+                                imagebase64: {
+                                    [Op.notIn]: data.listImage
+                                }
+                            }
+                        })
+
+                        resolve({
+                            errCode: 0,
+                            id: evaluateProduct.id
+                        })
+                    }
+                }
+            }
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const deleteVideoEvaluate = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idDetailBill) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let evaluateProduct = await db.evaluateProduct.findOne({
+                    where: {
+                        idDetailBill: data.idDetailBill
+                    }
+                })
+
+                let video = await db.videoEvaluateProduct.findOne({
+                    where: {
+                        idEvaluateProduct: evaluateProduct.id
+                    }
+                })
+
+                if (video) {
+                    await GG_Drive.deleteFile(video.idGGDrive)
+                }
+
+
+                await db.videoEvaluateProduct.destroy({
+                    where: {
+                        idEvaluateProduct: evaluateProduct.id
+                    }
+                })
+
+                resolve({
+                    errCode: 0,
+                })
+            }
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+
+const updateVideoEvaluate = (id, filename) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let evaluateProduct = await db.evaluateProduct.findOne({
+                where: {
+                    idDetailBill: id
+                }
+            })
+            let videoOld = await db.videoEvaluateProduct.findOne({
+                where: {
+                    idEvaluateProduct: evaluateProduct.id
+                }
+            })
+            await GG_Drive.deleteFile(videoOld.idGGDrive)
+            await db.videoEvaluateProduct.destroy({
+                where: {
+                    idEvaluateProduct: evaluateProduct.id
+                }
+            })
+
+
+            let urlVideo = await GG_Drive.uploadFile(filename)
+
+            await db.videoEvaluateProduct.create({
+                id: uuidv4(),
+                idEvaluateProduct: evaluateProduct.id,
+                videobase64: urlVideo.url,
+                idGGDrive: urlVideo.id
+            })
+
+            resolve({
+                errCode: 0,
+            })
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -2852,5 +3066,9 @@ module.exports = {
     buyProductByCardSucess,
     createNewEvaluateProduct,
     uploadVideoEvaluateProduct,
-    uploadImagesEvaluateProduct
+    uploadImagesEvaluateProduct,
+    createNewEvaluateProductFailed,
+    updataEvaluateProduct,
+    deleteVideoEvaluate,
+    updateVideoEvaluate
 }

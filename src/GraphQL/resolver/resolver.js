@@ -2,7 +2,7 @@ import {
     ListTypeProducts, ListTrademarks, ListProducts, ListImageProducts,
     ListClassify, ListPromotions, listEvaluates, productSearch,
     listBills, listDetailBills,
-    listAddressUser
+    listAddressUser, listImageEvaluate, listVideoEvaluate
 
 } from '../data/rest'
 import FuzzySearch from 'fuzzy-search';
@@ -62,6 +62,10 @@ const resolvers = {
             let listBill = await listBills();
             return listBill.find(item => item.id === args.id)
         },
+        detailBillById: async (parent, args) => {
+            let list = await listDetailBills();
+            return list.find(item => item.id === args.id)
+        },
     },
     product: {
         typeProduct: async (parent, args) => {
@@ -120,6 +124,20 @@ const resolvers = {
         product: async (parent, args) => {
             let ListProduct = await ListProducts();
             return ListProduct.find(item => item.id === parent.idProduct.toLowerCase())
+        },
+        evaluateProduct: async (parent, args) => {
+            let List = await listEvaluates();
+            return List.find(item => item.idDetailBill === parent.id)
+        },
+    },
+    evaluateProduct: {
+        imageEvaluateProduct: async (parent, args) => {
+            let list = await listImageEvaluate();
+            return list.filter(item => item.idEvaluateProduct === parent.id)
+        },
+        videoEvaluateProduct: async (parent, args) => {
+            let list = await listVideoEvaluate();
+            return list.find(item => item.idEvaluateProduct === parent.id)
         },
     }
 

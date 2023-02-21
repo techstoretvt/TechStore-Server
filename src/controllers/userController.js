@@ -591,6 +591,64 @@ const uploadImagesEvaluateProduct = async (req, res) => {
     }
 }
 
+const createNewEvaluateProductFailed = async (req, res) => {
+    try {
+        let data = await userService.createNewEvaluateProductFailed(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const updataEvaluateProduct = async (req, res) => {
+    try {
+        let data = await userService.updataEvaluateProduct(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+const deleteVideoEvaluate = async (req, res) => {
+    try {
+        let data = await userService.deleteVideoEvaluate(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+const updateVideoEvaluate = async (req, res) => {
+    try {
+        let data = await userService.updateVideoEvaluate(req.query.id, req.file.filename)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -628,5 +686,9 @@ module.exports = {
     buyProductByCardSucess,
     createNewEvaluateProduct,
     uploadVideoEvaluateProduct,
-    uploadImagesEvaluateProduct
+    uploadImagesEvaluateProduct,
+    createNewEvaluateProductFailed,
+    updataEvaluateProduct,
+    deleteVideoEvaluate,
+    updateVideoEvaluate
 }
