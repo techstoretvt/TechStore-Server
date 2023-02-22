@@ -16,7 +16,9 @@ const ListProducts = async () => {
 }
 
 const ListImageProducts = async () => {
-    let data = await db.imageProduct.findAll();
+    let data = await db.imageProduct.findAll({
+        order: [['STTImage', 'ASC']]
+    });
     return data
 }
 

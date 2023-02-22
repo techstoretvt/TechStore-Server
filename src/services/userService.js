@@ -2406,6 +2406,37 @@ const hasReceivedProduct = (data) => {
                         bill.idStatusBill = '3'
                         await bill.save();
 
+
+                        let detailBill = await db.detailBill.findAll({
+                            where: {
+                                idBill: bill.id
+                            }
+                        })
+
+                        detailBill.forEach(async item => {
+                            let classifyProduct = await db.classifyProduct.findOne({
+                                where: {
+                                    id: item.idClassifyProduct
+                                },
+                                raw: false
+                            })
+
+                            let product = await db.product.findOne({
+                                where: {
+                                    id: item.idProduct
+                                },
+                                raw: false
+                            })
+
+                            classifyProduct.amount = classifyProduct.amount - item.amount;
+                            await classifyProduct.save()
+                            product.sold = product.sold + item.amount
+                            await product.save()
+                        })
+
+
+
+
                         resolve({
                             errCode: 0,
                         })
