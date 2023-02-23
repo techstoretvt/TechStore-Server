@@ -2756,7 +2756,8 @@ const createNewEvaluateProduct = (data) => {
                             {
                                 model: db.bill,
                                 where: {
-                                    idUser
+                                    idUser,
+                                    idStatusBill: '3'
                                 }
                             }
                         ],
@@ -3035,13 +3036,14 @@ const updateVideoEvaluate = (id, filename) => {
                     idEvaluateProduct: evaluateProduct.id
                 }
             })
-            await GG_Drive.deleteFile(videoOld.idGGDrive)
-            await db.videoEvaluateProduct.destroy({
-                where: {
-                    idEvaluateProduct: evaluateProduct.id
-                }
-            })
-
+            if (videoOld) {
+                await GG_Drive.deleteFile(videoOld.idGGDrive)
+                await db.videoEvaluateProduct.destroy({
+                    where: {
+                        idEvaluateProduct: evaluateProduct.id
+                    }
+                })
+            }
 
             let urlVideo = await GG_Drive.uploadFile(filename)
 
