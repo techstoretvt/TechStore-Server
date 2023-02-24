@@ -414,10 +414,420 @@ const getListProductMayLike = (data) => {
     })
 }
 
+const getEvaluateByIdProduct = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idProduct || !data.fillter || !data.page || !data.offset) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let amount5star = await db.evaluateProduct.count({
+                    where: {
+                        idProduct: data.idProduct,
+                        starNumber: 5
+                    }
+                })
+                let amount4star = await db.evaluateProduct.count({
+                    where: {
+                        idProduct: data.idProduct,
+                        starNumber: 4
+                    }
+                })
+                let amount3star = await db.evaluateProduct.count({
+                    where: {
+                        idProduct: data.idProduct,
+                        starNumber: 3
+                    }
+                })
+                let amount2star = await db.evaluateProduct.count({
+                    where: {
+                        idProduct: data.idProduct,
+                        starNumber: 2
+                    }
+                })
+                let amount1star = await db.evaluateProduct.count({
+                    where: {
+                        idProduct: data.idProduct,
+                        starNumber: 1
+                    }
+                })
+
+                let amountComment = await db.evaluateProduct.count({
+                    where: {
+                        idProduct: data.idProduct,
+                        content: {
+                            [Op.ne]: ""
+                        }
+                    }
+                })
+
+                let evaluateProductArr = await db.evaluateProduct.findAll({
+                    where: {
+                        idProduct: data.idProduct
+                    },
+                })
+                let amountImage = 0
+                let amountVideo = 0
+                evaluateProductArr.forEach(async item => {
+                    let image = await db.imageEvaluateProduct.findOne({
+                        where: {
+                            idEvaluateProduct: item.id
+                        }
+                    })
+                    let video = await db.videoEvaluateProduct.findOne({
+                        where: {
+                            idEvaluateProduct: item.id
+                        }
+                    })
+                    if (image) amountImage++
+                    if (video) amountVideo++
+                })
+
+                let avgStarArrr = await db.evaluateProduct.findAll({
+                    where: {
+                        idProduct: data.idProduct
+                    }
+                })
+
+                let avgStar, totalStar = 0
+                avgStarArrr.forEach(item => {
+                    totalStar += item.starNumber
+                });
+                avgStar = totalStar / avgStarArrr.length
+
+                if (data.fillter === 'all') {
+                    let evaluateProduct = await db.evaluateProduct.findAll({
+                        where: {
+                            idProduct: data.idProduct
+                        },
+                        offset: (data.page - 1) * data.offset,
+                        limit: data.offset,
+                        include: [
+                            {
+                                model: db.User,
+                                attributes: [
+                                    'firstName', 'lastName', 'typeAccount',
+                                    'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub'
+                                ]
+                            },
+                            {
+                                model: db.detailBill,
+                                attributes: ['id'],
+                                include: [
+                                    {
+                                        model: db.classifyProduct,
+                                        attributes: ['nameClassifyProduct'],
+                                    }
+                                ]
+                            },
+                            {
+                                model: db.imageEvaluateProduct
+                            },
+                            {
+                                model: db.videoEvaluateProduct
+                            }
+                        ],
+                        order: [['createdAt', 'DESC']],
+                        raw: false,
+                        nest: true
+                    })
+
+                    let amountEvaluate = await db.evaluateProduct.count({
+                        where: {
+                            idProduct: data.idProduct
+                        },
+                    })
+
+
+                    resolve({
+                        errCode: 0,
+
+                        data: evaluateProduct,
+                        amoutFiller: amountEvaluate,
+
+                        amount5star,
+                        amount4star,
+                        amount3star,
+                        amount2star,
+                        amount1star,
+                        amountComment,
+                        amountImage,
+                        amountVideo,
+                        avgStar
+                    })
+
+
+                }
+
+                else if (data.fillter !== 'all' && data.fillter !== 'comment' && data.fillter !== 'video'
+                    && data.fillter !== 'image'
+                ) {
+                    let evaluateProduct = await db.evaluateProduct.findAll({
+                        where: {
+                            idProduct: data.idProduct,
+                            starNumber: +data.fillter
+                        },
+                        offset: (data.page - 1) * data.offset,
+                        limit: data.offset,
+                        include: [
+                            {
+                                model: db.User,
+                                attributes: [
+                                    'firstName', 'lastName', 'typeAccount',
+                                    'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub'
+                                ]
+                            },
+                            {
+                                model: db.detailBill,
+                                attributes: ['id'],
+                                include: [
+                                    {
+                                        model: db.classifyProduct,
+                                        attributes: ['nameClassifyProduct'],
+                                    }
+                                ]
+                            },
+                            {
+                                model: db.imageEvaluateProduct
+                            },
+                            {
+                                model: db.videoEvaluateProduct
+                            }
+                        ],
+                        order: [['createdAt', 'DESC']],
+                        raw: false,
+                        nest: true
+                    })
+
+                    let amountEvaluate = await db.evaluateProduct.count({
+                        where: {
+                            idProduct: data.idProduct,
+                            starNumber: +data.fillter
+                        },
+                    })
+
+
+                    resolve({
+                        errCode: 0,
+
+                        data: evaluateProduct,
+                        amoutFiller: amountEvaluate,
+
+                        amount5star,
+                        amount4star,
+                        amount3star,
+                        amount2star,
+                        amount1star,
+                        amountComment,
+                        amountImage,
+                        amountVideo,
+                        avgStar
+                    })
+                }
+                else if (data.fillter === 'comment') {
+                    let evaluateProduct = await db.evaluateProduct.findAll({
+                        where: {
+                            idProduct: data.idProduct,
+                            content: {
+                                [Op.ne]: ''
+                            }
+                        },
+                        offset: (data.page - 1) * data.offset,
+                        limit: data.offset,
+                        include: [
+                            {
+                                model: db.User,
+                                attributes: [
+                                    'firstName', 'lastName', 'typeAccount',
+                                    'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub'
+                                ]
+                            },
+                            {
+                                model: db.detailBill,
+                                attributes: ['id'],
+                                include: [
+                                    {
+                                        model: db.classifyProduct,
+                                        attributes: ['nameClassifyProduct'],
+                                    }
+                                ]
+                            },
+                            {
+                                model: db.imageEvaluateProduct
+                            },
+                            {
+                                model: db.videoEvaluateProduct
+                            }
+                        ],
+                        order: [['createdAt', 'DESC']],
+                        raw: false,
+                        nest: true
+                    })
+
+                    let amountEvaluate = await db.evaluateProduct.count({
+                        where: {
+                            idProduct: data.idProduct,
+                            content: {
+                                [Op.ne]: ''
+                            }
+                        },
+                    })
+
+
+                    resolve({
+                        errCode: 0,
+
+                        data: evaluateProduct,
+                        amoutFiller: amountEvaluate,
+
+                        amount5star,
+                        amount4star,
+                        amount3star,
+                        amount2star,
+                        amount1star,
+                        amountComment,
+                        amountImage,
+                        amountVideo,
+                        avgStar
+                    })
+                }
+                else if (data.fillter === 'image') {
+                    let evaluateProduct = await db.evaluateProduct.findAll({
+                        where: {
+                            idProduct: data.idProduct,
+                        },
+                        offset: (data.page - 1) * data.offset,
+                        limit: data.offset,
+                        include: [
+                            {
+                                model: db.User,
+                                attributes: [
+                                    'firstName', 'lastName', 'typeAccount',
+                                    'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub'
+                                ]
+                            },
+                            {
+                                model: db.detailBill,
+                                attributes: ['id'],
+                                include: [
+                                    {
+                                        model: db.classifyProduct,
+                                        attributes: ['nameClassifyProduct'],
+                                    }
+                                ]
+                            },
+                            {
+                                model: db.imageEvaluateProduct,
+                                where: {
+                                    imagebase64: {
+                                        [Op.ne]: ''
+                                    }
+                                }
+                            },
+                            {
+                                model: db.videoEvaluateProduct,
+
+                            }
+                        ],
+                        order: [['createdAt', 'DESC']],
+                        raw: false,
+                        nest: true
+                    })
+
+                    resolve({
+                        errCode: 0,
+
+                        data: evaluateProduct,
+                        amoutFiller: amountImage,
+
+                        amount5star,
+                        amount4star,
+                        amount3star,
+                        amount2star,
+                        amount1star,
+                        amountComment,
+                        amountImage,
+                        amountVideo,
+                        avgStar
+                    })
+                }
+                else if (data.fillter === 'video') {
+                    let evaluateProduct = await db.evaluateProduct.findAll({
+                        where: {
+                            idProduct: data.idProduct,
+                        },
+                        offset: (data.page - 1) * data.offset,
+                        limit: data.offset,
+                        include: [
+                            {
+                                model: db.User,
+                                attributes: [
+                                    'firstName', 'lastName', 'typeAccount',
+                                    'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub'
+                                ]
+                            },
+                            {
+                                model: db.detailBill,
+                                attributes: ['id'],
+                                include: [
+                                    {
+                                        model: db.classifyProduct,
+                                        attributes: ['nameClassifyProduct'],
+                                    }
+                                ]
+                            },
+                            {
+                                model: db.imageEvaluateProduct,
+
+                            },
+                            {
+                                model: db.videoEvaluateProduct,
+                                where: {
+                                    videobase64: {
+                                        [Op.ne]: ''
+                                    }
+                                }
+                            }
+                        ],
+                        order: [['createdAt', 'DESC']],
+                        raw: false,
+                        nest: true
+                    })
+
+                    resolve({
+                        errCode: 0,
+
+                        data: evaluateProduct,
+                        amoutFiller: amountVideo,
+
+                        amount5star,
+                        amount4star,
+                        amount3star,
+                        amount2star,
+                        amount1star,
+                        amountComment,
+                        amountImage,
+                        amountVideo,
+                        avgStar
+                    })
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     getProductPromotionHome,
     getTopSellProduct,
     getNewCollectionProduct,
     getProductFlycam,
-    getListProductMayLike
+    getListProductMayLike,
+    getEvaluateByIdProduct
 }

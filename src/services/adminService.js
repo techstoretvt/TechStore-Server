@@ -962,7 +962,6 @@ const confirmBillById = (data) => {
                     let check = true
                     detailBill.forEach((item, index) => {
                         if (classifyProduct[index].amount < item.amount) check = false
-                        classifyProduct[index].amount = classifyProduct[index].amount - item.amount
                     })
 
                     if (!check) {
@@ -972,10 +971,12 @@ const confirmBillById = (data) => {
                         })
                         return;
                     }
-
-                    await classifyProduct.save()
-
-
+                    else {
+                        detailBill.forEach(async (item, index) => {
+                            classifyProduct[index].amount = classifyProduct[index].amount - item.amount;
+                            await classifyProduct[index].save();
+                        })
+                    }
 
                     //send email
                     let user = await db.User.findOne({

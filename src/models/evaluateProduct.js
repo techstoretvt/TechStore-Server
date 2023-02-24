@@ -9,8 +9,9 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       evaluateProduct.belongsTo(models.User, { foreignKey: 'idUser' })
       evaluateProduct.belongsTo(models.product, { foreignKey: 'idProduct' })
+      evaluateProduct.belongsTo(models.detailBill, { foreignKey: 'idDetailBill' })
       evaluateProduct.hasMany(models.imageEvaluateProduct, { foreignKey: 'idEvaluateProduct' })
-      evaluateProduct.hasMany(models.videoEvaluateProduct, { foreignKey: 'idEvaluateProduct' })
+      evaluateProduct.hasOne(models.videoEvaluateProduct, { foreignKey: 'idEvaluateProduct' })
     }
   }
   evaluateProduct.init({

@@ -81,11 +81,28 @@ const getListProductMayLike = async (req, res) => {
     }
 }
 
+const getEvaluateByIdProduct = async (req, res) => {
+    try {
+        //call service data
+        let data = await appService.getEvaluateByIdProduct(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
 
 module.exports = {
     getProductPromotionHome,
     getTopSellProduct,
     getNewCollectionProduct,
     getProductFlycam,
-    getListProductMayLike
+    getListProductMayLike,
+    getEvaluateByIdProduct
 }

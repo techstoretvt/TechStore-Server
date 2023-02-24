@@ -2414,22 +2414,12 @@ const hasReceivedProduct = (data) => {
                         })
 
                         detailBill.forEach(async item => {
-                            let classifyProduct = await db.classifyProduct.findOne({
-                                where: {
-                                    id: item.idClassifyProduct
-                                },
-                                raw: false
-                            })
-
                             let product = await db.product.findOne({
                                 where: {
                                     id: item.idProduct
                                 },
                                 raw: false
                             })
-
-                            classifyProduct.amount = classifyProduct.amount - item.amount;
-                            await classifyProduct.save()
                             product.sold = product.sold + item.amount
                             await product.save()
                         })

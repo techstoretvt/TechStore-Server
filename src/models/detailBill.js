@@ -10,6 +10,7 @@ module.exports = (sequelize, DataTypes) => {
       detailBill.belongsTo(models.bill, { foreignKey: 'idBill' })
       detailBill.belongsTo(models.product, { foreignKey: 'idProduct' })
       detailBill.belongsTo(models.classifyProduct, { foreignKey: 'idClassifyProduct' })
+      detailBill.hasMany(models.evaluateProduct, { foreignKey: 'idDetailBill' })
     }
   }
   detailBill.init({
