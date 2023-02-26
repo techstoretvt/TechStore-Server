@@ -66,6 +66,20 @@ module.exports = {
       },
 
 
+      sdt: {
+        type: Sequelize.STRING
+      },
+      gender: {
+        type: Sequelize.STRING
+      },
+      birtday: {
+        type: Sequelize.STRING
+      },
+      avatarUpdate: {
+        type: Sequelize.STRING
+      },
+
+
 
 
 

@@ -33,6 +33,12 @@ module.exports = (sequelize, DataTypes) => {
     avatarFacebook: DataTypes.TEXT,
     avatarGithub: DataTypes.TEXT,
 
+    sdt: DataTypes.STRING,
+    gender: DataTypes.STRING,
+    birtday: DataTypes.STRING,
+    avatarUpdate: DataTypes.STRING,
+
+
   }, {
     sequelize,
     modelName: 'User',

@@ -131,7 +131,10 @@ const CreateUser = (data) => {
                             keyVerify: keyVerify,
                             statusUser: 'wait',
                             typeAccount: 'web',
-                            id: uuidv4()
+                            id: uuidv4(),
+                            gender: 'nam',
+                            birtday: '1/1/1990',
+
                         },
                         raw: false
                     });
@@ -587,7 +590,9 @@ const loginGoogle = (data) => {
 
                         statusUser: 'true',
                         avatarGoogle: data.avatar,
-                        id: uuidv4()
+                        id: uuidv4(),
+                        gender: 'nam',
+                        birtday: '1/1/1990',
                     },
                     raw: false
                 });
@@ -670,7 +675,9 @@ const loginFacebook = (data) => {
 
                         statusUser: 'true',
                         avatarFacebook: data.avatarFacebook,
-                        id: uuidv4()
+                        id: uuidv4(),
+                        gender: 'nam',
+                        birtday: '1/1/1990',
                     },
                     raw: false
                 });
@@ -752,7 +759,10 @@ const loginGithub = (data) => {
                         typeAccount: 'github',
 
                         statusUser: 'true',
-                        avatarGithub: data.avatarGithub
+                        avatarGithub: data.avatarGithub,
+                        id: uuidv4(),
+                        gender: 'nam',
+                        birtday: '1/1/1990',
                     },
                     raw: false
                 });
@@ -3054,6 +3064,113 @@ const updateVideoEvaluate = (id, filename) => {
     })
 }
 
+const updateProfileUser = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.firstName) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id;
+                    let user = await db.User.findOne({
+                        where: {
+                            id: idUser
+                        },
+                        raw: false
+                    })
+
+                    if (!user) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Không tìm thấy tài khoản!',
+                        })
+                    }
+                    else {
+                        user.firstName = data.firstName
+                        user.lastName = data.lastName
+                        user.sdt = data.sdt
+                        user.gender = data.gender
+                        user.birtday = data.birtday
+                        await user.save()
+
+                        resolve({
+                            errCode: 0,
+                        })
+                    }
+
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const updateAvatarUser = ({ file, query }) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!query.accessToken) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                })
+            }
+            else {
+                let decode = commont.decodeToken(query.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id;
+                    let user = await db.User.findOne({
+                        where: {
+                            id: idUser
+                        },
+                        raw: false
+                    })
+
+                    if (!user) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Không tìm thấy tài khoản!',
+                        })
+                    }
+                    else {
+                        user.avatarUpdate = file.path
+                        await user.save()
+
+                        resolve({
+                            errCode: 0,
+                        })
+                    }
+
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -3093,5 +3210,7 @@ module.exports = {
     createNewEvaluateProductFailed,
     updataEvaluateProduct,
     deleteVideoEvaluate,
-    updateVideoEvaluate
+    updateVideoEvaluate,
+    updateProfileUser,
+    updateAvatarUser
 }

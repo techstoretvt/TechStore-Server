@@ -649,6 +649,41 @@ const updateVideoEvaluate = async (req, res) => {
     }
 }
 
+const updateProfileUser = async (req, res) => {
+    try {
+        let data = await userService.updateProfileUser(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const updateAvatarUser = async (req, res) => {
+    try {
+        let data = await userService.updateAvatarUser({
+            file: req.file,
+            query: req.query,
+        })
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -690,5 +725,7 @@ module.exports = {
     createNewEvaluateProductFailed,
     updataEvaluateProduct,
     deleteVideoEvaluate,
-    updateVideoEvaluate
+    updateVideoEvaluate,
+    updateProfileUser,
+    updateAvatarUser
 }
