@@ -21,6 +21,10 @@ module.exports = {
       imageTypeProduct: {
         type: Sequelize.STRING
       },
+      stt: {
+        autoIncrement: true,
+        type: Sequelize.INTEGER
+      },
 
 
       createdAt: {

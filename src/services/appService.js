@@ -511,7 +511,8 @@ const getEvaluateByIdProduct = (data) => {
                                 model: db.User,
                                 attributes: [
                                     'firstName', 'lastName', 'typeAccount',
-                                    'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub'
+                                    'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub',
+                                    'avatarUpdate'
                                 ]
                             },
                             {
@@ -578,7 +579,8 @@ const getEvaluateByIdProduct = (data) => {
                                 model: db.User,
                                 attributes: [
                                     'firstName', 'lastName', 'typeAccount',
-                                    'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub'
+                                    'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub',
+                                    'avatarUpdate'
                                 ]
                             },
                             {
@@ -643,7 +645,8 @@ const getEvaluateByIdProduct = (data) => {
                                 model: db.User,
                                 attributes: [
                                     'firstName', 'lastName', 'typeAccount',
-                                    'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub'
+                                    'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub',
+                                    'avatarUpdate'
                                 ]
                             },
                             {
@@ -707,7 +710,8 @@ const getEvaluateByIdProduct = (data) => {
                                 model: db.User,
                                 attributes: [
                                     'firstName', 'lastName', 'typeAccount',
-                                    'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub'
+                                    'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub',
+                                    'avatarUpdate'
                                 ]
                             },
                             {
@@ -767,7 +771,8 @@ const getEvaluateByIdProduct = (data) => {
                                 model: db.User,
                                 attributes: [
                                     'firstName', 'lastName', 'typeAccount',
-                                    'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub'
+                                    'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub',
+                                    'avatarUpdate'
                                 ]
                             },
                             {

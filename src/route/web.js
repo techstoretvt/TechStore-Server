@@ -72,6 +72,8 @@ const initWebRoute = (app) => {
     router.post('/api/v1/update-video-evaluate', upload.single('video'), userController.updateVideoEvaluate)
     router.put('/api/v1/update-profile-user', userController.updateProfileUser)
     router.put('/api/v1/update-avatar-user', fileUploader.single('file'), userController.updateAvatarUser)
+    router.put('/api/v1/get-confirm-code-change-pass', userController.getConfirmCodeChangePass)
+    router.put('/api/v1/confirm-code-change-pass', userController.confirmCodeChangePass)
 
     //admin api
     router.post('/api/add-type-product', fileUploader.single('file'), adminController.addTypeProduct)
