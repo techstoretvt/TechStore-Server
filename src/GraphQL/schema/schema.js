@@ -4,10 +4,12 @@ const typeDefs = gql`
     type typeProduct {
         id: String
         nameTypeProduct: String
+        nameTypeProductEn: String
     }
     type product {
         id: String
         nameProduct: String
+        nameProductEn: String
         priceProduct: String
         contentHTML: String
         isSell: String
@@ -24,8 +26,11 @@ const typeDefs = gql`
     }
 
     type trademark {
+        id: String
         nameTrademark: String
+        nameTrademarkEn: String
         typeProduct: typeProduct
+        product: [product]
     }
 
     type imageProduct {
@@ -118,6 +123,8 @@ const typeDefs = gql`
         listBillByType (type: String!): [bill]
         BillById(id: String!): bill
         detailBillById(id: String): detailBill
+        listTrademarkSearch(keyword: String!): [trademark]
+        listTypeProductSearch(keyword: String!): [typeProduct]
     }
 
     # type Mutation {

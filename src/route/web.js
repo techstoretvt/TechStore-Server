@@ -109,6 +109,7 @@ const initWebRoute = (app) => {
     router.get('/api/v1/get-product-type-flycam', appController.getProductFlycam)
     router.get('/api/v1/get-list-product-may-like', appController.getListProductMayLike)
     router.get('/api/v1/get-evaluate-by-id-product', appController.getEvaluateByIdProduct)
+    router.get('/api/v1/search-product', appController.searchProduct)
 
 
     //test

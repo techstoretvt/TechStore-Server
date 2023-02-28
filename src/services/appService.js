@@ -1,5 +1,6 @@
 import db from '../models'
 const { Op } = require("sequelize");
+import FuzzySearch from 'fuzzy-search';
 
 const getProductPromotionHome = () => {
     return new Promise(async (resolve, reject) => {
@@ -828,11 +829,183 @@ const getEvaluateByIdProduct = (data) => {
     })
 }
 
+
+const searchProduct = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.keyword || !data.page) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let whereTrademark = () => {
+                    if (!data.brand) return {}
+                    let arr = data.brand.split(',')
+                    return {
+                        nameTrademark: {
+                            [Op.or]: arr
+                        }
+                    }
+                }
+
+                let whereTypeProduct = () => {
+                    if (!data.facet) return {}
+                    let arr = data.facet.split(',')
+                    return {
+                        nameTypeProduct: {
+                            [Op.or]: arr
+                        }
+                    }
+                }
+
+                let whereStatus = () => {
+                    if (!data.status) return {}
+                    return {
+                        isSell: data.status === 'sell' ? 'true' : 'false'
+                    }
+                }
+
+                let wherePrice = () => {
+                    if (!data.minP || !data.maxP) return {}
+                    return {
+                        priceClassify: {
+                            [Op.between]: [+data.minP, +data.maxP]
+                        }
+                    }
+                }
+
+                let whereRating = () => {
+                    if (!data.rating) return null
+
+                    return {
+                        starNumber: {
+                            [Op.gte]: +data.rating
+                        }
+                    }
+                }
+
+                // let arrOrder = () => {
+                //     if (!data.order) return null
+
+                //     if (data.order === 'latest') {
+                //         return ['createdAt', 'DESC']
+                //     }
+
+                //     if (data.order === 'selling') {
+                //         return ['isSell', 'DESC']
+                //     }
+                // }
+
+                let arrOrder = [['nameProduct', 'asc'], ['createdAt', 'DESC'], ['isSell', 'DESC']]
+                let indexOrder = !data.order ? 0 : data.order === 'latest' ? 1 : data.order === 'selling' ? 2 : 0
+
+
+                let listProducts = await db.product.findAll({
+                    where: whereStatus(),
+                    offset: (data.page - 1) * data.maxProduct,
+                    limit: data.maxProduct,
+                    include: [
+                        {
+                            model: db.trademark,
+                            where: whereTrademark()
+                        },
+                        {
+                            model: db.typeProduct,
+                            where: whereTypeProduct()
+                        },
+                        {
+                            model: db.imageProduct, as: 'imageProduct-product'
+                        },
+                        {
+                            model: db.classifyProduct, as: 'classifyProduct-product',
+                            where: wherePrice(),
+                        },
+                        {
+                            model: db.promotionProduct
+                        },
+                        {
+                            model: db.evaluateProduct,
+                            where: whereRating()
+                        }
+                    ],
+                    order: [
+                        [{ model: db.imageProduct, as: 'imageProduct-product' }, 'STTImage', 'asc'],
+                        [{ model: db.classifyProduct, as: 'classifyProduct-product' }, 'priceClassify', 'asc'],
+                        arrOrder[indexOrder]
+                    ],
+                    raw: false,
+                    nest: true
+                })
+
+                let countProduct = await db.product.count({
+                    where: whereStatus(),
+                    include: [
+                        {
+                            model: db.trademark,
+                            where: whereTrademark()
+                        },
+                        {
+                            model: db.typeProduct,
+                            where: whereTypeProduct()
+                        },
+                        {
+                            model: db.imageProduct, as: 'imageProduct-product',
+                            limit: 1
+                        },
+                        {
+                            model: db.classifyProduct, as: 'classifyProduct-product',
+                            where: wherePrice(),
+                            limit: 1
+                        },
+                        {
+                            model: db.promotionProduct
+                        },
+                        {
+                            model: db.evaluateProduct,
+                            where: whereRating(),
+                            limit: 1
+                        }
+                    ],
+                    raw: false,
+                    nest: true
+                })
+
+
+                const searcher = new FuzzySearch(listProducts, ['nameProductEn', 'trademark.nameTrademarkEn', 'typeProduct.nameTypeProductEn'], {
+                    caseSensitive: false,
+                    sort: true
+                });
+                let key = data.keyword.normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .replace(/đ/g, 'd').replace(/Đ/g, 'D');
+
+                const result = searcher.search(key);
+
+                resolve({
+                    errCode: 0,
+                    data: result,
+                    countProduct
+                })
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+
+
 module.exports = {
     getProductPromotionHome,
     getTopSellProduct,
     getNewCollectionProduct,
     getProductFlycam,
     getListProductMayLike,
-    getEvaluateByIdProduct
+    getEvaluateByIdProduct,
+    searchProduct
 }

@@ -91,7 +91,50 @@ const listVideoEvaluate = async () => {
     return data
 }
 
+const ListTrademarkSearch = async () => {
+    let data = await db.trademark.findAll({
+        include: [
+            {
+                model: db.product,
+                attributes: {
+                    exclude: ['createdAt', 'updatedAt']
+                }
+            },
+            {
+                model: db.typeProduct,
+                attributes: {
+                    exclude: ['createdAt', 'updatedAt']
+                }
+            }
+        ],
+        raw: false,
+        nest: true
+    });
+    return data
+}
 
+
+const ListTypeProductSearch = async () => {
+    let data = await db.typeProduct.findAll({
+        include: [
+            {
+                model: db.product,
+                attributes: {
+                    exclude: ['createdAt', 'updatedAt']
+                }
+            },
+            {
+                model: db.trademark,
+                attributes: {
+                    exclude: ['createdAt', 'updatedAt']
+                }
+            }
+        ],
+        raw: false,
+        nest: true
+    });
+    return data
+}
 
 
 module.exports = {
@@ -107,5 +150,7 @@ module.exports = {
     listDetailBills,
     listAddressUser,
     listImageEvaluate,
-    listVideoEvaluate
+    listVideoEvaluate,
+    ListTrademarkSearch,
+    ListTypeProductSearch
 }

@@ -2,7 +2,8 @@ import {
     ListTypeProducts, ListTrademarks, ListProducts, ListImageProducts,
     ListClassify, ListPromotions, listEvaluates, productSearch,
     listBills, listDetailBills,
-    listAddressUser, listImageEvaluate, listVideoEvaluate
+    listAddressUser, listImageEvaluate, listVideoEvaluate,
+    ListTrademarkSearch, ListTypeProductSearch
 
 } from '../data/rest'
 import FuzzySearch from 'fuzzy-search';
@@ -65,6 +66,38 @@ const resolvers = {
         detailBillById: async (parent, args) => {
             let list = await listDetailBills();
             return list.find(item => item.id === args.id)
+        },
+        listTrademarkSearch: async (parent, args) => {
+            let list = await ListTrademarkSearch();
+
+            const searcher = new FuzzySearch(list, ['nameTrademarkEn', 'typeProduct.nameTypeProductEn', 'products.nameProductEn'], {
+                caseSensitive: false,
+                sort: true
+            });
+            let key = args.keyword.normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/đ/g, 'd').replace(/Đ/g, 'D');
+
+            const result = searcher.search(key);
+
+
+            return result
+        },
+        listTypeProductSearch: async (parent, args) => {
+            let list = await ListTypeProductSearch();
+
+            const searcher = new FuzzySearch(list, ['nameTypeProductEn', 'trademark.nameTrademarkEn', 'products.nameProductEn'], {
+                caseSensitive: false,
+                sort: true
+            });
+            let key = args.keyword.normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/đ/g, 'd').replace(/Đ/g, 'D');
+
+            const result = searcher.search(key);
+
+
+            return result
         },
     },
     product: {
@@ -138,6 +171,12 @@ const resolvers = {
         videoEvaluateProduct: async (parent, args) => {
             let list = await listVideoEvaluate();
             return list.find(item => item.idEvaluateProduct === parent.id)
+        },
+    },
+    trademark: {
+        product: async (parent, args) => {
+            let list = await ListProducts();
+            return list.filter(item => item.idTrademark === parent.id)
         },
     }
 
