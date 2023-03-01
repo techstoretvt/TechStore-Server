@@ -1,4 +1,5 @@
 import db from '../../models'
+const { Op } = require("sequelize");
 
 const ListTypeProducts = async () => {
     let data = await db.typeProduct.findAll();
@@ -136,6 +137,24 @@ const ListTypeProductSearch = async () => {
     return data
 }
 
+const listKeywordService = async (keyword) => {
+    let listKeyword = await db.keywordSearchs.findAll({
+        limit: 20,
+        where: {
+            keyword: {
+                [Op.startsWith]: keyword.toLowerCase()
+            }
+        },
+        order: [
+            ['keyword', 'asc'],
+            // ['amount', 'DESC']
+        ],
+        raw: false
+    })
+
+    return listKeyword
+}
+
 
 module.exports = {
     ListTypeProducts,
@@ -152,5 +171,6 @@ module.exports = {
     listImageEvaluate,
     listVideoEvaluate,
     ListTrademarkSearch,
-    ListTypeProductSearch
+    ListTypeProductSearch,
+    listKeywordService
 }

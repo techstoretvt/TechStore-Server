@@ -113,6 +113,13 @@ const typeDefs = gql`
         idGGDrive: String
     }
 
+    type keywordSearch {
+        id: String
+        keyword: String
+        amount: Int
+        stt: Int
+    }
+
 
     # ROOT TYPE
     type Query {
@@ -125,6 +132,7 @@ const typeDefs = gql`
         detailBillById(id: String): detailBill
         listTrademarkSearch(keyword: String!): [trademark]
         listTypeProductSearch(keyword: String!): [typeProduct]
+        listKeyword(keyword: String!): [keywordSearch]
     }
 
     # type Mutation {

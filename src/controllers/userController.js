@@ -712,6 +712,8 @@ const confirmCodeChangePass = async (req, res) => {
     }
 }
 
+
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -757,5 +759,6 @@ module.exports = {
     updateProfileUser,
     updateAvatarUser,
     getConfirmCodeChangePass,
-    confirmCodeChangePass
+    confirmCodeChangePass,
+
 }

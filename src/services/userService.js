@@ -3269,6 +3269,14 @@ const confirmCodeChangePass = (data) => {
                 }
                 else {
 
+                    if (user.typeAccount !== 'web') {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Tài khoản phải là tài khoản được tạo trên website mới được phép thực hiện chức năng này!'
+                        })
+                        return
+                    }
+
                     let hasePass = commont.hashPassword(data.pass);
 
                     user.pass = hasePass
@@ -3330,5 +3338,5 @@ module.exports = {
     updateProfileUser,
     updateAvatarUser,
     getConfirmCodeChangePass,
-    confirmCodeChangePass
+    confirmCodeChangePass,
 }

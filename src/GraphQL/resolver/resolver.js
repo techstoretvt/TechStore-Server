@@ -3,7 +3,8 @@ import {
     ListClassify, ListPromotions, listEvaluates, productSearch,
     listBills, listDetailBills,
     listAddressUser, listImageEvaluate, listVideoEvaluate,
-    ListTrademarkSearch, ListTypeProductSearch
+    ListTrademarkSearch, ListTypeProductSearch,
+    listKeywordService
 
 } from '../data/rest'
 import FuzzySearch from 'fuzzy-search';
@@ -98,6 +99,10 @@ const resolvers = {
 
 
             return result
+        },
+        listKeyword: async (parent, args) => {
+            let list = await listKeywordService(args.keyword);
+            return list
         },
     },
     product: {

@@ -113,8 +113,6 @@ const searchProduct = async (req, res) => {
     }
 }
 
-
-
 module.exports = {
     getProductPromotionHome,
     getTopSellProduct,
@@ -122,5 +120,5 @@ module.exports = {
     getProductFlycam,
     getListProductMayLike,
     getEvaluateByIdProduct,
-    searchProduct
+    searchProduct,
 }

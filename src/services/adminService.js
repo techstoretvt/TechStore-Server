@@ -1138,6 +1138,48 @@ const cancelBillById = (data) => {
     })
 }
 
+const createNewKeyWord = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.nameKeyword) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                })
+            }
+            else {
+                let [keyword, created] = await db.keywordSearchs.findOrCreate({
+                    where: {
+                        keyword: data.nameKeyword.toLowerCase()
+                    },
+                    defaults: {
+                        amount: 1,
+                        id: uuidv4()
+                    },
+                    raw: false
+                })
+
+                if (!created) {
+                    keyword.amount = keyword.amount + 1
+                    await keyword.save()
+
+                    resolve({
+                        errCode: 0,
+                    })
+                }
+                else {
+                    resolve({
+                        errCode: 0,
+                    })
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 
 module.exports = {
     addTypeProduct,
@@ -1160,5 +1202,6 @@ module.exports = {
     testApi,
     deleteErrorProduct,
     confirmBillById,
-    cancelBillById
+    cancelBillById,
+    createNewKeyWord
 }

@@ -345,6 +345,9 @@ const getListProductMayLike = (data) => {
                 })
             }
             else {
+
+                let arrType = data.nameTypeProduct.split(',')
+
                 let products = await db.product.findAll({
                     attributes: ['id', 'nameProduct', 'priceProduct', 'isSell', 'sold'],
                     where: {
@@ -371,7 +374,9 @@ const getListProductMayLike = (data) => {
                                 exclude: ['createdAt', 'updatedAt', 'id']
                             },
                             where: {
-                                nameTypeProduct: data.nameTypeProduct
+                                nameTypeProduct: {
+                                    [Op.in]: arrType
+                                }
                             }
                         },
                         {
@@ -899,14 +904,14 @@ const searchProduct = (data) => {
                 //     }
                 // }
 
-                let arrOrder = [['nameProduct', 'asc'], ['createdAt', 'DESC'], ['isSell', 'DESC']]
+                let arrOrder = [['nameProduct', 'asc'], ['stt', 'DESC'], ['isSell', 'DESC']]
                 let indexOrder = !data.order ? 0 : data.order === 'latest' ? 1 : data.order === 'selling' ? 2 : 0
 
 
                 let listProducts = await db.product.findAll({
                     where: whereStatus(),
-                    offset: (data.page - 1) * data.maxProduct,
-                    limit: data.maxProduct,
+                    // offset: (data.page - 1) * data.maxProduct,
+                    // limit: data.maxProduct,
                     include: [
                         {
                             model: db.trademark,
@@ -940,40 +945,6 @@ const searchProduct = (data) => {
                     nest: true
                 })
 
-                let countProduct = await db.product.count({
-                    where: whereStatus(),
-                    include: [
-                        {
-                            model: db.trademark,
-                            where: whereTrademark()
-                        },
-                        {
-                            model: db.typeProduct,
-                            where: whereTypeProduct()
-                        },
-                        {
-                            model: db.imageProduct, as: 'imageProduct-product',
-                            limit: 1
-                        },
-                        {
-                            model: db.classifyProduct, as: 'classifyProduct-product',
-                            where: wherePrice(),
-                            limit: 1
-                        },
-                        {
-                            model: db.promotionProduct
-                        },
-                        {
-                            model: db.evaluateProduct,
-                            where: whereRating(),
-                            limit: 1
-                        }
-                    ],
-                    raw: false,
-                    nest: true
-                })
-
-
                 const searcher = new FuzzySearch(listProducts, ['nameProductEn', 'trademark.nameTrademarkEn', 'typeProduct.nameTypeProductEn'], {
                     caseSensitive: false,
                     sort: true
@@ -984,10 +955,13 @@ const searchProduct = (data) => {
 
                 const result = searcher.search(key);
 
+                let start = (data.page - 1) * data.maxProduct
+                let end = start + data.maxProduct
+
                 resolve({
                     errCode: 0,
-                    data: result,
-                    countProduct
+                    countProduct: result.length,
+                    data: result.slice(start, end),
                 })
 
             }
@@ -999,7 +973,6 @@ const searchProduct = (data) => {
 }
 
 
-
 module.exports = {
     getProductPromotionHome,
     getTopSellProduct,
@@ -1007,5 +980,5 @@ module.exports = {
     getProductFlycam,
     getListProductMayLike,
     getEvaluateByIdProduct,
-    searchProduct
+    searchProduct,
 }

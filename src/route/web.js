@@ -100,6 +100,8 @@ const initWebRoute = (app) => {
     router.put('/api/v1/confirm-bill-by-id', adminController.confirmBillById)
     router.put('/api/v1/cancel-bill-by-id', adminController.cancelBillById)
 
+    router.post('/api/v1/create-new-keyword', adminController.createNewKeyWord)
+
 
 
     //app api
