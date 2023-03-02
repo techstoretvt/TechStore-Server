@@ -73,7 +73,6 @@ const getUserLogin = async (req, res) => {
     try {
         //call service data
         let data = await userService.getUserLogin(req.query)
-
         return res.status(200).json(data)
     }
     catch (e) {

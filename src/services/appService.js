@@ -1,6 +1,7 @@
 import db from '../models'
-const { Op } = require("sequelize");
+const { Op, UUIDV4 } = require("sequelize");
 import FuzzySearch from 'fuzzy-search';
+import { v4 as uuidv4 } from 'uuid';
 
 const getProductPromotionHome = () => {
     return new Promise(async (resolve, reject) => {
@@ -503,7 +504,12 @@ const getEvaluateByIdProduct = (data) => {
                 avgStarArrr.forEach(item => {
                     totalStar += item.starNumber
                 });
-                avgStar = totalStar / avgStarArrr.length
+                if (avgStarArrr.length === 0) {
+                    avgStar = 0
+                }
+                else {
+                    avgStar = totalStar / avgStarArrr.length
+                }
 
                 if (data.fillter === 'all') {
                     let evaluateProduct = await db.evaluateProduct.findAll({
@@ -972,6 +978,45 @@ const searchProduct = (data) => {
     })
 }
 
+//test
+const GetListProduct = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let products = await db.product.findAll()
+
+            resolve(products)
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const createProduct = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            // let product = await db.product.create({
+            //     nameProduct: data.name,
+            //     id: uuidv4(),
+            //     idTypeProduct: 'sfsdfsd',
+            //     idTrademark: 'sfsdfds',
+            //     isSell: 'true',
+            //     sold: 0,
+
+            // })
+
+            resolve({
+                errCode: 0,
+                mess: 'đã thêm sản phẩm'
+            })
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+//end test
 
 module.exports = {
     getProductPromotionHome,
@@ -981,4 +1026,6 @@ module.exports = {
     getListProductMayLike,
     getEvaluateByIdProduct,
     searchProduct,
+    GetListProduct,
+    createProduct
 }
