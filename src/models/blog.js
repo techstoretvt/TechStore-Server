@@ -13,13 +13,13 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   blog.init({
-    titleBlog: DataTypes.STRING,
     contentHTML: DataTypes.TEXT,
     contentMarkdown: DataTypes.TEXT,
     idUser: DataTypes.STRING,
     timeBlog: DataTypes.STRING,
     viewBlog: DataTypes.INTEGER,
-    descriptionPhoto: DataTypes.TEXT,
+    typeBlog: DataTypes.STRING,
+    textShare: DataTypes.STRING,
     stt: DataTypes.INTEGER,
 
 

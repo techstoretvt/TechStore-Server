@@ -10,9 +10,7 @@ module.exports = {
         type: Sequelize.STRING
       },
 
-      titleBlog: {
-        type: Sequelize.STRING
-      },
+
       contentHTML: {
         type: Sequelize.TEXT
       },
@@ -25,12 +23,16 @@ module.exports = {
       timeBlog: {
         type: Sequelize.STRING
       },
+      typeBlog: {
+        type: Sequelize.STRING
+      },
+      textShare: {
+        type: Sequelize.STRING
+      },
       viewBlog: {
         type: Sequelize.INTEGER
       },
-      descriptionPhoto: {
-        type: Sequelize.TEXT
-      },
+
       stt: {
         allowNull: false,
         autoIncrement: true,
