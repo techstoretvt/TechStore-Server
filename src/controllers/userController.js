@@ -712,6 +712,71 @@ const confirmCodeChangePass = async (req, res) => {
 }
 
 
+const createNewBlog = async (req, res) => {
+    try {
+        let data = await userService.createNewBlog(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const createNewImageBlog = async (req, res) => {
+    try {
+        let data = await userService.createNewImageBlog({
+            files: req.files,
+            query: req.query
+        })
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+
+const uploadVideoNewBlog = async (req, res) => {
+    try {
+        let data = await userService.uploadVideoNewBlog(req.query.idBlog, req.file.filename)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const getBlogById = async (req, res) => {
+    try {
+        let data = await userService.getBlogById(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+
 
 module.exports = {
     CreateUser,
@@ -759,5 +824,8 @@ module.exports = {
     updateAvatarUser,
     getConfirmCodeChangePass,
     confirmCodeChangePass,
-
+    createNewBlog,
+    createNewImageBlog,
+    uploadVideoNewBlog,
+    getBlogById
 }

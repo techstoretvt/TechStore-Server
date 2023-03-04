@@ -155,6 +155,12 @@ const listKeywordService = async (keyword) => {
     return listKeyword
 }
 
+const listBlog = async () => {
+    let data = await db.blogs.findAll({
+        order: [['stt', 'DESC']]
+    });
+    return data
+}
 
 module.exports = {
     ListTypeProducts,
@@ -172,5 +178,6 @@ module.exports = {
     listVideoEvaluate,
     ListTrademarkSearch,
     ListTypeProductSearch,
-    listKeywordService
+    listKeywordService,
+    listBlog
 }

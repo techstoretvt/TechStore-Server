@@ -55,9 +55,10 @@ let GG_Drive = {
     },
     uploadFile: async (name) => {
         try {
+            let date = new Date().getTime()
             const createFile = await drive.files.create({
                 requestBody: {
-                    name: "iloveyou_anh1.mp4",
+                    name: `Video-${date}`,
                     mimeType: 'video/mp4'
                 },
                 media: {
@@ -3295,6 +3296,190 @@ const confirmCodeChangePass = (data) => {
     })
 }
 
+const createNewBlog = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.contentHtml || !data.contentMarkdown) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id
+
+                    let date = new Date().getTime();
+                    let idBlog = uuidv4()
+
+                    await db.blogs.create({
+                        id: idBlog,
+                        contentHTML: data.contentHtml,
+                        contentMarkdown: data.contentMarkdown,
+                        idUser,
+                        timeBlog: date.toString(),
+                        viewBlog: 0,
+                        typeBlog: 'default',
+                        timePost: data.timePost || 0
+                    })
+
+                    resolve({
+                        errCode: 0,
+                        idBlog
+                    })
+                }
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const createNewImageBlog = ({ files, query }) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!files || files.length === 0 || !query.idBlog) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data: {
+                        files,
+                        query
+                    }
+                })
+            }
+            else {
+                let array = files.map((item, index) => {
+                    return {
+                        id: uuidv4(),
+                        image: item.path,
+                        idBlog: query.idBlog,
+                        idCloudinary: item.filename
+                    }
+                })
+
+                await db.imageBlogs.bulkCreate(array, { individualHooks: true })
+                resolve({
+                    errCode: 0,
+                    errMessage: 'ok',
+
+                })
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const uploadVideoNewBlog = (idBlog, fileName) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!idBlog || !fileName) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data: {
+                        idBlog, fileName
+                    }
+                })
+            }
+            else {
+
+                let urlVideo = await GG_Drive.uploadFile(fileName)
+
+                if (urlVideo)
+                    await db.videoBlogs.create({
+                        id: uuidv4(),
+                        idBlog: idBlog,
+                        video: urlVideo.url,
+                        idDrive: urlVideo.id
+                    })
+
+                resolve({
+                    errCode: 0,
+                })
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const getBlogById = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idBlog) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id
+                    let blog = await db.blogs.findOne({
+                        where: {
+                            idUser,
+                            id: data.idBlog,
+                            typeBlog: 'default'
+                        },
+                        include: [
+                            {
+                                model: db.imageBlogs
+                            },
+                            {
+                                model: db.videoBlogs
+                            }
+                        ],
+                        raw: false
+                    })
+
+                    if (!blog) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Không tìm thấy bài viết nào!',
+                        })
+                    }
+                    else {
+                        resolve({
+                            errCode: 0,
+                            data: blog
+                        })
+                    }
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -3339,4 +3524,8 @@ module.exports = {
     updateAvatarUser,
     getConfirmCodeChangePass,
     confirmCodeChangePass,
+    createNewBlog,
+    createNewImageBlog,
+    uploadVideoNewBlog,
+    getBlogById
 }

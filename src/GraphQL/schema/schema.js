@@ -120,6 +120,20 @@ const typeDefs = gql`
         stt: Int
     }
 
+    type blog {
+        id: String
+        contentHTML: String,
+        contentMarkdown: String
+        idUser: String
+        timeBlog: String
+        viewBlog: Int
+        typeBlog: String
+        textShare: String
+        stt: Int
+        timePost: String
+        updatedAt: String
+        createdAt: String
+    }
 
     # ROOT TYPE
     type Query {
@@ -133,6 +147,7 @@ const typeDefs = gql`
         listTrademarkSearch(keyword: String!): [trademark]
         listTypeProductSearch(keyword: String!): [typeProduct]
         listKeyword(keyword: String!): [keywordSearch]
+        blog(Id: String!): blog
     }
 
     # type Mutation {

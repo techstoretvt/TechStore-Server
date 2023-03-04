@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       commentBlog.belongsTo(models.User, { foreignKey: 'idUser' })
-      commentBlog.belongsTo(models.blog, { foreignKey: 'idBlog' })
+      commentBlog.belongsTo(models.blogs, { foreignKey: 'idBlog' })
     }
   }
   commentBlog.init({

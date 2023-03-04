@@ -3,16 +3,19 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class blog extends Model {
+  class blogs extends Model {
 
     static associate(models) {
       // define association here
-      blog.belongsTo(models.User, { foreignKey: 'idUser' })
-      blog.hasMany(models.commentBlog, { foreignKey: 'idBlog' })
-      blog.hasMany(models.likeBlog, { foreignKey: 'idBlog' })
+      blogs.belongsTo(models.User, { foreignKey: 'idUser' })
+      blogs.hasMany(models.commentBlog, { foreignKey: 'idBlog' })
+      blogs.hasMany(models.likeBlog, { foreignKey: 'idBlog' })
+      blogs.hasMany(models.imageBlogs, { foreignKey: 'idBlog' })
+      blogs.hasOne(models.videoBlogs, { foreignKey: 'idBlog' })
+
     }
   }
-  blog.init({
+  blogs.init({
     contentHTML: DataTypes.TEXT,
     contentMarkdown: DataTypes.TEXT,
     idUser: DataTypes.STRING,
@@ -21,11 +24,11 @@ module.exports = (sequelize, DataTypes) => {
     typeBlog: DataTypes.STRING,
     textShare: DataTypes.STRING,
     stt: DataTypes.INTEGER,
-
+    timePost: DataTypes.DOUBLE,
 
   }, {
     sequelize,
-    modelName: 'blog',
+    modelName: 'blogs',
   });
-  return blog;
+  return blogs;
 };

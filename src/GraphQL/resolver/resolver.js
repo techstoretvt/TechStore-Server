@@ -4,7 +4,7 @@ import {
     listBills, listDetailBills,
     listAddressUser, listImageEvaluate, listVideoEvaluate,
     ListTrademarkSearch, ListTypeProductSearch,
-    listKeywordService
+    listKeywordService, listBlog
 
 } from '../data/rest'
 import FuzzySearch from 'fuzzy-search';
@@ -103,6 +103,10 @@ const resolvers = {
         listKeyword: async (parent, args) => {
             let list = await listKeywordService(args.keyword);
             return list
+        },
+        blog: async (parent, args) => {
+            let list = await listBlog();
+            return list.find(item => item.id === args.Id)
         },
     },
     product: {

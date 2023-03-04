@@ -74,6 +74,10 @@ const initWebRoute = (app) => {
     router.put('/api/v1/update-avatar-user', fileUploader.single('file'), userController.updateAvatarUser)
     router.put('/api/v1/get-confirm-code-change-pass', userController.getConfirmCodeChangePass)
     router.put('/api/v1/confirm-code-change-pass', userController.confirmCodeChangePass)
+    router.post('/api/v1/create-new-blog', userController.createNewBlog)
+    router.post('/api/v1/create-new-image-blog', fileUploader.array('file'), userController.createNewImageBlog)
+    router.post('/api/v1/upload-new-video-blog', upload.single('video'), userController.uploadVideoNewBlog)
+    router.get('/api/v1/get-blog-by-id', userController.getBlogById)
 
     //admin api
     router.post('/api/add-type-product', fileUploader.single('file'), adminController.addTypeProduct)

@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('blogs', {
+    await queryInterface.createTable('imageBlogs', {
       id: {
         allowNull: false,
         autoIncrement: false,
@@ -11,36 +11,21 @@ module.exports = {
       },
 
 
-      contentHTML: {
+      idBlog: {
+        type: Sequelize.STRING
+      },
+      image: {
         type: Sequelize.TEXT
       },
-      contentMarkdown: {
-        type: Sequelize.TEXT
-      },
-      idUser: {
+      idCloudinary: {
         type: Sequelize.STRING
       },
-      timeBlog: {
-        type: Sequelize.STRING
-      },
-      typeBlog: {
-        type: Sequelize.STRING
-      },
-      textShare: {
-        type: Sequelize.STRING
-      },
-      viewBlog: {
-        type: Sequelize.INTEGER
-      },
+
 
       stt: {
         allowNull: false,
         autoIncrement: true,
         type: Sequelize.INTEGER
-      },
-      timePost: {
-        allowNull: false,
-        type: Sequelize.DOUBLE
       },
 
 
@@ -55,6 +40,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('blogs');
+    await queryInterface.dropTable('imageBlogs');
   }
 };
