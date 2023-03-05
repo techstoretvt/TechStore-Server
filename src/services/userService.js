@@ -3479,6 +3479,103 @@ const getBlogById = (data) => {
     })
 }
 
+const updateBlog = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idBlog || !data.contentHtml || !data.contentMarkdown
+                || data.isVideo === undefined) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id
+                    let blog = await db.blogs.findOne({
+                        where: {
+                            idUser,
+                            id: data.idBlog,
+                            typeBlog: 'default'
+                        },
+                        raw: false
+                    })
+
+                    if (!blog) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Không tìm thấy bài viết nào!',
+                        })
+                    }
+                    else {
+                        blog.contentHTML = data.contentHtml
+                        blog.contentMarkdown = data.contentMarkdown
+                        await blog.save();
+
+
+                        let imageDelete = await db.imageBlogs.findAll({
+                            where: {
+                                idBlog: blog.id,
+                                image: {
+                                    [Op.notIn]: data.listImage
+                                }
+                            }
+                        })
+                        if (imageDelete) {
+                            imageDelete.forEach(async item => {
+                                cloudinary.v2.uploader.destroy(item.idCloudinary)
+                            })
+
+                            await db.imageBlogs.destroy({
+                                where: {
+                                    idBlog: blog.id,
+                                    image: {
+                                        [Op.notIn]: data.listImage
+                                    }
+                                }
+                            })
+                        }
+
+                        if (!data.isVideo) {
+                            let videoDelete = await db.videoBlogs.findOne({
+                                where: {
+                                    idBlog: blog.id,
+                                },
+                                raw: false
+                            })
+                            if (videoDelete) {
+                                GG_Drive.deleteFile(videoDelete.idDrive)
+                                await db.videoBlogs.destroy({
+                                    where: {
+                                        idBlog: blog.id,
+                                    }
+                                })
+                            }
+                        }
+
+                        resolve({
+                            errCode: 0,
+                            data: blog
+                        })
+                    }
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 
 module.exports = {
     CreateUser,
@@ -3527,5 +3624,6 @@ module.exports = {
     createNewBlog,
     createNewImageBlog,
     uploadVideoNewBlog,
-    getBlogById
+    getBlogById,
+    updateBlog
 }

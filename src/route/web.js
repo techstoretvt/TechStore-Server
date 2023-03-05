@@ -24,7 +24,7 @@ let upload = multer({ storage })
 
 const initWebRoute = (app) => {
     router.get('/', (req, res, next) => {
-        res.send('Hello backend -- Link frontend: <a href="techstoretvt.vercel.app">go to the website</a>')
+        res.send(`Hello backend -- Link frontend: <a href="${process.env.LINK_FONTEND}">go to the website</a>`)
     })
     router.get('/account', userController.accountVerifyPage)
     router.get('/verify-email', userController.verifyEmail)
@@ -78,6 +78,7 @@ const initWebRoute = (app) => {
     router.post('/api/v1/create-new-image-blog', fileUploader.array('file'), userController.createNewImageBlog)
     router.post('/api/v1/upload-new-video-blog', upload.single('video'), userController.uploadVideoNewBlog)
     router.get('/api/v1/get-blog-by-id', userController.getBlogById)
+    router.put('/api/v1/update-blog', userController.updateBlog)
 
     //admin api
     router.post('/api/add-type-product', fileUploader.single('file'), adminController.addTypeProduct)
