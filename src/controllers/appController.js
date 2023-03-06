@@ -146,6 +146,21 @@ const createProduct = async (req, res) => {
 }
 //end test
 
+const getListBlog = async (req, res) => {
+    try {
+        //call service data
+        let data = await appService.getListBlog(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
 
 module.exports = {
     getProductPromotionHome,
@@ -156,5 +171,6 @@ module.exports = {
     getEvaluateByIdProduct,
     searchProduct,
     GetListProduct,
-    createProduct
+    createProduct,
+    getListBlog
 }

@@ -24,6 +24,8 @@ module.exports = (sequelize, DataTypes) => {
     pass: DataTypes.STRING,
     avatar: DataTypes.TEXT,
     idTypeUser: DataTypes.STRING,
+    //1 admin root, 2 admin phu, 3 user
+
     statusUser: DataTypes.STRING,
     idGoogle: DataTypes.STRING,
     avatarGoogle: DataTypes.TEXT,

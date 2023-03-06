@@ -840,7 +840,6 @@ const getEvaluateByIdProduct = (data) => {
     })
 }
 
-
 const searchProduct = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -1018,6 +1017,73 @@ const createProduct = () => {
 }
 //end test
 
+const getListBlog = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.page || !data.maxCount) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let date = new Date().getTime()
+                let blogs = await db.blogs.findAll({
+                    where: {
+                        timePost: {
+                            [Op.lt]: date
+                        }
+                    },
+                    offset: (data.page - 1) * data.maxCount,
+                    limit: data.maxCount,
+                    include: [
+                        {
+                            model: db.imageBlogs
+                        },
+                        {
+                            model: db.videoBlogs
+                        },
+                        {
+                            model: db.User,
+                            attributes: {
+                                exclude: [
+                                    'updatedAt', 'statusUser', 'sdt', 'pass', 'keyVerify', 'idGoogle', 'idGithub', 'idFacebook', 'id', 'email', 'createdAt', 'birtday', 'gender'
+                                ]
+                            },
+                            where: {
+                                statusUser: {
+                                    [Op.ne]: 'false'
+                                }
+                            }
+                        }
+                    ],
+                    order: [['stt', 'DESC']],
+                    raw: false,
+                    nest: true
+                })
+
+                let countPage = await db.blogs.count({
+                    where: {
+                        timePost: {
+                            [Op.lt]: date
+                        }
+                    },
+                })
+                resolve({
+                    errCode: 0,
+                    data: blogs,
+                    countPage
+                })
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     getProductPromotionHome,
     getTopSellProduct,
@@ -1027,5 +1093,6 @@ module.exports = {
     getEvaluateByIdProduct,
     searchProduct,
     GetListProduct,
-    createProduct
+    createProduct,
+    getListBlog
 }

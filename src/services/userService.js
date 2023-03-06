@@ -3299,7 +3299,9 @@ const confirmCodeChangePass = (data) => {
 const createNewBlog = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.accessToken || !data.contentHtml || !data.contentMarkdown) {
+            if (!data.accessToken || !data.contentHtml || !data.contentMarkdown
+                || !data.typeVideo
+            ) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
@@ -3331,6 +3333,15 @@ const createNewBlog = (data) => {
                         typeBlog: 'default',
                         timePost: data.timePost || 0
                     })
+
+                    if (data.typeVideo === 'iframe' && data.urlVideo) {
+                        await db.videoBlogs.create({
+                            id: uuidv4(),
+                            idBlog: idBlog,
+                            video: data.urlVideo,
+                            idDrive: '',
+                        })
+                    }
 
                     resolve({
                         errCode: 0,
@@ -3397,6 +3408,16 @@ const uploadVideoNewBlog = (idBlog, fileName) => {
                 })
             }
             else {
+                let videoBlogs = await db.videoBlogs.findOne({
+                    where: {
+                        id: idBlog
+                    }
+                })
+                if (videoBlogs) {
+                    if (videoBlogs.idDrive) {
+                        GG_Drive.deleteFile(videoBlogs.idDrive)
+                    }
+                }
 
                 let urlVideo = await GG_Drive.uploadFile(fileName)
 
@@ -3483,7 +3504,7 @@ const updateBlog = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.accessToken || !data.idBlog || !data.contentHtml || !data.contentMarkdown
-                || data.isVideo === undefined) {
+                || data.isVideo === undefined || !data.typeVideo) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
@@ -3559,6 +3580,33 @@ const updateBlog = (data) => {
                                         idBlog: blog.id,
                                     }
                                 })
+                            }
+                        }
+                        if (data.typeVideo === 'iframe' && data.urlVideo !== '') {
+                            let videoBlog = await db.videoBlogs.findOne({
+                                where: {
+                                    idBlog: data.idBlog
+                                },
+                                raw: false
+                            })
+                            if (!videoBlog) {
+                                await db.videoBlogs.create({
+                                    id: uuidv4(),
+                                    idBlog: data.idBlog,
+                                    video: data.urlVideo,
+                                    idDrive: ''
+                                })
+                            }
+                            else {
+                                if (videoBlog.video !== data.urlVideo) {
+                                    if (videoBlog.idDrive) {
+                                        GG_Drive.deleteFile(videoBlog.idDrive)
+                                    }
+                                    videoBlog.idDrive = ''
+                                    videoBlog.video = data.urlVideo
+                                    await videoBlog.save()
+
+                                }
                             }
                         }
 
