@@ -3625,6 +3625,54 @@ const updateBlog = (data) => {
 }
 
 
+const shareProduct = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idProduct || !data.content) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id
+                    let blog = await db.blogs.create({
+                        id: uuidv4(),
+                        contentHTML: data.content,
+                        idUser,
+                        viewBlog: 0,
+                        typeBlog: 'product',
+                        timePost: 0,
+                    })
+
+                    await db.blogShares.create({
+                        id: uuidv4(),
+                        idBlog: blog.id,
+                        idProduct: data.idProduct
+                    })
+                    resolve({
+                        errCode: 0,
+                    })
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -3673,5 +3721,6 @@ module.exports = {
     createNewImageBlog,
     uploadVideoNewBlog,
     getBlogById,
-    updateBlog
+    updateBlog,
+    shareProduct
 }

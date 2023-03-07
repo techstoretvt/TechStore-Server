@@ -79,6 +79,7 @@ const initWebRoute = (app) => {
     router.post('/api/v1/upload-new-video-blog', upload.single('video'), userController.uploadVideoNewBlog)
     router.get('/api/v1/get-blog-by-id', userController.getBlogById)
     router.put('/api/v1/update-blog', userController.updateBlog)
+    router.post('/api/v1/share-product', userController.shareProduct)
 
     //admin api
     router.post('/api/add-type-product', fileUploader.single('file'), adminController.addTypeProduct)

@@ -790,6 +790,20 @@ const updateBlog = async (req, res) => {
         })
     }
 }
+const shareProduct = async (req, res) => {
+    try {
+        let data = await userService.shareProduct(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
 
 
 
@@ -844,4 +858,5 @@ module.exports = {
     uploadVideoNewBlog,
     getBlogById,
     updateBlog,
+    shareProduct,
 }

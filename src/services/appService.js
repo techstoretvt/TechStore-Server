@@ -1037,12 +1037,21 @@ const getListBlog = (data) => {
                     },
                     offset: (data.page - 1) * data.maxCount,
                     limit: data.maxCount,
+                    attributes: {
+                        exclude: ['createdAt', 'updatedAt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
+                    },
                     include: [
                         {
-                            model: db.imageBlogs
+                            model: db.imageBlogs,
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'stt', 'idCloudinary', 'idBlog', '']
+                            }
                         },
                         {
-                            model: db.videoBlogs
+                            model: db.videoBlogs,
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'stt', 'idDrive', 'idBlog', '']
+                            }
                         },
                         {
                             model: db.User,
@@ -1056,7 +1065,36 @@ const getListBlog = (data) => {
                                     [Op.ne]: 'false'
                                 }
                             }
+                        },
+                        {
+                            model: db.blogShares, as: 'blogs-blogShares-parent',
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'stt', 'idBlogShare', 'idProduct', 'idBlog']
+                            },
+                            include: [
+                                {
+                                    model: db.product,
+                                    attributes: {
+                                        exclude: ['createdAt', 'updatedAt', 'stt', 'sold', 'priceProduct', 'nameProductEn', 'isSell', 'idTypeProduct', 'idTrademark', 'contentMarkdown', 'contentHTML']
+                                    },
+                                    include: [
+                                        {
+                                            model: db.imageProduct, as: 'imageProduct-product',
+                                            // attributes: {
+                                            //     exclude: ['createdAt', 'updatedAt']
+                                            // },
+                                        }
+                                    ]
+                                },
+                                {
+                                    model: db.blogs, as: 'blogs-blogShares-child',
+                                    attributes: {
+                                        exclude: ['createdAt', 'updatedAt', 'stt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
+                                    },
+                                }
+                            ]
                         }
+
                     ],
                     order: [['stt', 'DESC']],
                     raw: false,

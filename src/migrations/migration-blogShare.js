@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('blogs', {
+    await queryInterface.createTable('blogShares', {
       id: {
         allowNull: false,
         autoIncrement: false,
@@ -11,26 +11,15 @@ module.exports = {
       },
 
 
-      contentHTML: {
-        type: Sequelize.TEXT
-      },
-      contentMarkdown: {
-        type: Sequelize.TEXT
-      },
-      idUser: {
+
+      idBlog: {
         type: Sequelize.STRING
       },
-      timeBlog: {
+      idBlogShare: {
         type: Sequelize.STRING
       },
-      typeBlog: {
+      idProduct: {
         type: Sequelize.STRING
-      },
-      textShare: {
-        type: Sequelize.STRING
-      },
-      viewBlog: {
-        type: Sequelize.INTEGER
       },
 
       stt: {
@@ -38,10 +27,6 @@ module.exports = {
         autoIncrement: true,
         type: Sequelize.INTEGER
       },
-      timePost: {
-        type: Sequelize.DOUBLE
-      },
-
 
       createdAt: {
         allowNull: false,
@@ -54,6 +39,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('blogs');
+    await queryInterface.dropTable('blogShares');
   }
 };
