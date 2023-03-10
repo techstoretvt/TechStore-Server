@@ -1122,6 +1122,30 @@ const getListBlog = (data) => {
     })
 }
 
+const getListHashTag = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+
+            let listProducts = await db.product.findAll({
+                attributes: ['id', 'nameProduct']
+            })
+
+
+            resolve({
+                errCode: 0,
+                data: listProducts
+            })
+
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+
 module.exports = {
     getProductPromotionHome,
     getTopSellProduct,
@@ -1132,5 +1156,6 @@ module.exports = {
     searchProduct,
     GetListProduct,
     createProduct,
-    getListBlog
+    getListBlog,
+    getListHashTag
 }

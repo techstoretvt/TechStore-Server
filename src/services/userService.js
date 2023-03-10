@@ -3672,6 +3672,306 @@ const shareProduct = (data) => {
     })
 }
 
+const shareBlog = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idBlog || !data.content) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id
+                    let checkBlogExits = await db.blogs.findOne({
+                        where: {
+                            id: data.idBlog,
+                            typeBlog: {
+                                [Op.ne]: 'shareBlog'
+                            }
+                        }
+                    })
+                    if (!checkBlogExits) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Bài viết không tồn tại!',
+                        })
+                        return
+                    }
+
+                    let blog = await db.blogs.create({
+                        id: uuidv4(),
+                        contentHTML: data.content,
+                        idUser,
+                        viewBlog: 0,
+                        typeBlog: 'shareBlog',
+                        timePost: 0,
+                    })
+
+                    await db.blogShares.create({
+                        id: uuidv4(),
+                        idBlog: blog.id,
+                        idBlogShare: data.idBlog
+                    })
+                    resolve({
+                        errCode: 0,
+                    })
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+
+const toggleLikeBlog = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idBlog) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id
+                    let checkBlogExits = await db.blogs.findOne({
+                        where: {
+                            id: data.idBlog,
+                        }
+                    })
+                    if (!checkBlogExits) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Bài viết không tồn tại!',
+                        })
+                        return
+                    }
+
+                    let [likeBlog, create] = await db.likeBlog.findOrCreate({
+                        where: {
+                            idUser,
+                            idBlog: data.idBlog
+                        },
+                        defaults: {
+                            id: uuidv4(),
+                        },
+                        raw: false
+                    })
+
+                    if (create) {
+                        resolve({
+                            errCode: 0,
+                            errMessage: 'Like'
+                        })
+                    }
+                    else {
+                        await likeBlog.destroy()
+
+                        resolve({
+                            errCode: 0,
+                            errMessage: 'unLike'
+                        })
+                    }
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const createNewCommentBlog = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idBlog || !data.content) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id
+                    let checkBlogExits = await db.blogs.findOne({
+                        where: {
+                            id: data.idBlog,
+                        }
+                    })
+                    if (!checkBlogExits) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Bài viết không tồn tại!',
+                        })
+                        return
+                    }
+
+                    let date = new Date().getTime()
+
+                    await db.commentBlog.create({
+                        id: uuidv4(),
+                        idUser,
+                        content: data.content,
+                        idBlog: data.idBlog,
+                        timeCommentBlog: date + ''
+                    })
+                    resolve({
+                        errCode: 0,
+                    })
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const createNewShortVideo = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.content || !data.scope) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id
+                    let shortVideo = await db.shortVideos.create({
+                        id: uuidv4(),
+                        idUser,
+                        content: data.content,
+                        scope: data.scope
+                    })
+
+                    if (data?.listHashTag?.length > 0) {
+                        let arrHashTag = data?.listHashTag?.map(item => {
+                            return {
+                                id: uuidv4(),
+                                idShortVideo: shortVideo.id,
+                                idProduct: item
+                            }
+                        })
+                        db.hashTagVideos.bulkCreate(arrHashTag, { individualHooks: true })
+                    }
+
+                    resolve({
+                        errCode: 0,
+                        idShortVideo: shortVideo.id
+                    })
+
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const uploadCoverImageShortVideo = ({ file, query }) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!file || !query || !query.idShortVideo) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                console.log(file)
+                let shortVideo = await db.shortVideos.findOne({
+                    where: {
+                        id: query.idShortVideo
+                    },
+                    raw: false
+                })
+
+                shortVideo.urlImage = file.path
+                shortVideo.idCloudinary = file.filename
+                await shortVideo.save()
+
+                resolve({
+                    errCode: 0,
+                })
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const uploadVideoForShortVideo = (idShortVideo, url) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let urlVideo = await GG_Drive.uploadFile(url)
+
+            let shortVideo = await db.shortVideos.findOne({
+                where: {
+                    id: idShortVideo
+                },
+                raw: false
+            })
+
+            shortVideo.idDriveVideo = urlVideo.id
+            await shortVideo.save()
+
+
+            resolve({
+                errCode: 0,
+            })
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
 
 module.exports = {
     CreateUser,
@@ -3722,5 +4022,11 @@ module.exports = {
     uploadVideoNewBlog,
     getBlogById,
     updateBlog,
-    shareProduct
+    shareProduct,
+    shareBlog,
+    toggleLikeBlog,
+    createNewCommentBlog,
+    createNewShortVideo,
+    uploadCoverImageShortVideo,
+    uploadVideoForShortVideo
 }

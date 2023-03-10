@@ -805,7 +805,98 @@ const shareProduct = async (req, res) => {
     }
 }
 
+const shareBlog = async (req, res) => {
+    try {
+        let data = await userService.shareBlog(req.body)
 
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const toggleLikeBlog = async (req, res) => {
+    try {
+        let data = await userService.toggleLikeBlog(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const createNewCommentBlog = async (req, res) => {
+    try {
+        let data = await userService.createNewCommentBlog(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const createNewShortVideo = async (req, res) => {
+    try {
+        let data = await userService.createNewShortVideo(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const uploadCoverImageShortVideo = async (req, res) => {
+    try {
+        let data = await userService.uploadCoverImageShortVideo({
+            file: req.file,
+            query: req.query
+        })
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const uploadVideoForShortVideo = async (req, res) => {
+    try {
+        let data = await userService.uploadVideoForShortVideo(req.query.idShortVideo, req.file.filename)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
 
 module.exports = {
     CreateUser,
@@ -859,4 +950,10 @@ module.exports = {
     getBlogById,
     updateBlog,
     shareProduct,
+    shareBlog,
+    toggleLikeBlog,
+    createNewCommentBlog,
+    createNewShortVideo,
+    uploadCoverImageShortVideo,
+    uploadVideoForShortVideo
 }

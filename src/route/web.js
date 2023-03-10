@@ -80,6 +80,13 @@ const initWebRoute = (app) => {
     router.get('/api/v1/get-blog-by-id', userController.getBlogById)
     router.put('/api/v1/update-blog', userController.updateBlog)
     router.post('/api/v1/share-product', userController.shareProduct)
+    router.post('/api/v1/share-blog', userController.shareBlog)
+    router.post('/api/v1/toggle-like-blog', userController.toggleLikeBlog)
+    router.post('/api/v1/create-new-comment-blog', userController.createNewCommentBlog)
+    router.post('/api/v1/create-new-short-video', userController.createNewShortVideo)
+    router.post('/api/v1/upload-cover-image-short-video', fileUploader.single('file'), userController.uploadCoverImageShortVideo)
+    router.post('/api/v1/upload-video-for-short-video', upload.single('video'), userController.uploadVideoForShortVideo)
+
 
     //admin api
     router.post('/api/add-type-product', fileUploader.single('file'), adminController.addTypeProduct)
@@ -119,6 +126,7 @@ const initWebRoute = (app) => {
     router.get('/api/v1/get-evaluate-by-id-product', appController.getEvaluateByIdProduct)
     router.get('/api/v1/search-product', appController.searchProduct)
     router.get('/api/v1/get-list-blog', appController.getListBlog)
+    router.get('/api/v1/get-list-hashtag', appController.getListHashTag)
 
 
 
