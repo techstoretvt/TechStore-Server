@@ -19,7 +19,10 @@ const storage = multer.diskStorage({
     }
 })
 
-let upload = multer({ storage })
+let upload = multer({
+    storage,
+    limits: { fileSize: 104857600 }
+})
 
 
 const initWebRoute = (app) => {
@@ -86,6 +89,8 @@ const initWebRoute = (app) => {
     router.post('/api/v1/create-new-short-video', userController.createNewShortVideo)
     router.post('/api/v1/upload-cover-image-short-video', fileUploader.single('file'), userController.uploadCoverImageShortVideo)
     router.post('/api/v1/upload-video-for-short-video', upload.single('video'), userController.uploadVideoForShortVideo)
+    router.get('/api/v1/get-short-video-by-id', userController.getShortVideoById)
+    router.put('/api/v1/update-short-video-by-id', userController.updateShortVideoById)
 
 
     //admin api
@@ -127,6 +132,8 @@ const initWebRoute = (app) => {
     router.get('/api/v1/search-product', appController.searchProduct)
     router.get('/api/v1/get-list-blog', appController.getListBlog)
     router.get('/api/v1/get-list-hashtag', appController.getListHashTag)
+    router.get('/api/v1/get-blog-share-product', appController.getBlogShareProduct)
+    router.get('/api/v1/get-blog-share-default', appController.getBlogShareDefault)
 
 
 

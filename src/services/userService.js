@@ -3411,12 +3411,14 @@ const uploadVideoNewBlog = (idBlog, fileName) => {
                 let videoBlogs = await db.videoBlogs.findOne({
                     where: {
                         id: idBlog
-                    }
+                    },
+                    raw: false
                 })
                 if (videoBlogs) {
                     if (videoBlogs.idDrive) {
                         GG_Drive.deleteFile(videoBlogs.idDrive)
                     }
+                    await videoBlogs.destroy()
                 }
 
                 let urlVideo = await GG_Drive.uploadFile(fileName)
@@ -3474,7 +3476,7 @@ const getBlogById = (data) => {
                             },
                             {
                                 model: db.videoBlogs
-                            }
+                            },
                         ],
                         raw: false
                     })
@@ -3923,13 +3925,17 @@ const uploadCoverImageShortVideo = ({ file, query }) => {
                 })
             }
             else {
-                console.log(file)
                 let shortVideo = await db.shortVideos.findOne({
                     where: {
                         id: query.idShortVideo
                     },
                     raw: false
                 })
+
+                if (shortVideo.idCloudinary) {
+                    cloudinary.v2.uploader.destroy(shortVideo.idCloudinary)
+                }
+
 
                 shortVideo.urlImage = file.path
                 shortVideo.idCloudinary = file.filename
@@ -3958,6 +3964,10 @@ const uploadVideoForShortVideo = (idShortVideo, url) => {
                 raw: false
             })
 
+            if (shortVideo.idDriveVideo) {
+                GG_Drive.deleteFile(shortVideo.idDriveVideo)
+            }
+
             shortVideo.idDriveVideo = urlVideo.id
             await shortVideo.save()
 
@@ -3966,6 +3976,134 @@ const uploadVideoForShortVideo = (idShortVideo, url) => {
                 errCode: 0,
             })
 
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const getShortVideoById = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idShortVideo) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id
+                    let shortVideo = await db.shortVideos.findOne({
+                        where: {
+                            id: data.idShortVideo,
+                            idUser
+                        },
+                        include: [
+                            {
+                                model: db.hashTagVideos,
+                                attributes: ['idProduct']
+                            }
+                        ],
+                        raw: false,
+                        nest: true
+                    })
+                    if (shortVideo) {
+                        resolve({
+                            errCode: 0,
+                            data: shortVideo
+                        })
+                    }
+                    else {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Không tìm thấy video!',
+                        })
+                    }
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const updateShortVideoById = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idShortVideo || !data.content || !data.scope) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id
+                    let shortVideo = await db.shortVideos.findOne({
+                        where: {
+                            id: data.idShortVideo,
+                            idUser
+                        },
+                        raw: false
+                    })
+
+                    if (shortVideo) {
+                        shortVideo.content = data.content
+                        shortVideo.scope = data.scope
+                        await shortVideo.save();
+
+                        await db.hashTagVideos.destroy({
+                            where: {
+                                idShortVideo: data.idShortVideo
+                            }
+                        })
+
+                        if (data?.listHashTag?.length > 0) {
+                            console.log('list hash tag', data?.listHashTag);
+                            let arrHashTag = data?.listHashTag?.map(item => {
+                                return {
+                                    id: uuidv4(),
+                                    idShortVideo: data.idShortVideo,
+                                    idProduct: item
+                                }
+                            })
+                            console.log('arr hash tag', arrHashTag);
+                            await db.hashTagVideos.bulkCreate(arrHashTag, { individualHooks: true })
+                        }
+                        resolve({
+                            errCode: 0,
+                        })
+
+                    }
+                    else {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Không tìm thấy video!',
+                        })
+                    }
+                }
+            }
         }
         catch (e) {
             reject(e);
@@ -4028,5 +4166,7 @@ module.exports = {
     createNewCommentBlog,
     createNewShortVideo,
     uploadCoverImageShortVideo,
-    uploadVideoForShortVideo
+    uploadVideoForShortVideo,
+    getShortVideoById,
+    updateShortVideoById
 }

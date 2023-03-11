@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
 
     static associate(models) {
       // define association here
-
+      hashTagVideos.belongsTo(models.shortVideos, { foreignKey: 'idShortVideo' })
     }
   }
   hashTagVideos.init({

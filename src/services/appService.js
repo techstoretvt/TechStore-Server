@@ -1050,7 +1050,7 @@ const getListBlog = (data) => {
                         {
                             model: db.videoBlogs,
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'stt', 'idDrive', 'idBlog', '']
+                                exclude: ['createdAt', 'updatedAt', 'stt', 'idBlog', '']
                             }
                         },
                         {
@@ -1080,9 +1080,6 @@ const getListBlog = (data) => {
                                     include: [
                                         {
                                             model: db.imageProduct, as: 'imageProduct-product',
-                                            // attributes: {
-                                            //     exclude: ['createdAt', 'updatedAt']
-                                            // },
                                         }
                                     ]
                                 },
@@ -1145,6 +1142,142 @@ const getListHashTag = (data) => {
     })
 }
 
+const getBlogShareProduct = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idBlog) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let blogs = await db.blogs.findOne({
+                    where: {
+                        id: data.idBlog
+                    },
+                    attributes: {
+                        exclude: ['createdAt', 'updatedAt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
+                    },
+                    include: [
+                        {
+                            model: db.User,
+                            attributes: {
+                                exclude: [
+                                    'updatedAt', 'statusUser', 'sdt', 'pass', 'keyVerify', 'idGoogle', 'idGithub', 'idFacebook', 'id', 'email', 'createdAt', 'birtday', 'gender'
+                                ]
+                            },
+                            where: {
+                                statusUser: {
+                                    [Op.ne]: 'false'
+                                }
+                            }
+                        },
+                        {
+                            model: db.blogShares, as: 'blogs-blogShares-parent',
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'stt', 'idBlogShare', 'idProduct', 'idBlog']
+                            },
+                            include: [
+                                {
+                                    model: db.product,
+                                    attributes: {
+                                        exclude: ['createdAt', 'updatedAt', 'stt', 'sold', 'priceProduct', 'nameProductEn', 'isSell', 'idTypeProduct', 'idTrademark', 'contentMarkdown', 'contentHTML']
+                                    },
+                                    include: [
+                                        {
+                                            model: db.imageProduct, as: 'imageProduct-product',
+                                        }
+                                    ]
+                                },
+                            ]
+                        }
+
+                    ],
+                    order: [['stt', 'DESC']],
+                    raw: false,
+                    nest: true
+                })
+
+
+                resolve({
+                    errCode: 0,
+                    data: blogs,
+                })
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const getBlogShareDefault = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idBlog) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let blogs = await db.blogs.findOne({
+                    where: {
+                        id: data.idBlog
+                    },
+                    attributes: {
+                        exclude: ['createdAt', 'updatedAt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
+                    },
+                    include: [
+                        {
+                            model: db.User,
+                            attributes: {
+                                exclude: [
+                                    'updatedAt', 'statusUser', 'sdt', 'pass', 'keyVerify', 'idGoogle', 'idGithub', 'idFacebook', 'id', 'email', 'createdAt', 'birtday', 'gender'
+                                ]
+                            },
+                            where: {
+                                statusUser: {
+                                    [Op.ne]: 'false'
+                                }
+                            }
+                        },
+                        {
+                            model: db.imageBlogs,
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'stt', 'idCloudinary', 'idBlog', '']
+                            }
+                        },
+                        {
+                            model: db.videoBlogs,
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'stt', 'idBlog', '']
+                            }
+                        },
+                    ],
+                    raw: false,
+                    nest: true
+                })
+
+
+                resolve({
+                    errCode: 0,
+                    data: blogs,
+                })
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+
 
 module.exports = {
     getProductPromotionHome,
@@ -1157,5 +1290,7 @@ module.exports = {
     GetListProduct,
     createProduct,
     getListBlog,
-    getListHashTag
+    getListHashTag,
+    getBlogShareProduct,
+    getBlogShareDefault
 }

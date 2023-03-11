@@ -179,6 +179,35 @@ const getListHashTag = async (req, res) => {
 }
 
 
+const getBlogShareProduct = async (req, res) => {
+    try {
+        let data = await appService.getBlogShareProduct(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const getBlogShareDefault = async (req, res) => {
+    try {
+        let data = await appService.getBlogShareDefault(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
 module.exports = {
     getProductPromotionHome,
     getTopSellProduct,
@@ -190,5 +219,7 @@ module.exports = {
     GetListProduct,
     createProduct,
     getListBlog,
-    getListHashTag
+    getListHashTag,
+    getBlogShareProduct,
+    getBlogShareDefault
 }
