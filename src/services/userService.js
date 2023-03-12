@@ -4111,6 +4111,132 @@ const updateShortVideoById = (data) => {
     })
 }
 
+const getListBlogUserByPage = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.page) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id
+                    let date = new Date().getTime()
+                    let blogs = await db.blogs.findAll({
+                        where: {
+                            idUser,
+                        },
+                        offset: (data.page - 1) * 10,
+                        limit: 10,
+                        attributes: {
+                            exclude: ['updatedAt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
+                        },
+                        include: [
+                            {
+                                model: db.imageBlogs,
+                                attributes: {
+                                    exclude: ['createdAt', 'updatedAt', 'stt', 'idCloudinary', 'idBlog', '']
+                                }
+                            },
+                            {
+                                model: db.videoBlogs,
+                                attributes: {
+                                    exclude: ['createdAt', 'updatedAt', 'stt', 'idBlog', '']
+                                }
+                            },
+                            {
+                                model: db.User,
+                                attributes: {
+                                    exclude: [
+                                        'updatedAt', 'statusUser', 'sdt', 'pass', 'keyVerify', 'idGoogle', 'idGithub', 'idFacebook', 'id', 'email', 'createdAt', 'birtday', 'gender'
+                                    ]
+                                },
+                                where: {
+                                    statusUser: {
+                                        [Op.ne]: 'false'
+                                    }
+                                }
+                            },
+                            {
+                                model: db.blogShares, as: 'blogs-blogShares-parent',
+                                attributes: {
+                                    exclude: ['createdAt', 'updatedAt', 'stt', 'idBlogShare', 'idProduct', 'idBlog']
+                                },
+                                include: [
+                                    {
+                                        model: db.product,
+                                        attributes: {
+                                            exclude: ['createdAt', 'updatedAt', 'stt', 'sold', 'priceProduct', 'nameProductEn', 'isSell', 'idTypeProduct', 'idTrademark', 'contentMarkdown', 'contentHTML']
+                                        },
+                                        include: [
+                                            {
+                                                model: db.imageProduct, as: 'imageProduct-product',
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        model: db.blogs, as: 'blogs-blogShares-child',
+                                        attributes: {
+                                            exclude: ['createdAt', 'updatedAt', 'stt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
+                                        },
+                                    }
+                                ]
+                            }
+
+                        ],
+                        order: [['stt', 'DESC']],
+                        raw: false,
+                        nest: true
+                    })
+
+                    let count = await db.blogs.count({
+                        where: {
+                            idUser,
+                        },
+                        include: [
+                            {
+                                model: db.User,
+                                attributes: {
+                                    exclude: [
+                                        'updatedAt', 'statusUser', 'sdt', 'pass', 'keyVerify', 'idGoogle', 'idGithub', 'idFacebook', 'id', 'email', 'createdAt', 'birtday', 'gender'
+                                    ]
+                                },
+                                where: {
+                                    statusUser: {
+                                        [Op.ne]: 'false'
+                                    }
+                                }
+                            },
+                        ],
+                        raw: false,
+                        nest: true
+                    })
+
+                    resolve({
+                        errCode: 0,
+                        data: blogs,
+                        count
+                    })
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -4168,5 +4294,6 @@ module.exports = {
     uploadCoverImageShortVideo,
     uploadVideoForShortVideo,
     getShortVideoById,
-    updateShortVideoById
+    updateShortVideoById,
+    getListBlogUserByPage
 }

@@ -91,6 +91,7 @@ const initWebRoute = (app) => {
     router.post('/api/v1/upload-video-for-short-video', upload.single('video'), userController.uploadVideoForShortVideo)
     router.get('/api/v1/get-short-video-by-id', userController.getShortVideoById)
     router.put('/api/v1/update-short-video-by-id', userController.updateShortVideoById)
+    router.get('/api/v1/get-list-blog-user-by-page', userController.getListBlogUserByPage)
 
 
     //admin api

@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
     idUser: DataTypes.STRING,
     timeBlog: DataTypes.STRING,
     viewBlog: DataTypes.INTEGER,
-    typeBlog: DataTypes.STRING,
+    typeBlog: DataTypes.STRING, //product,default,shareBlog
     textShare: DataTypes.STRING,
     stt: DataTypes.INTEGER,
     timePost: DataTypes.DOUBLE,
