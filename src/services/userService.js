@@ -122,6 +122,15 @@ const CreateUser = (data) => {
                     return;
                 }
                 else {
+                    if (data.firstName.length > 30 || data.lastName > 30) {
+                        resolve({
+                            errCode: 4,
+                            errMessage: 'Độ dài của tên vượt quá mức cho phép!'
+                        })
+                        return;
+                    }
+
+
                     let [user, created] = await db.User.findOrCreate({
                         where: { email: data.email },
                         defaults: {
@@ -3097,6 +3106,15 @@ const updateProfileUser = (data) => {
                         })
                     }
                     else {
+                        if (data.firstName.length > 30 || data.lastName.length > 30) {
+                            resolve({
+                                errCode: 4,
+                                errMessage: 'Độ dài của tên vượt quá mức cho phép!'
+                            })
+                            return;
+                        }
+
+
                         user.firstName = data.firstName
                         user.lastName = data.lastName
                         user.sdt = data.sdt
@@ -4237,6 +4255,265 @@ const getListBlogUserByPage = (data) => {
     })
 }
 
+const deleteBlogUserById = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idBlog) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id
+
+                    let blog = await db.blogs.findOne({
+                        where: {
+                            idUser,
+                            id: data.idBlog
+                        },
+                        raw: false
+                    })
+                    if (!blog) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Bài viết không tồn tại!',
+                        })
+                    }
+                    else {
+                        // await db.blogShares.destroy({
+                        //     where: {
+                        //         idBlog: blog.id
+                        //     }
+                        // })
+                        // let videoBlog = await db.videoBlogs.findOne({
+                        //     where: {
+                        //         idBlog: blog.id
+                        //     },
+                        //     raw: false
+                        // })
+                        // if (videoBlog) {
+                        //     if (videoBlog.idDrive !== '')
+                        //         GG_Drive.deleteFile(videoBlog.idDrive)
+                        //     await videoBlog.destroy()
+                        // }
+                        // let imageBlogs = await db.imageBlogs.findAll({
+                        //     where: {
+                        //         idBlog: blog.id
+                        //     }
+                        // })
+                        // if (imageBlogs && imageBlogs.length > 0) {
+                        //     imageBlogs.map(item => {
+                        //         cloudinary.v2.uploader.destroy(item.idCloudinary)
+                        //     })
+                        // }
+                        // await db.imageBlogs.destroy({
+                        //     where: {
+                        //         idBlog: blog.id
+                        //     }
+                        // })
+                        // await blog.destroy()
+
+                        resolve({
+                            errCode: 0,
+                        })
+                    }
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const editContentBlogUserById = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idBlog || !data.content) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id
+
+                    let blog = await db.blogs.findOne({
+                        where: {
+                            idUser,
+                            id: data.idBlog
+                        },
+                        raw: false
+                    })
+                    if (!blog) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Bài viết không tồn tại!',
+                        })
+                    }
+                    else {
+                        blog.contentHTML = data.content
+                        await blog.save()
+
+                        resolve({
+                            errCode: 0,
+                        })
+                    }
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const deleteCommentBlogById = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idComment) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id
+                    let commentBlog = await db.commentBlog.findOne({
+                        where: {
+                            id: data.idComment,
+                            idUser
+                        },
+                        include: [
+                            {
+                                model: db.User,
+                                where: {
+                                    statusUser: {
+                                        [Op.ne]: 'false'
+                                    }
+                                }
+                            }
+                        ],
+                        raw: false,
+                        nest: true
+                    })
+
+                    if (!commentBlog) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Hiện không thể thực hiện tính năng này!',
+                        })
+                        return;
+                    }
+                    else {
+                        await commentBlog.destroy()
+                        resolve({
+                            errCode: 0,
+                        })
+                    }
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const updateCommentBlogById = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idComment || !data.content) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id
+                    let commentBlog = await db.commentBlog.findOne({
+                        where: {
+                            id: data.idComment,
+                            idUser
+                        },
+                        include: [
+                            {
+                                model: db.User,
+                                where: {
+                                    statusUser: {
+                                        [Op.ne]: 'false'
+                                    }
+                                }
+                            }
+                        ],
+                        raw: false,
+                        nest: true
+                    })
+
+                    if (!commentBlog) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Hiện không thể thực hiện tính năng này!',
+                        })
+                        return;
+                    }
+                    else {
+                        commentBlog.content = data.content
+                        await commentBlog.save()
+                        resolve({
+                            errCode: 0,
+                        })
+                    }
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -4295,5 +4572,9 @@ module.exports = {
     uploadVideoForShortVideo,
     getShortVideoById,
     updateShortVideoById,
-    getListBlogUserByPage
+    getListBlogUserByPage,
+    deleteBlogUserById,
+    editContentBlogUserById,
+    deleteCommentBlogById,
+    updateCommentBlogById
 }

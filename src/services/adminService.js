@@ -1,6 +1,7 @@
 import db from '../models'
 import { v4 as uuidv4 } from 'uuid';
 import { sendEmail } from './commont'
+import { Sequelize } from 'sequelize';
 
 const addTypeProduct = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -53,6 +54,9 @@ const getAllTypeProduct = () => {
                     ['id', 'ASC'],
                 ],
             });
+            // let typeProducts = await db.typeProduct.findAll({
+            //     order: db.sequelize.random()
+            // });
             if (typeProducts && typeProducts.length > 0) {
                 resolve({
                     errCode: 0,

@@ -7,7 +7,9 @@ const http = require('http');
 const { ApolloServer } = require('apollo-server-express')
 
 import configViewEngine from "./config/viewEngine";
-import initWebRoute from "./route/web";
+import initAppRoute from "./route/appRoute";
+import initUserRoute from './route/userRoute'
+import initAdminRoute from './route/adminRoute'
 const typeDefs = require('./GraphQL/schema/schema')
 const resolvers = require('./GraphQL/resolver/resolver')
 
@@ -32,7 +34,9 @@ app.use(cors());
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }))
 
-initWebRoute(app);
+initAppRoute(app);
+initUserRoute(app);
+initAdminRoute(app);
 
 //web socket
 io.on('connection', (socket) => {

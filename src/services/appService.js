@@ -1,7 +1,9 @@
 import db from '../models'
 const { Op, UUIDV4 } = require("sequelize");
+require('dotenv').config();
 import FuzzySearch from 'fuzzy-search';
 import { v4 as uuidv4 } from 'uuid';
+import commont from '../services/commont'
 
 const getProductPromotionHome = () => {
     return new Promise(async (resolve, reject) => {
@@ -1158,7 +1160,7 @@ const getBlogShareProduct = (data) => {
                         id: data.idBlog
                     },
                     attributes: {
-                        exclude: ['createdAt', 'updatedAt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
+                        exclude: ['updatedAt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
                     },
                     include: [
                         {
@@ -1230,7 +1232,7 @@ const getBlogShareDefault = (data) => {
                         id: data.idBlog
                     },
                     attributes: {
-                        exclude: ['createdAt', 'updatedAt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
+                        exclude: ['updatedAt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
                     },
                     include: [
                         {
@@ -1277,7 +1279,191 @@ const getBlogShareDefault = (data) => {
     })
 }
 
+const getBlogById = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idBlog) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let blogs = await db.blogs.findOne({
+                    where: {
+                        id: data.idBlog
+                    },
+                    attributes: {
+                        exclude: ['updatedAt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
+                    },
+                    include: [
+                        {
+                            model: db.User,
+                            attributes: {
+                                exclude: [
+                                    'updatedAt', 'statusUser', 'sdt', 'pass', 'keyVerify', 'idGoogle', 'idGithub', 'idFacebook', 'id', 'email', 'createdAt', 'birtday', 'gender'
+                                ]
+                            },
+                            where: {
+                                statusUser: {
+                                    [Op.ne]: 'false'
+                                }
+                            }
+                        },
+                        {
+                            model: db.imageBlogs,
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'stt', 'idCloudinary', 'idBlog', '']
+                            }
+                        },
+                        {
+                            model: db.videoBlogs,
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'stt', 'idBlog', '']
+                            }
+                        },
+                        {
+                            model: db.blogShares, as: 'blogs-blogShares-parent',
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'stt', 'idBlogShare', 'idProduct', 'idBlog']
+                            },
+                            include: [
+                                {
+                                    model: db.product,
+                                    attributes: {
+                                        exclude: ['createdAt', 'updatedAt', 'stt', 'sold', 'priceProduct', 'nameProductEn', 'isSell', 'idTypeProduct', 'idTrademark', 'contentMarkdown', 'contentHTML']
+                                    },
+                                    include: [
+                                        {
+                                            model: db.imageProduct, as: 'imageProduct-product',
+                                        }
+                                    ]
+                                },
+                                {
+                                    model: db.blogs, as: 'blogs-blogShares-child',
+                                    attributes: {
+                                        exclude: ['createdAt', 'updatedAt', 'stt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
+                                    },
+                                }
+                            ]
+                        }
 
+                    ],
+                    raw: false,
+                    nest: true
+                })
+
+                let checkLike = false
+
+                if (data.accessToken) {
+                    let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+
+                    if (decode !== null) {
+                        let likeBlogUser = await db.likeBlog.findOne({
+                            where: {
+                                idUser: decode.id,
+                                idBlog: data.idBlog
+                            }
+                        })
+
+                        if (likeBlogUser) checkLike = true
+                    }
+                }
+
+
+                resolve({
+                    errCode: 0,
+                    data: blogs,
+                    checkLike
+                })
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const getCommentBlogByIdBlog = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idBlog || !data.page) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let commentBlogs = await db.commentBlog.findAll({
+                    where: {
+                        idBlog: data.idBlog
+                    },
+                    limit: 20,
+                    offset: (+data.page - 1) * 20,
+                    include: [
+                        {
+                            model: db.User,
+                            where: {
+                                statusUser: {
+                                    [Op.ne]: 'false'
+                                }
+                            }
+                        }
+                    ],
+                    order: [['stt', 'DESC']],
+                    raw: false,
+                    nest: true
+                })
+
+                let count = await db.commentBlog.count({
+                    where: {
+                        idBlog: data.idBlog
+                    },
+                    include: [
+                        {
+                            model: db.User,
+                            where: {
+                                statusUser: {
+                                    [Op.ne]: 'false'
+                                }
+                            }
+                        }
+                    ],
+                    raw: false,
+                    nest: true
+                })
+
+
+                if (data.accessToken) {
+                    let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                    if (decode !== null) {
+                        resolve({
+                            errCode: 0,
+                            data: commentBlogs,
+                            idUser: decode.id,
+                            count
+                        })
+                        return
+                    }
+                }
+
+
+                resolve({
+                    errCode: 0,
+                    data: commentBlogs,
+                    count
+                })
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
 
 module.exports = {
     getProductPromotionHome,
@@ -1292,5 +1478,7 @@ module.exports = {
     getListBlog,
     getListHashTag,
     getBlogShareProduct,
-    getBlogShareDefault
+    getBlogShareDefault,
+    getBlogById,
+    getCommentBlogByIdBlog
 }

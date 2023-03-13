@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
     idTypeUser: DataTypes.STRING,
     //1 admin root, 2 admin phu, 3 user
 
-    statusUser: DataTypes.STRING,
+    statusUser: DataTypes.STRING, //true, false , timestamp
     idGoogle: DataTypes.STRING,
     avatarGoogle: DataTypes.TEXT,
     typeAccount: DataTypes.STRING,
