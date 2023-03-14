@@ -49,6 +49,10 @@ const initAppRoute = (app) => {
     router.get(routes.getCommentBlogByIdBlog, appController.getCommentBlogByIdBlog)
 
 
+
+    router.put(routes.increaseViewBlogById, appController.increaseViewBlogById)
+
+
     //test
     router.get('/api/test-api', adminController.testApi)
 

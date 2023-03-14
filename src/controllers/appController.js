@@ -239,6 +239,21 @@ const getCommentBlogByIdBlog = async (req, res) => {
     }
 }
 
+const increaseViewBlogById = async (req, res) => {
+    try {
+        let data = await appService.increaseViewBlogById(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
 
 module.exports = {
     getProductPromotionHome,
@@ -255,5 +270,6 @@ module.exports = {
     getBlogShareProduct,
     getBlogShareDefault,
     getBlogById,
-    getCommentBlogByIdBlog
+    getCommentBlogByIdBlog,
+    increaseViewBlogById
 }

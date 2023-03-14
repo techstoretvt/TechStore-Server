@@ -26,6 +26,7 @@ module.exports = (sequelize, DataTypes) => {
     textShare: DataTypes.STRING,
     stt: DataTypes.INTEGER,
     timePost: DataTypes.DOUBLE,
+    backgroundColor: DataTypes.STRING
 
   }, {
     sequelize,

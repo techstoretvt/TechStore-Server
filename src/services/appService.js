@@ -1290,9 +1290,13 @@ const getBlogById = (data) => {
                 })
             }
             else {
+                let date = new Date().getTime()
                 let blogs = await db.blogs.findOne({
                     where: {
-                        id: data.idBlog
+                        id: data.idBlog,
+                        timePost: {
+                            [Op.lt]: date
+                        }
                     },
                     attributes: {
                         exclude: ['updatedAt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
@@ -1465,6 +1469,42 @@ const getCommentBlogByIdBlog = (data) => {
     })
 }
 
+const increaseViewBlogById = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idBlog) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let blog = await db.blogs.findOne({
+                    where: {
+                        id: data.idBlog
+                    },
+                    raw: false
+                })
+
+                if (blog) {
+                    blog.viewBlog = blog.viewBlog + 1
+                    await blog.save()
+                }
+
+
+                resolve({
+                    errCode: 0,
+                })
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     getProductPromotionHome,
     getTopSellProduct,
@@ -1480,5 +1520,6 @@ module.exports = {
     getBlogShareProduct,
     getBlogShareDefault,
     getBlogById,
-    getCommentBlogByIdBlog
+    getCommentBlogByIdBlog,
+    increaseViewBlogById
 }

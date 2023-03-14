@@ -41,6 +41,9 @@ module.exports = {
       timePost: {
         type: Sequelize.DOUBLE
       },
+      backgroundColor: {
+        type: Sequelize.STRING
+      },
 
 
       createdAt: {

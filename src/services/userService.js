@@ -3318,7 +3318,7 @@ const createNewBlog = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.accessToken || !data.contentHtml || !data.contentMarkdown
-                || !data.typeVideo
+                || !data.typeVideo || !data.bgColor
             ) {
                 resolve({
                     errCode: 1,
@@ -3349,7 +3349,8 @@ const createNewBlog = (data) => {
                         timeBlog: date.toString(),
                         viewBlog: 0,
                         typeBlog: 'default',
-                        timePost: data.timePost || 0
+                        timePost: data.timePost || 0,
+                        backgroundColor: data.bgColor
                     })
 
                     if (data.typeVideo === 'iframe' && data.urlVideo) {
@@ -3524,7 +3525,7 @@ const updateBlog = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.accessToken || !data.idBlog || !data.contentHtml || !data.contentMarkdown
-                || data.isVideo === undefined || !data.typeVideo) {
+                || data.isVideo === undefined || !data.typeVideo || !data.bgColor) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
@@ -3560,6 +3561,7 @@ const updateBlog = (data) => {
                     else {
                         blog.contentHTML = data.contentHtml
                         blog.contentMarkdown = data.contentMarkdown
+                        blog.backgroundColor = data.bgColor
                         await blog.save();
 
 
@@ -4158,7 +4160,7 @@ const getListBlogUserByPage = (data) => {
                         offset: (data.page - 1) * 10,
                         limit: 10,
                         attributes: {
-                            exclude: ['updatedAt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
+                            exclude: ['updatedAt', 'viewBlog', 'timeBlog', 'idUser', 'contentMarkdown']
                         },
                         include: [
                             {
@@ -4514,6 +4516,127 @@ const updateCommentBlogById = (data) => {
     })
 }
 
+const getListBlogByIdUser = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idUser || !data.page) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let idUser = data.idUser
+                let date = new Date().getTime()
+                let blogs = await db.blogs.findAll({
+                    where: {
+                        idUser,
+                        timePost: {
+                            [Op.lt]: date
+                        }
+                    },
+                    offset: (data.page - 1) * 10,
+                    limit: 10,
+                    attributes: {
+                        exclude: ['updatedAt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
+                    },
+                    include: [
+                        {
+                            model: db.imageBlogs,
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'stt', 'idCloudinary', 'idBlog', '']
+                            }
+                        },
+                        {
+                            model: db.videoBlogs,
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'stt', 'idBlog', '']
+                            }
+                        },
+                        {
+                            model: db.User,
+                            attributes: {
+                                exclude: [
+                                    'updatedAt', 'statusUser', 'sdt', 'pass', 'keyVerify', 'idGoogle', 'idGithub', 'idFacebook', 'id', 'email', 'createdAt', 'birtday', 'gender'
+                                ]
+                            },
+                            where: {
+                                statusUser: {
+                                    [Op.ne]: 'false'
+                                }
+                            }
+                        },
+                        {
+                            model: db.blogShares, as: 'blogs-blogShares-parent',
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'stt', 'idBlogShare', 'idProduct', 'idBlog']
+                            },
+                            include: [
+                                {
+                                    model: db.product,
+                                    attributes: {
+                                        exclude: ['createdAt', 'updatedAt', 'stt', 'sold', 'priceProduct', 'nameProductEn', 'isSell', 'idTypeProduct', 'idTrademark', 'contentMarkdown', 'contentHTML']
+                                    },
+                                    include: [
+                                        {
+                                            model: db.imageProduct, as: 'imageProduct-product',
+                                        }
+                                    ]
+                                },
+                                {
+                                    model: db.blogs, as: 'blogs-blogShares-child',
+                                    attributes: {
+                                        exclude: ['createdAt', 'updatedAt', 'stt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
+                                    },
+                                }
+                            ]
+                        }
+
+                    ],
+                    order: [['stt', 'DESC']],
+                    raw: false,
+                    nest: true
+                })
+
+                let count = await db.blogs.count({
+                    where: {
+                        idUser,
+                    },
+                    include: [
+                        {
+                            model: db.User,
+                            attributes: {
+                                exclude: [
+                                    'updatedAt', 'statusUser', 'sdt', 'pass', 'keyVerify', 'idGoogle', 'idGithub', 'idFacebook', 'id', 'email', 'createdAt', 'birtday', 'gender'
+                                ]
+                            },
+                            where: {
+                                statusUser: {
+                                    [Op.ne]: 'false'
+                                }
+                            }
+                        },
+                    ],
+                    raw: false,
+                    nest: true
+                })
+
+                resolve({
+                    errCode: 0,
+                    data: blogs,
+                    count
+                })
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -4576,5 +4699,6 @@ module.exports = {
     deleteBlogUserById,
     editContentBlogUserById,
     deleteCommentBlogById,
-    updateCommentBlogById
+    updateCommentBlogById,
+    getListBlogByIdUser
 }

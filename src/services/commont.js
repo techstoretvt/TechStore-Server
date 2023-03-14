@@ -65,6 +65,7 @@ const routes = {
     getBlogShareDefault: '/api/v1/get-blog-share-default',
     getBlogById: '/api/v1/get-blog-by-id',
     getCommentBlogByIdBlog: '/api/v1/get-comment-blog-by-id-blog',
+    increaseViewBlogById: '/api/v1/increase-view-blog-by-id',
 
 
     //admin
@@ -153,6 +154,7 @@ const routes = {
     createNewEvaluateProductFailed: '/api/v2/create-new-evaluate-product-failed',
     deleteBlogUserById: '/api/v1/delete-blog-user-by-id',
     deleteCommentBlogById: '/api/v1/delete-comment-blog-by-id',
+    getListBlogByIdUser: '/api/v1/get-list-blog-by-id-user'
 
 }
 
