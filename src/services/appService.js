@@ -1031,6 +1031,8 @@ const getListBlog = (data) => {
             }
             else {
                 let date = new Date().getTime()
+                let arrIdBlogLike = []
+
                 let blogs = await db.blogs.findAll({
                     where: {
                         timePost: {
@@ -1066,7 +1068,8 @@ const getListBlog = (data) => {
                                 statusUser: {
                                     [Op.ne]: 'false'
                                 }
-                            }
+                            },
+
                         },
                         {
                             model: db.blogShares, as: 'blogs-blogShares-parent',
@@ -1092,7 +1095,8 @@ const getListBlog = (data) => {
                                     },
                                 }
                             ]
-                        }
+                        },
+
 
                     ],
                     order: [['stt', 'DESC']],
@@ -1107,10 +1111,77 @@ const getListBlog = (data) => {
                         }
                     },
                 })
+
+
+                if (data.accessToken) {
+                    let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                    if (decode !== null) {
+                        let idUser = decode.id
+                        let listIdBlog = []
+
+                        let blogArr = await db.blogs.findAll({
+                            where: {
+                                timePost: {
+                                    [Op.lt]: date
+                                }
+                            },
+                            offset: (data.page - 1) * data.maxCount,
+                            limit: data.maxCount,
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
+                            },
+                            include: [
+
+                                {
+                                    model: db.User,
+                                    attributes: {
+                                        exclude: [
+                                            'updatedAt', 'statusUser', 'sdt', 'pass', 'keyVerify', 'idGoogle', 'idGithub', 'idFacebook', 'id', 'email', 'createdAt', 'birtday', 'gender'
+                                        ]
+                                    },
+                                    where: {
+                                        statusUser: {
+                                            [Op.ne]: 'false'
+                                        }
+                                    },
+                                },
+                            ],
+                            order: [['stt', 'DESC']],
+                            raw: false,
+                            nest: true
+                        })
+
+                        blogArr.forEach((item, index) => {
+
+                            let idBlog = { ...item }.dataValues.id
+                            listIdBlog.push(idBlog)
+                        })
+                        let likeBlog = await db.likeBlog.findAll({
+                            where: {
+                                idUser,
+                                idBlog: {
+                                    [Op.in]: listIdBlog
+                                }
+                            },
+                            attributes: ['idBlog']
+                        })
+
+                        resolve({
+                            errCode: 0,
+                            data: blogs,
+                            countPage,
+                            arrIdBlogLike: likeBlog
+                        })
+                        return
+                    }
+
+                }
+
                 resolve({
                     errCode: 0,
                     data: blogs,
-                    countPage
+                    countPage,
+                    arrIdBlogLike
                 })
 
             }
