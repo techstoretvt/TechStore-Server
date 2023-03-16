@@ -3429,7 +3429,7 @@ const uploadVideoNewBlog = (idBlog, fileName) => {
             else {
                 let videoBlogs = await db.videoBlogs.findOne({
                     where: {
-                        id: idBlog
+                        idBlog: idBlog
                     },
                     raw: false
                 })
@@ -3604,7 +3604,7 @@ const updateBlog = (data) => {
                                 })
                             }
                         }
-                        if (data.typeVideo === 'iframe' && data.urlVideo !== '') {
+                        if (data.typeVideo === 'iframe' && data.urlVideo && data.urlVideo !== '') {
                             let videoBlog = await db.videoBlogs.findOne({
                                 where: {
                                     idBlog: data.idBlog
