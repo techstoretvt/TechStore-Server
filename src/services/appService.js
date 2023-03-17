@@ -1166,11 +1166,19 @@ const getListBlog = (data) => {
                             attributes: ['idBlog']
                         })
 
+                        let listIdBlogCollection = await db.collectionBlogs.findAll({
+                            where: {
+                                idUser: decode.id
+                            },
+                            attributes: ['idBlog']
+                        })
+
                         resolve({
                             errCode: 0,
                             data: blogs,
                             countPage,
-                            arrIdBlogLike: likeBlog
+                            arrIdBlogLike: likeBlog,
+                            listIdBlogCollection
                         })
                         return
                     }
@@ -1181,7 +1189,8 @@ const getListBlog = (data) => {
                     errCode: 0,
                     data: blogs,
                     countPage,
-                    arrIdBlogLike
+                    arrIdBlogLike,
+                    listIdBlogCollection: []
                 })
 
             }
@@ -1423,35 +1432,48 @@ const getBlogById = (data) => {
                                 }
                             ]
                         }
-
                     ],
                     raw: false,
                     nest: true
                 })
 
-                let checkLike = false
+                if (blogs) {
+                    let checkLike = false
+                    let checkCollection = false
+                    if (data.accessToken) {
+                        let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
 
-                if (data.accessToken) {
-                    let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                        if (decode !== null) {
+                            let likeBlogUser = await db.likeBlog.findOne({
+                                where: {
+                                    idUser: decode.id,
+                                    idBlog: data.idBlog
+                                }
+                            })
+                            let collectionBlogs = await db.collectionBlogs.findOne({
+                                where: {
+                                    idBlog: data.idBlog,
+                                    idUser: decode.id
+                                }
+                            })
 
-                    if (decode !== null) {
-                        let likeBlogUser = await db.likeBlog.findOne({
-                            where: {
-                                idUser: decode.id,
-                                idBlog: data.idBlog
-                            }
-                        })
-
-                        if (likeBlogUser) checkLike = true
+                            if (likeBlogUser) checkLike = true
+                            if (collectionBlogs) checkCollection = true
+                        }
                     }
+                    resolve({
+                        errCode: 0,
+                        data: blogs,
+                        checkLike,
+                        checkCollection
+                    })
                 }
-
-
-                resolve({
-                    errCode: 0,
-                    data: blogs,
-                    checkLike
-                })
+                else {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Not found'
+                    })
+                }
 
             }
         }

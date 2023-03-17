@@ -9,6 +9,7 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       blogShares.belongsTo(models.blogs, { foreignKey: 'idBlog', as: 'blogs-blogShares-parent' })
       blogShares.belongsTo(models.blogs, { foreignKey: 'idBlogShare', as: 'blogs-blogShares-child' })
+      blogShares.belongsTo(models.blogs, { foreignKey: 'idBlogShare', as: 'listBlogShare' })
       blogShares.belongsTo(models.product, { foreignKey: 'idProduct' })
 
     }

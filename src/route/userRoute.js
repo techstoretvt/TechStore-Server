@@ -69,6 +69,7 @@ const initUserRoute = (app) => {
     router.post(routes.createNewShortVideo, userController.createNewShortVideo)
     router.post(routes.uploadCoverImageShortVideo, fileUploader.single('file'), userController.uploadCoverImageShortVideo)
     router.post(routes.uploadVideoForShortVideo, upload.single('video'), userController.uploadVideoForShortVideo)
+    router.post(routes.saveBlogCollection, userController.saveBlogCollection)
 
 
 

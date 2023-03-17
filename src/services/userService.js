@@ -4160,7 +4160,7 @@ const getListBlogUserByPage = (data) => {
                         offset: (data.page - 1) * 10,
                         limit: 10,
                         attributes: {
-                            exclude: ['updatedAt', 'viewBlog', 'timeBlog', 'idUser', 'contentMarkdown']
+                            exclude: ['updatedAt', 'timeBlog', 'idUser', 'contentMarkdown']
                         },
                         include: [
                             {
@@ -4212,6 +4212,18 @@ const getListBlogUserByPage = (data) => {
                                         },
                                     }
                                 ]
+                            },
+                            {
+                                model: db.likeBlog,
+                                attributes: ['id']
+                            },
+                            {
+                                model: db.blogShares, as: 'listBlogShare',
+                                attributes: ['id']
+                            },
+                            {
+                                model: db.commentBlog,
+                                attributes: ['id']
                             }
 
                         ],
@@ -4539,7 +4551,7 @@ const getListBlogByIdUser = (data) => {
                     offset: (data.page - 1) * 10,
                     limit: 10,
                     attributes: {
-                        exclude: ['updatedAt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
+                        exclude: ['updatedAt', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
                     },
                     include: [
                         {
@@ -4591,6 +4603,18 @@ const getListBlogByIdUser = (data) => {
                                     },
                                 }
                             ]
+                        },
+                        {
+                            model: db.likeBlog,
+                            attributes: ['id']
+                        },
+                        {
+                            model: db.blogShares, as: 'listBlogShare',
+                            attributes: ['id']
+                        },
+                        {
+                            model: db.commentBlog,
+                            attributes: ['id']
                         }
 
                     ],
@@ -4635,6 +4659,73 @@ const getListBlogByIdUser = (data) => {
         }
     })
 }
+
+const saveBlogCollection = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idBlog) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let idUser = decode.id
+
+                    let checkBlog = await db.blogs.findOne({
+                        where: {
+                            id: data.idBlog
+                        }
+                    })
+
+                    if (!checkBlog) {
+                        resolve({
+                            errCode: 2,
+                            errMessage: 'Không tìm thấy bài viết!',
+                        })
+                        return;
+                    }
+
+                    let [collection, create] = await db.collectionBlogs.findOrCreate({
+                        where: {
+                            idBlog: data.idBlog,
+                            idUser
+                        },
+                        defaults: {
+                            id: uuidv4()
+                        },
+                        raw: false
+                    })
+
+                    if (!create) {
+                        await collection.destroy()
+                        resolve({
+                            errCode: 0,
+                        })
+                        return
+                    }
+                    resolve({
+                        errCode: 0,
+                    })
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 
 
 module.exports = {
@@ -4700,5 +4791,6 @@ module.exports = {
     editContentBlogUserById,
     deleteCommentBlogById,
     updateCommentBlogById,
-    getListBlogByIdUser
+    getListBlogByIdUser,
+    saveBlogCollection
 }
