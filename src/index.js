@@ -51,6 +51,9 @@ io.on('connection', (socket) => {
         })
     });
 })
+export const handleEmit = (nameEmit, contentEmit) => {
+    io.emit(nameEmit, contentEmit)
+}
 
 //graphql
 const serverQL = new ApolloServer({
