@@ -28,7 +28,12 @@ module.exports = (sequelize, DataTypes) => {
     textShare: DataTypes.STRING,
     stt: DataTypes.INTEGER,
     timePost: DataTypes.DOUBLE,
-    backgroundColor: DataTypes.STRING
+    backgroundColor: DataTypes.STRING,
+    editImage: DataTypes.STRING,
+    editVideo: DataTypes.STRING,
+    amountLike: DataTypes.DOUBLE,
+    amountShare: DataTypes.DOUBLE,
+    amountComment: DataTypes.DOUBLE,
 
   }, {
     sequelize,

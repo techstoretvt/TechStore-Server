@@ -1034,6 +1034,36 @@ const saveBlogCollection = async (req, res) => {
     }
 }
 
+const getListCollectionBlogUserByPage = async (req, res) => {
+    try {
+        let data = await userService.getListCollectionBlogUserByPage(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const deleteCollectBlogById = async (req, res) => {
+    try {
+        let data = await userService.deleteCollectBlogById(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -1100,5 +1130,7 @@ module.exports = {
     deleteCommentBlogById,
     updateCommentBlogById,
     getListBlogByIdUser,
-    saveBlogCollection
+    saveBlogCollection,
+    getListCollectionBlogUserByPage,
+    deleteCollectBlogById
 }

@@ -44,6 +44,24 @@ module.exports = {
       backgroundColor: {
         type: Sequelize.STRING
       },
+      editImage: {
+        type: Sequelize.STRING
+      },
+      editVideo: {
+        type: Sequelize.STRING
+      },
+      amountLike: {
+        defaultValue: 0,
+        type: Sequelize.DOUBLE
+      },
+      amountShare: {
+        defaultValue: 0,
+        type: Sequelize.DOUBLE
+      },
+      amountComment: {
+        defaultValue: 0,
+        type: Sequelize.DOUBLE
+      },
 
 
       createdAt: {

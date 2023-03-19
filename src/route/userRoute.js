@@ -39,6 +39,7 @@ const initUserRoute = (app) => {
     router.get(routes.getShortVideoById, userController.getShortVideoById)
     router.get(routes.buyProductByCardSucess, userController.buyProductByCardSucess);
     router.get(routes.getListBlogByIdUser, userController.getListBlogByIdUser)
+    router.get(routes.getListCollectionBlogUserByPage, userController.getListCollectionBlogUserByPage)
 
 
     router.post(routes.CreateUser, userController.CreateUser)
@@ -101,6 +102,7 @@ const initUserRoute = (app) => {
     router.delete(routes.createNewEvaluateProductFailed, userController.createNewEvaluateProductFailed)
     router.delete(routes.deleteBlogUserById, userController.deleteBlogUserById)
     router.delete(routes.deleteCommentBlogById, userController.deleteCommentBlogById)
+    router.delete(routes.deleteCollectBlogById, userController.deleteCollectBlogById)
 
     return app.use('/', router);
 }

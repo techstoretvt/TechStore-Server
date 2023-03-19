@@ -13,6 +13,7 @@ const path = require('path');
 import { handleEmit } from '../index'
 var cloudinary = require('cloudinary');
 // await cloudinary.v2.uploader.destroy('vznd4hds4kudr0zbvfop')
+import Sequelize from 'sequelize';
 
 paypal.configure({
    'mode': 'sandbox', //sandbox or live
@@ -3319,7 +3320,7 @@ const createNewBlog = (data) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.contentHtml || !data.contentMarkdown
-            || !data.typeVideo || !data.bgColor
+            || !data.typeVideo || !data.bgColor || !data.editVideo || !data.editImage
          ) {
             resolve({
                errCode: 1,
@@ -3351,7 +3352,9 @@ const createNewBlog = (data) => {
                   viewBlog: 0,
                   typeBlog: 'default',
                   timePost: data.timePost || 0,
-                  backgroundColor: data.bgColor
+                  backgroundColor: data.bgColor,
+                  editVideo: data.editVideo,
+                  editImage: data.editImage
                })
 
                if (data.typeVideo === 'iframe' && data.urlVideo) {
@@ -3401,6 +3404,16 @@ const createNewImageBlog = ({ files, query }) => {
             })
 
             await db.imageBlogs.bulkCreate(array, { individualHooks: true })
+            let blog = await db.blogs.findOne({
+               where: {
+                  id: query.idBlog
+               },
+               raw: false
+            })
+            if (blog) {
+               blog.editImage = 'false'
+               await blog.save()
+            }
 
             // handleEmit
             let user = await db.User.findOne({
@@ -3467,6 +3480,16 @@ const uploadVideoNewBlog = (idBlog, fileName) => {
                   idDrive: urlVideo.id
                })
 
+            let blog = await db.blogs.findOne({
+               where: {
+                  id: idBlog
+               },
+               raw: false
+            })
+            if (blog) {
+               blog.editVideo = 'false'
+               await blog.save()
+            }
 
             let user = await db.User.findOne({
                include: [
@@ -3557,7 +3580,9 @@ const updateBlog = (data) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idBlog || !data.contentHtml || !data.contentMarkdown
-            || data.isVideo === undefined || !data.typeVideo || !data.bgColor) {
+            || data.isVideo === undefined || !data.typeVideo || !data.bgColor
+            || !data.editVideo || !data.editImage
+         ) {
             resolve({
                errCode: 1,
                errMessage: 'Missing required parameter!',
@@ -3594,6 +3619,8 @@ const updateBlog = (data) => {
                   blog.contentHTML = data.contentHtml
                   blog.contentMarkdown = data.contentMarkdown
                   blog.backgroundColor = data.bgColor
+                  blog.editVideo = data.editVideo
+                  blog.editImage = data.editImage
                   await blog.save();
 
 
@@ -3753,7 +3780,8 @@ const shareBlog = (data) => {
                      typeBlog: {
                         [Op.ne]: 'shareBlog'
                      }
-                  }
+                  },
+                  raw: false
                })
                if (!checkBlogExits) {
                   resolve({
@@ -3777,6 +3805,11 @@ const shareBlog = (data) => {
                   idBlog: blog.id,
                   idBlogShare: data.idBlog
                })
+
+               checkBlogExits.amountShare = checkBlogExits.amountShare + 1
+               await checkBlogExits.save()
+
+
                resolve({
                   errCode: 0,
                })
@@ -3814,7 +3847,8 @@ const toggleLikeBlog = (data) => {
                let checkBlogExits = await db.blogs.findOne({
                   where: {
                      id: data.idBlog,
-                  }
+                  },
+                  raw: false
                })
                if (!checkBlogExits) {
                   resolve({
@@ -3836,12 +3870,16 @@ const toggleLikeBlog = (data) => {
                })
 
                if (create) {
+                  checkBlogExits.amountLike = checkBlogExits.amountLike + 1
+                  await checkBlogExits.save()
                   resolve({
                      errCode: 0,
                      errMessage: 'Like'
                   })
                }
                else {
+                  checkBlogExits.amountLike = checkBlogExits.amountLike - 1
+                  await checkBlogExits.save()
                   await likeBlog.destroy()
 
                   resolve({
@@ -3901,6 +3939,20 @@ const createNewCommentBlog = (data) => {
                   idBlog: data.idBlog,
                   timeCommentBlog: date + ''
                })
+
+               //tang sl comment
+               let blog = await db.blogs.findOne({
+                  where: {
+                     id: data.idBlog
+                  },
+                  raw: false
+               })
+               if (blog) {
+                  blog.amountComment = blog.amountComment + 1
+                  await blog.save()
+               }
+
+
                resolve({
                   errCode: 0,
                })
@@ -4245,18 +4297,18 @@ const getListBlogUserByPage = (data) => {
                            }
                         ]
                      },
-                     {
-                        model: db.likeBlog,
-                        attributes: ['id']
-                     },
-                     {
-                        model: db.blogShares, as: 'listBlogShare',
-                        attributes: ['id']
-                     },
-                     {
-                        model: db.commentBlog,
-                        attributes: ['id']
-                     }
+                     // {
+                     //    model: db.likeBlog,
+                     //    attributes: ['id'],
+                     // },
+                     // {
+                     //    model: db.blogShares, as: 'listBlogShare',
+                     //    attributes: ['id']
+                     // },
+                     // {
+                     //    model: db.commentBlog,
+                     //    attributes: ['id']
+                     // }
 
                   ],
                   order: [['stt', 'DESC']],
@@ -4325,10 +4377,17 @@ const deleteBlogUserById = (data) => {
 
                let blog = await db.blogs.findOne({
                   where: {
-                     idUser,
-                     id: data.idBlog
+                     id: data.idBlog,
+                     idUser
                   },
-                  raw: false
+                  include: [
+                     {
+                        model: db.blogShares,
+                        as: 'blogs-blogShares-parent',
+                     }
+                  ],
+                  raw: false,
+                  nest: true
                })
                if (!blog) {
                   resolve({
@@ -4337,39 +4396,63 @@ const deleteBlogUserById = (data) => {
                   })
                }
                else {
-                  // await db.blogShares.destroy({
-                  //     where: {
-                  //         idBlog: blog.id
-                  //     }
-                  // })
-                  // let videoBlog = await db.videoBlogs.findOne({
-                  //     where: {
-                  //         idBlog: blog.id
-                  //     },
-                  //     raw: false
-                  // })
-                  // if (videoBlog) {
-                  //     if (videoBlog.idDrive !== '')
-                  //         GG_Drive.deleteFile(videoBlog.idDrive)
-                  //     await videoBlog.destroy()
-                  // }
-                  // let imageBlogs = await db.imageBlogs.findAll({
-                  //     where: {
-                  //         idBlog: blog.id
-                  //     }
-                  // })
-                  // if (imageBlogs && imageBlogs.length > 0) {
-                  //     imageBlogs.map(item => {
-                  //         cloudinary.v2.uploader.destroy(item.idCloudinary)
-                  //     })
-                  // }
-                  // await db.imageBlogs.destroy({
-                  //     where: {
-                  //         idBlog: blog.id
-                  //     }
-                  // })
-                  // await blog.destroy()
+                  await db.blogShares.destroy({
+                     where: {
+                        idBlog: blog.id
+                     }
+                  })
+                  let videoBlog = await db.videoBlogs.findOne({
+                     where: {
+                        idBlog: blog.id
+                     },
+                     raw: false
+                  })
+                  if (videoBlog) {
+                     if (videoBlog.idDrive !== '')
+                        GG_Drive.deleteFile(videoBlog.idDrive)
+                     await videoBlog.destroy()
+                  }
+                  let imageBlogs = await db.imageBlogs.findAll({
+                     where: {
+                        idBlog: blog.id
+                     }
+                  })
+                  if (imageBlogs && imageBlogs.length > 0) {
+                     imageBlogs.map(item => {
+                        cloudinary.v2.uploader.destroy(item.idCloudinary)
+                     })
+                  }
+                  await db.imageBlogs.destroy({
+                     where: {
+                        idBlog: blog.id
+                     }
+                  })
 
+
+                  //xoa amount share
+                  if (blog.typeBlog === "shareBlog") {
+                     if (data.idBlogShare) {
+                        let blogShare = await db.blogs.findOne({
+                           where: {
+                              id: data.idBlogShare
+                           },
+                           raw: false
+                        })
+
+
+                        if (blogShare) {
+                           console.log('tim thay');
+                           blogShare.amountShare = blogShare.amountShare - 1
+                           await blogShare.save()
+                        }
+                        else {
+                           console.log('khong tim thay');
+                        }
+                     }
+                  }
+
+
+                  await blog.destroy()
                   resolve({
                      errCode: 0,
                   })
@@ -4484,6 +4567,18 @@ const deleteCommentBlogById = (data) => {
                }
                else {
                   await commentBlog.destroy()
+
+                  let blog = await db.blogs.findOne({
+                     where: {
+                        id: commentBlog.idBlog
+                     },
+                     raw: false
+                  })
+                  if (blog) {
+                     blog.amountComment = blog.amountComment - 1
+                     await blog.save()
+                  }
+
                   resolve({
                      errCode: 0,
                   })
@@ -4758,6 +4853,139 @@ const saveBlogCollection = (data) => {
    })
 }
 
+const getListCollectionBlogUserByPage = (data) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         if (!data.accessToken || !data.page) {
+            resolve({
+               errCode: 1,
+               errMessage: 'Missing required parameter!',
+               data
+            })
+         }
+         else {
+            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+            if (decode === null) {
+               resolve({
+                  errCode: 2,
+                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                  decode
+               })
+            }
+            else {
+               let idUser = decode.id
+
+               let collections = await db.collectionBlogs.findAll({
+                  where: {
+                     idUser
+                  },
+                  limit: 20,
+                  offset: (data.page - 1) * 20,
+                  attributes: ['id', 'createdAt'],
+                  include: [
+                     {
+                        model: db.blogs,
+                        attributes: ['contentHTML', 'backgroundColor', 'id'],
+                        include: [
+                           {
+                              model: db.User,
+                              attributes: ['firstName', 'lastName'],
+                              where: {
+                                 statusUser: {
+                                    [Op.ne]: 'false'
+                                 }
+                              }
+                           }
+                        ]
+                     },
+
+                  ],
+                  raw: false
+               })
+
+               let count = await db.collectionBlogs.count({
+                  where: {
+                     idUser
+                  },
+                  include: [
+                     {
+                        model: db.blogs,
+                        include: [
+                           {
+                              model: db.User,
+                              where: {
+                                 statusUser: {
+                                    [Op.ne]: 'false'
+                                 }
+                              }
+                           }
+                        ]
+                     },
+
+                  ],
+                  raw: false
+               })
+
+
+
+               resolve({
+                  errCode: 0,
+                  data: collections,
+                  count
+               })
+
+
+            }
+         }
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
+
+const deleteCollectBlogById = (data) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         if (!data.accessToken || !data.idCollect) {
+            resolve({
+               errCode: 1,
+               errMessage: 'Missing required parameter!',
+               data
+            })
+         }
+         else {
+            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+            if (decode === null) {
+               resolve({
+                  errCode: 2,
+                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                  decode
+               })
+            }
+            else {
+               let idUser = decode.id
+
+               await db.collectionBlogs.destroy({
+                  where: {
+                     id: data.idCollect
+                  }
+               })
+
+               resolve({
+                  errCode: 0,
+               })
+
+
+            }
+         }
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
+
 
 
 module.exports = {
@@ -4824,5 +5052,7 @@ module.exports = {
    deleteCommentBlogById,
    updateCommentBlogById,
    getListBlogByIdUser,
-   saveBlogCollection
+   saveBlogCollection,
+   getListCollectionBlogUserByPage,
+   deleteCollectBlogById
 }

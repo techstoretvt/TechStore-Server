@@ -1061,7 +1061,7 @@ const getListBlog = (data) => {
                             model: db.User,
                             attributes: {
                                 exclude: [
-                                    'updatedAt', 'statusUser', 'sdt', 'pass', 'keyVerify', 'idGoogle', 'idGithub', 'idFacebook', 'id', 'email', 'createdAt', 'birtday', 'gender'
+                                    'updatedAt', 'statusUser', 'sdt', 'pass', 'keyVerify', 'idGoogle', 'idGithub', 'idFacebook', 'email', 'createdAt', 'birtday', 'gender'
                                 ]
                             },
                             where: {
@@ -1386,7 +1386,7 @@ const getBlogById = (data) => {
                             model: db.User,
                             attributes: {
                                 exclude: [
-                                    'updatedAt', 'statusUser', 'sdt', 'pass', 'keyVerify', 'idGoogle', 'idGithub', 'idFacebook', 'id', 'email', 'createdAt', 'birtday', 'gender'
+                                    'updatedAt', 'statusUser', 'sdt', 'pass', 'keyVerify', 'idGoogle', 'idGithub', 'idFacebook', 'email', 'createdAt', 'birtday', 'gender'
                                 ]
                             },
                             where: {

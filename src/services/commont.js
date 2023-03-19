@@ -156,6 +156,8 @@ const routes = {
     deleteCommentBlogById: '/api/v1/delete-comment-blog-by-id',
     getListBlogByIdUser: '/api/v1/get-list-blog-by-id-user',
     saveBlogCollection: '/api/v1/save-blog-collection',
+    getListCollectionBlogUserByPage: '/api/v1/get-list-collection-blog-user-by-page',
+    deleteCollectBlogById: '/api/v1/delete-collect-blog-by-id',
 
 }
 
