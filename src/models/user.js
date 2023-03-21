@@ -15,6 +15,7 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.likeBlog, { foreignKey: 'idUser' })
       User.hasMany(models.addressUser, { foreignKey: 'idUser' })
       User.hasMany(models.collectionBlogs, { foreignKey: 'idUser' })
+      User.hasMany(models.shortVideos, { foreignKey: 'idUser' })
     }
   }
   User.init({
@@ -30,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
     statusUser: DataTypes.STRING, //true, false , timestamp
     idGoogle: DataTypes.STRING,
     avatarGoogle: DataTypes.TEXT,
-    typeAccount: DataTypes.STRING,
+    typeAccount: DataTypes.STRING, //web, google, facebook, github
     idFacebook: DataTypes.STRING,
     idGithub: DataTypes.STRING,
     avatarFacebook: DataTypes.TEXT,

@@ -47,6 +47,7 @@ const initAppRoute = (app) => {
     router.get(routes.getBlogShareDefault, appController.getBlogShareDefault)
     router.get(routes.getBlogById, appController.getBlogById)
     router.get(routes.getCommentBlogByIdBlog, appController.getCommentBlogByIdBlog)
+    router.get(routes.getListShortVideo, appController.getListShortVideo)
 
 
 

@@ -1598,6 +1598,104 @@ const increaseViewBlogById = (data) => {
     })
 }
 
+const getListShortVideo = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            //Không có truyền tham số
+            if (!data._isv && !data.listIdVideo) {
+                let listVideo = await db.shortVideos.findAll({
+
+                    attributes: ['id', 'idDriveVideo', 'urlImage', 'content', 'scope'],
+                    include: [
+                        {
+                            model: db.hashTagVideos,
+                            attributes: ['id'],
+                            include: [
+                                {
+                                    model: db.product,
+                                    attributes: ['id', 'nameProduct']
+                                }
+                            ]
+                        },
+                        {
+                            model: db.User,
+                            attributes: ['id', 'firstName', 'lastName', 'idTypeUser', 'typeAccount',
+                                'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub', 'avatarUpdate',
+                                'statusUser'
+                            ],
+                            where: {
+                                statusUser: {
+                                    [Op.ne]: 'false'
+                                }
+                            }
+                        }
+                    ],
+                    raw: false,
+                    nest: true,
+                    limit: 5,
+                    order: db.sequelize.random()
+                })
+
+                resolve({
+                    errCode: 0,
+                    data: listVideo
+                })
+            }
+            else if (!data._isv && data.listIdVideo) {
+                let listVideo = await db.shortVideos.findAll({
+                    where: {
+                        id: {
+                            [Op.notIn]: data.listIdVideo
+                        },
+                        scope: 'public'
+                    },
+                    attributes: ['id', 'idDriveVideo', 'urlImage', 'content', 'scope'],
+                    include: [
+                        {
+                            model: db.hashTagVideos,
+                            attributes: ['id'],
+                            include: [
+                                {
+                                    model: db.product,
+                                    attributes: ['id', 'nameProduct']
+                                }
+                            ]
+                        },
+                        {
+                            model: db.User,
+                            attributes: ['id', 'firstName', 'lastName', 'idTypeUser', 'typeAccount',
+                                'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub', 'avatarUpdate',
+                                'statusUser'
+                            ],
+                            where: {
+                                statusUser: {
+                                    [Op.ne]: 'false'
+                                }
+                            }
+                        }
+                    ],
+                    raw: false,
+                    nest: true,
+                    limit: 5,
+                    order: db.sequelize.random()
+                })
+
+                resolve({
+                    errCode: 0,
+                    data: listVideo
+                })
+            }
+
+
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     getProductPromotionHome,
     getTopSellProduct,
@@ -1614,5 +1712,6 @@ module.exports = {
     getBlogShareDefault,
     getBlogById,
     getCommentBlogByIdBlog,
-    increaseViewBlogById
+    increaseViewBlogById,
+    getListShortVideo
 }
