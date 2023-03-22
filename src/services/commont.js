@@ -67,6 +67,7 @@ const routes = {
     getCommentBlogByIdBlog: '/api/v1/get-comment-blog-by-id-blog',
     increaseViewBlogById: '/api/v1/increase-view-blog-by-id',
     getListShortVideo: '/api/v1/get-list-short-video',
+    getListCommentShortVideoById: '/api/v1/get-list-comment-short-video-by-id',
 
 
     //admin

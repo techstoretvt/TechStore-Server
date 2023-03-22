@@ -1696,6 +1696,64 @@ const getListShortVideo = (data) => {
     })
 }
 
+const getListCommentShortVideoById = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idShortVideo || !data.offset) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+
+                let listComments = await db.commentShortVideos.findAll({
+                    where: {
+                        idShortVideo: data.idShortVideo
+                    },
+                    attributes: ['id', 'content', 'createdAt'],
+                    include: [
+                        {
+                            model: db.User,
+                            attributes: ['id', 'firstName', 'lastName', 'idTypeUser', 'typeAccount',
+                                'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub', 'avatarUpdate',
+                                'statusUser'
+                            ],
+                            where: {
+                                statusUser: {
+                                    [Op.ne]: 'false'
+                                }
+                            }
+                        }
+                    ],
+                    order: [['stt', 'DESC']],
+                    raw: false,
+                    nest: true
+                })
+
+
+                let idUser
+                if (data.accessToken) {
+                    let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                    if (decode !== null) {
+                        idUser = decode.id
+                    }
+                }
+
+                resolve({
+                    errCode: 0,
+                    data: listComments,
+                    idUser
+                })
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     getProductPromotionHome,
     getTopSellProduct,
@@ -1713,5 +1771,6 @@ module.exports = {
     getBlogById,
     getCommentBlogByIdBlog,
     increaseViewBlogById,
-    getListShortVideo
+    getListShortVideo,
+    getListCommentShortVideoById
 }

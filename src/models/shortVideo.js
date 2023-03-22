@@ -9,6 +9,7 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       shortVideos.hasMany(models.hashTagVideos, { foreignKey: 'idShortVideo' })
       shortVideos.belongsTo(models.User, { foreignKey: 'idUser' })
+      shortVideos.hasMany(models.commentShortVideos, { foreignKey: 'idShortVideo' })
 
     }
   }
