@@ -1606,7 +1606,9 @@ const getListShortVideo = (data) => {
             if (!data._isv && !data.listIdVideo) {
                 let listVideo = await db.shortVideos.findAll({
 
-                    attributes: ['id', 'idDriveVideo', 'urlImage', 'content', 'scope'],
+                    attributes: ['id', 'idDriveVideo', 'urlImage', 'content', 'scope',
+                        'countLike', 'countComment'
+                    ],
                     include: [
                         {
                             model: db.hashTagVideos,
@@ -1650,7 +1652,7 @@ const getListShortVideo = (data) => {
                         },
                         scope: 'public'
                     },
-                    attributes: ['id', 'idDriveVideo', 'urlImage', 'content', 'scope'],
+                    attributes: ['id', 'idDriveVideo', 'urlImage', 'content', 'scope', 'countLike', 'countComment'],
                     include: [
                         {
                             model: db.hashTagVideos,
@@ -1712,6 +1714,8 @@ const getListCommentShortVideoById = (data) => {
                     where: {
                         idShortVideo: data.idShortVideo
                     },
+                    limit: 20,
+                    offset: data.offset,
                     attributes: ['id', 'content', 'createdAt'],
                     include: [
                         {
@@ -1732,19 +1736,57 @@ const getListCommentShortVideoById = (data) => {
                     nest: true
                 })
 
+                let count = await db.commentShortVideos.count({
+                    where: {
+                        idShortVideo: data.idShortVideo
+                    },
+                    include: [
+                        {
+                            model: db.User,
+                            where: {
+                                statusUser: {
+                                    [Op.ne]: 'false'
+                                }
+                            }
+                        }
+                    ],
+                    raw: false,
+                    nest: true
+                })
 
-                let idUser
+
+                let idUser, User
                 if (data.accessToken) {
                     let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
                     if (decode !== null) {
-                        idUser = decode.id
+
+
+                        let user = await db.User.findOne({
+                            where: {
+                                id: decode.id,
+                                statusUser: {
+                                    [Op.ne]: 'false'
+                                }
+                            },
+                            attributes: ['id', 'firstName', 'lastName', 'idTypeUser', 'typeAccount',
+                                'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub', 'avatarUpdate',
+                                'statusUser'
+                            ],
+                        })
+
+                        if (user) {
+                            idUser = decode.id
+                            User = user
+                        }
                     }
                 }
 
                 resolve({
                     errCode: 0,
                     data: listComments,
-                    idUser
+                    idUser,
+                    count,
+                    User
                 })
             }
         }

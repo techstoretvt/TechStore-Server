@@ -10,6 +10,7 @@ module.exports = (sequelize, DataTypes) => {
       shortVideos.hasMany(models.hashTagVideos, { foreignKey: 'idShortVideo' })
       shortVideos.belongsTo(models.User, { foreignKey: 'idUser' })
       shortVideos.hasMany(models.commentShortVideos, { foreignKey: 'idShortVideo' })
+      shortVideos.hasMany(models.likeShortVideos, { foreignKey: 'idShortVideo' })
 
     }
   }
@@ -20,7 +21,10 @@ module.exports = (sequelize, DataTypes) => {
     content: DataTypes.STRING,
     scope: DataTypes.STRING, //public,private
     stt: DataTypes.INTEGER,
-    idCloudinary: DataTypes.STRING
+    idCloudinary: DataTypes.STRING,
+
+    countLike: DataTypes.DOUBLE,
+    countComment: DataTypes.DOUBLE,
 
 
   }, {

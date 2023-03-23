@@ -1064,6 +1064,82 @@ const deleteCollectBlogById = async (req, res) => {
     }
 }
 
+const createCommentShortVideo = async (req, res) => {
+    try {
+        let data = await userService.createCommentShortVideo(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const deleteCommentShortVideoById = async (req, res) => {
+    try {
+        let data = await userService.deleteCommentShortVideoById(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const editCommentShortVideoById = async (req, res) => {
+    try {
+        let data = await userService.editCommentShortVideoById(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const toggleLikeShortVideo = async (req, res) => {
+    try {
+        let data = await userService.toggleLikeShortVideo(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+
+const checkUserLikeShortVideo = async (req, res) => {
+    try {
+        let data = await userService.checkUserLikeShortVideo(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -1132,5 +1208,10 @@ module.exports = {
     getListBlogByIdUser,
     saveBlogCollection,
     getListCollectionBlogUserByPage,
-    deleteCollectBlogById
+    deleteCollectBlogById,
+    createCommentShortVideo,
+    deleteCommentShortVideoById,
+    editCommentShortVideoById,
+    toggleLikeShortVideo,
+    checkUserLikeShortVideo
 }

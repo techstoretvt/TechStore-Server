@@ -4986,73 +4986,330 @@ const deleteCollectBlogById = (data) => {
    })
 }
 
+const createCommentShortVideo = (data) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         if (!data.accessToken || !data.idShortVideo || !data.content) {
+            resolve({
+               errCode: 1,
+               errMessage: 'Missing required parameter!',
+               data
+            })
+         }
+         else {
+            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+            if (decode === null) {
+               resolve({
+                  errCode: 2,
+                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                  decode
+               })
+            }
+            else {
+               let shortVideo = await db.shortVideos.findOne({
+                  where: {
+                     id: data.idShortVideo
+                  },
+                  raw: false
+               })
+               if (!shortVideo) {
+                  resolve({
+                     errCode: 3,
+                     errMessage: 'Không tìm thấy video nào!',
+                  })
+                  return
+               }
 
+               await db.commentShortVideos.create({
+                  id: uuidv4(),
+                  idUser: decode.id,
+                  idShortVideo: data.idShortVideo,
+                  content: data.content
+               })
+
+               shortVideo.countComment = shortVideo.countComment + 1
+               await shortVideo.save()
+
+               resolve({
+                  errCode: 0,
+               })
+            }
+         }
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
+
+
+const deleteCommentShortVideoById = (data) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         if (!data.accessToken || !data.idCommemtShortVideo) {
+            resolve({
+               errCode: 1,
+               errMessage: 'Missing required parameter!',
+               data
+            })
+         }
+         else {
+            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+            if (decode === null) {
+               resolve({
+                  errCode: 2,
+                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                  decode
+               })
+            }
+            else {
+               let commentShortVideos = await db.commentShortVideos.findOne({
+                  where: {
+                     id: data.idCommemtShortVideo,
+                     idUser: decode.id
+                  },
+                  raw: false
+               })
+               if (!commentShortVideos) {
+                  resolve({
+                     errCode: 3,
+                     errMessage: 'Không tìm thấy hoặc bạn không được phép thực hiện chức năng này!',
+                  })
+                  return
+               }
+
+               let shortVideo = await db.shortVideos.findOne({
+                  where: {
+                     id: commentShortVideos.idShortVideo
+                  },
+                  raw: false
+               })
+
+               if (shortVideo) {
+                  shortVideo.countComment = shortVideo.countComment - 1
+                  await shortVideo.save()
+               }
+
+               await commentShortVideos.destroy()
+
+               resolve({
+                  errCode: 0,
+               })
+            }
+         }
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
+
+
+const editCommentShortVideoById = (data) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         if (!data.accessToken || !data.idCommemtShortVideo || !data.content || !data.idShortVideo) {
+            resolve({
+               errCode: 1,
+               errMessage: 'Missing required parameter!',
+               data
+            })
+         }
+         else {
+            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+            if (decode === null) {
+               resolve({
+                  errCode: 2,
+                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                  decode
+               })
+            }
+            else {
+               let idUser = decode.id
+               let commentShortVideos = await db.commentShortVideos.findOne({
+                  where: {
+                     id: data.idCommemtShortVideo,
+                     idUser,
+                     idShortVideo: data.idShortVideo
+                  },
+                  raw: false
+               })
+               if (!commentShortVideos) {
+                  resolve({
+                     errCode: 3,
+                     errMessage: 'Không tìm thấy hoặc bạn không được phép thực hiện chức năng này!',
+                  })
+                  return
+               }
+
+               commentShortVideos.content = data.content
+               await commentShortVideos.save()
+
+               resolve({
+                  errCode: 0,
+               })
+            }
+         }
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
+
+const toggleLikeShortVideo = (data) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         if (!data.accessToken || !data.idShortVideo) {
+            resolve({
+               errCode: 1,
+               errMessage: 'Missing required parameter!',
+               data
+            })
+         }
+         else {
+            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+            if (decode === null) {
+               resolve({
+                  errCode: 2,
+                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                  decode
+               })
+            }
+            else {
+               let idUser = decode.id
+               let shortVideo = await db.shortVideos.findOne({
+                  where: {
+                     id: data.idShortVideo
+                  },
+                  raw: false
+               })
+
+               if (!shortVideo) {
+                  resolve({
+                     errCode: 3,
+                     errMessage: 'Không tìm thấy hoặc bạn không được phép thực hiện chức năng này!',
+                  })
+                  return
+               }
+
+               let [likeShortVideo, create] = await db.likeShortVideos.findOrCreate({
+                  where: {
+                     idUser,
+                     idShortVideo: shortVideo.id
+                  },
+                  defaults: {
+                     id: uuidv4()
+                  },
+               })
+
+               if (create) {
+                  shortVideo.countLike = shortVideo.countLike + 1;
+                  await shortVideo.save()
+
+                  resolve({
+                     errCode: 0,
+                     mess: 'add'
+                  })
+               }
+               else {
+                  shortVideo.countLike = shortVideo.countLike - 1;
+                  await shortVideo.save()
+
+                  await db.likeShortVideos.destroy({
+                     where: {
+                        idUser,
+                        idShortVideo: shortVideo.id
+                     }
+                  })
+
+                  resolve({
+                     errCode: 0,
+                     mess: 'remove'
+                  })
+               }
+            }
+         }
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
+
+const checkUserLikeShortVideo = (data) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         if (!data.accessToken || !data.idShortVideo) {
+            resolve({
+               errCode: 1,
+               errMessage: 'Missing required parameter!',
+               data
+            })
+         }
+         else {
+            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+            if (decode === null) {
+               resolve({
+                  errCode: 2,
+                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                  decode
+               })
+            }
+            else {
+               let idUser = decode.id
+               let likeShortVideo = await db.likeShortVideos.findOne({
+                  where: {
+                     idUser,
+                     idShortVideo: data.idShortVideo
+                  }
+               })
+
+               if (likeShortVideo) {
+                  resolve({
+                     errCode: 0,
+                     mess: true
+                  })
+               }
+               else {
+                  resolve({
+                     errCode: 0,
+                     mess: false
+                  })
+               }
+            }
+         }
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
 
 module.exports = {
-   CreateUser,
-   verifyCreateUser,
-   userLogin,
-   refreshToken,
-   getUserLogin,
-   loginGoogle,
-   loginFacebook,
-   loginGithub,
-   addProductToCart,
-   addCartOrMoveCart,
-   addNewAddressUser,
-   getAddressUser,
-   setDefaultAddress,
-   deleteAddressUser,
-   editAddressUser,
-   getListCartUser,
-   editAmountCartUser,
-   chooseProductInCart,
-   deleteProductInCart,
-   updateClassifyProductInCart,
-   createNewBill,
-   chooseAllProductInCart,
-   getUserLoginRefreshToken,
-   getListBillByType,
-   userCancelBill,
-   userRepurchaseBill,
-   getCodeVeridyForgetPass,
-   changePassForget,
-   checkKeyVerify,
-   hasReceivedProduct,
-   buyProductByCard,
-   buyProductByCardSucess,
-   createNewEvaluateProduct,
-   uploadVideoEvaluateProduct,
-   uploadImagesEvaluateProduct,
-   createNewEvaluateProductFailed,
-   updataEvaluateProduct,
-   deleteVideoEvaluate,
-   updateVideoEvaluate,
-   updateProfileUser,
-   updateAvatarUser,
-   getConfirmCodeChangePass,
-   confirmCodeChangePass,
-   createNewBlog,
-   createNewImageBlog,
-   uploadVideoNewBlog,
-   getBlogById,
-   updateBlog,
-   shareProduct,
-   shareBlog,
-   toggleLikeBlog,
-   createNewCommentBlog,
-   createNewShortVideo,
-   uploadCoverImageShortVideo,
-   uploadVideoForShortVideo,
-   getShortVideoById,
-   updateShortVideoById,
-   getListBlogUserByPage,
-   deleteBlogUserById,
-   editContentBlogUserById,
-   deleteCommentBlogById,
-   updateCommentBlogById,
-   getListBlogByIdUser,
-   saveBlogCollection,
-   getListCollectionBlogUserByPage,
-   deleteCollectBlogById
+   CreateUser, verifyCreateUser, userLogin, refreshToken,
+   getUserLogin, loginGoogle, loginFacebook, loginGithub,
+   addProductToCart, addCartOrMoveCart, addNewAddressUser, getAddressUser,
+   setDefaultAddress, deleteAddressUser, editAddressUser, getListCartUser,
+   editAmountCartUser, chooseProductInCart, deleteProductInCart,
+   updateClassifyProductInCart, createNewBill, chooseAllProductInCart,
+   getUserLoginRefreshToken, getListBillByType, userCancelBill,
+   userRepurchaseBill, getCodeVeridyForgetPass, changePassForget, checkKeyVerify,
+   hasReceivedProduct, buyProductByCard, buyProductByCardSucess,
+   createNewEvaluateProduct, uploadVideoEvaluateProduct, uploadImagesEvaluateProduct,
+   createNewEvaluateProductFailed, updataEvaluateProduct, deleteVideoEvaluate,
+   updateVideoEvaluate, updateProfileUser, updateAvatarUser,
+   getConfirmCodeChangePass, confirmCodeChangePass, createNewBlog,
+   createNewImageBlog, uploadVideoNewBlog, getBlogById,
+   updateBlog, shareProduct, shareBlog, toggleLikeBlog,
+   createNewCommentBlog, createNewShortVideo, uploadCoverImageShortVideo,
+   uploadVideoForShortVideo, getShortVideoById,
+   updateShortVideoById, getListBlogUserByPage, deleteBlogUserById,
+   editContentBlogUserById, deleteCommentBlogById,
+   updateCommentBlogById, getListBlogByIdUser, saveBlogCollection,
+   getListCollectionBlogUserByPage, deleteCollectBlogById,
+   createCommentShortVideo, deleteCommentShortVideoById,
+   editCommentShortVideoById,
+   toggleLikeShortVideo,
+   checkUserLikeShortVideo
 }

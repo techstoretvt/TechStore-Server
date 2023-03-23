@@ -160,6 +160,11 @@ const routes = {
     saveBlogCollection: '/api/v1/save-blog-collection',
     getListCollectionBlogUserByPage: '/api/v1/get-list-collection-blog-user-by-page',
     deleteCollectBlogById: '/api/v1/delete-collect-blog-by-id',
+    createCommentShortVideo: '/api/v1/create-comment-short-video',
+    deleteCommentShortVideoById: '/api/v1/delete-comment-shortvideo-by-id',
+    editCommentShortVideoById: '/api/v1/edit-comment-shortvideo-by-id',
+    toggleLikeShortVideo: '/api/v1/toggle-like-shortvideo',
+    checkUserLikeShortVideo: '/api/v1/check-user-like-shortvideo',
 
 }
 

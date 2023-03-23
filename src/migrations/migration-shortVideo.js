@@ -30,6 +30,16 @@ module.exports = {
         type: Sequelize.STRING
       },
 
+      countLike: {
+        defaultValue: 0,
+        type: Sequelize.DOUBLE
+      },
+
+      countComment: {
+        defaultValue: 0,
+        type: Sequelize.DOUBLE
+      },
+
 
       stt: {
         allowNull: false,

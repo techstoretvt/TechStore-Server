@@ -40,6 +40,7 @@ const initUserRoute = (app) => {
     router.get(routes.buyProductByCardSucess, userController.buyProductByCardSucess);
     router.get(routes.getListBlogByIdUser, userController.getListBlogByIdUser)
     router.get(routes.getListCollectionBlogUserByPage, userController.getListCollectionBlogUserByPage)
+    router.get(routes.checkUserLikeShortVideo, userController.checkUserLikeShortVideo)
 
 
     router.post(routes.CreateUser, userController.CreateUser)
@@ -71,6 +72,8 @@ const initUserRoute = (app) => {
     router.post(routes.uploadCoverImageShortVideo, fileUploader.single('file'), userController.uploadCoverImageShortVideo)
     router.post(routes.uploadVideoForShortVideo, upload.single('video'), userController.uploadVideoForShortVideo)
     router.post(routes.saveBlogCollection, userController.saveBlogCollection)
+    router.post(routes.createCommentShortVideo, userController.createCommentShortVideo)
+    router.post(routes.toggleLikeShortVideo, userController.toggleLikeShortVideo)
 
 
 
@@ -93,6 +96,7 @@ const initUserRoute = (app) => {
     router.put(routes.updateShortVideoById, userController.updateShortVideoById)
     router.put(routes.editContentBlogUserById, userController.editContentBlogUserById)
     router.put(routes.updateCommentBlogById, userController.updateCommentBlogById)
+    router.put(routes.editCommentShortVideoById, userController.editCommentShortVideoById)
 
 
 
@@ -103,6 +107,8 @@ const initUserRoute = (app) => {
     router.delete(routes.deleteBlogUserById, userController.deleteBlogUserById)
     router.delete(routes.deleteCommentBlogById, userController.deleteCommentBlogById)
     router.delete(routes.deleteCollectBlogById, userController.deleteCollectBlogById)
+    router.delete(routes.deleteCommentShortVideoById, userController.deleteCommentShortVideoById)
+
 
     return app.use('/', router);
 }
