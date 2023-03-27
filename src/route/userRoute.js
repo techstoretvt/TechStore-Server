@@ -41,6 +41,7 @@ const initUserRoute = (app) => {
     router.get(routes.getListBlogByIdUser, userController.getListBlogByIdUser)
     router.get(routes.getListCollectionBlogUserByPage, userController.getListCollectionBlogUserByPage)
     router.get(routes.checkUserLikeShortVideo, userController.checkUserLikeShortVideo)
+    router.get(routes.CheckSaveCollectionShortVideo, userController.CheckSaveCollectionShortVideo)
 
 
     router.post(routes.CreateUser, userController.CreateUser)
@@ -74,6 +75,7 @@ const initUserRoute = (app) => {
     router.post(routes.saveBlogCollection, userController.saveBlogCollection)
     router.post(routes.createCommentShortVideo, userController.createCommentShortVideo)
     router.post(routes.toggleLikeShortVideo, userController.toggleLikeShortVideo)
+    router.post(routes.saveCollectionShortVideo, userController.saveCollectionShortVideo)
 
 
 

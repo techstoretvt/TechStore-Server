@@ -8,10 +8,12 @@ const { Op } = require("sequelize");
 const paypal = require('paypal-rest-sdk');
 import commont from '../services/commont'
 const { google } = require('googleapis');
+const { OAuth2Client } = require('google-auth-library');
 const fs = require('fs');
 const path = require('path');
 import { handleEmit } from '../index'
 var cloudinary = require('cloudinary');
+
 // await cloudinary.v2.uploader.destroy('vznd4hds4kudr0zbvfop')
 import Sequelize from 'sequelize';
 
@@ -26,12 +28,13 @@ const REDIRECT_URI = process.env.REDIRECT_URI;
 const REFRESH_TOKEN = process.env.REFRESH_TOKEN;
 
 
-const oauth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
-oauth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+
+const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
+oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
 
 const drive = google.drive({
    version: 'v3',
-   auth: oauth2Client
+   auth: oAuth2Client
 })
 
 let GG_Drive = {
@@ -55,13 +58,16 @@ let GG_Drive = {
          console.error(error);
       }
    },
-   uploadFile: async (name) => {
+   uploadFile: async (name, idForder = "") => {
       try {
          let date = new Date().getTime()
+
          const createFile = await drive.files.create({
             requestBody: {
                name: `Video-${date}`,
-               mimeType: 'video/mp4'
+               mimeType: 'video/mp4',
+               parents: [idForder],
+               // parents: ['19zNlML-kybw2jufbGE7L5VesvrJ-WIQi'],
             },
             media: {
                mimeType: 'video/mp4',
@@ -77,7 +83,7 @@ let GG_Drive = {
          }
 
       } catch (error) {
-         console.error(error);
+         console.error('Loi tu upload', error);
       }
    },
    deleteFile: async (fileId) => {
@@ -90,8 +96,6 @@ let GG_Drive = {
       }
    }
 }
-
-
 
 let verifier_email = new Verifier(process.env.API_KEY_VERIFY_EMAIL, {
    checkCatchAll: false,
@@ -2813,7 +2817,7 @@ const createNewEvaluateProduct = (data) => {
 const uploadVideoEvaluateProduct = (id, url) => {
    return new Promise(async (resolve, reject) => {
       try {
-         let urlVideo = await GG_Drive.uploadFile(url)
+         let urlVideo = await GG_Drive.uploadFile(url, process.env.ID_FOLDER_VIDEO_EVALUATE)
 
          await db.videoEvaluateProduct.create({
             id: uuidv4(),
@@ -3054,7 +3058,7 @@ const updateVideoEvaluate = (id, filename) => {
             })
          }
 
-         let urlVideo = await GG_Drive.uploadFile(filename)
+         let urlVideo = await GG_Drive.uploadFile(filename, process.env.ID_FOLDER_VIDEO_EVALUATE)
 
          await db.videoEvaluateProduct.create({
             id: uuidv4(),
@@ -3470,7 +3474,7 @@ const uploadVideoNewBlog = (idBlog, fileName) => {
                await videoBlogs.destroy()
             }
 
-            let urlVideo = await GG_Drive.uploadFile(fileName)
+            let urlVideo = await GG_Drive.uploadFile(fileName, process.env.ID_FOLDER_VIDEO_BLOG)
 
             if (urlVideo)
                await db.videoBlogs.create({
@@ -4059,7 +4063,7 @@ const uploadCoverImageShortVideo = ({ file, query }) => {
 const uploadVideoForShortVideo = (idShortVideo, url) => {
    return new Promise(async (resolve, reject) => {
       try {
-         let urlVideo = await GG_Drive.uploadFile(url)
+         let urlVideo = await GG_Drive.uploadFile(url, process.env.ID_FOLDER_SHORT_VIDEO)
 
          let shortVideo = await db.shortVideos.findOne({
             where: {
@@ -5286,6 +5290,109 @@ const checkUserLikeShortVideo = (data) => {
    })
 }
 
+const saveCollectionShortVideo = (data) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         if (!data.accessToken || !data.idShortVideo) {
+            resolve({
+               errCode: 1,
+               errMessage: 'Missing required parameter!',
+               data
+            })
+         }
+         else {
+            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+            if (decode === null) {
+               resolve({
+                  errCode: 2,
+                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                  decode
+               })
+            }
+            else {
+               let idUser = decode.id
+               let [collectionShortVideo, create] = await db.collectionShortVideos.findOrCreate({
+                  where: {
+                     idUser,
+                     idShortVideo: data.idShortVideo
+                  },
+                  defaults: {
+                     id: uuidv4()
+                  },
+                  raw: false
+               })
+
+               if (create) {
+                  resolve({
+                     errCode: 0,
+                     mess: 'add'
+                  })
+               }
+               else {
+                  await collectionShortVideo.destroy();
+                  resolve({
+                     errCode: 0,
+                     mess: 'remove'
+                  })
+               }
+            }
+         }
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
+
+const CheckSaveCollectionShortVideo = (data) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         if (!data.accessToken || !data.idShortVideo) {
+            resolve({
+               errCode: 1,
+               errMessage: 'Missing required parameter!',
+               data
+            })
+         }
+         else {
+            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+            if (decode === null) {
+               resolve({
+                  errCode: 2,
+                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                  decode
+               })
+            }
+            else {
+               let idUser = decode.id
+               let collectionShortVideo = await db.collectionShortVideos.findOne({
+                  where: {
+                     idUser,
+                     idShortVideo: data.idShortVideo
+                  },
+               })
+
+               if (collectionShortVideo) {
+                  resolve({
+                     errCode: 0,
+                     mess: true
+                  })
+               }
+               else {
+                  resolve({
+                     errCode: 0,
+                     mess: false
+                  })
+               }
+            }
+         }
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
+
 module.exports = {
    CreateUser, verifyCreateUser, userLogin, refreshToken,
    getUserLogin, loginGoogle, loginFacebook, loginGithub,
@@ -5311,5 +5418,5 @@ module.exports = {
    createCommentShortVideo, deleteCommentShortVideoById,
    editCommentShortVideoById,
    toggleLikeShortVideo,
-   checkUserLikeShortVideo
+   checkUserLikeShortVideo, saveCollectionShortVideo, CheckSaveCollectionShortVideo
 }

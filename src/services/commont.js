@@ -165,6 +165,8 @@ const routes = {
     editCommentShortVideoById: '/api/v1/edit-comment-shortvideo-by-id',
     toggleLikeShortVideo: '/api/v1/toggle-like-shortvideo',
     checkUserLikeShortVideo: '/api/v1/check-user-like-shortvideo',
+    saveCollectionShortVideo: '/api/v1/save-collection-short-video',
+    CheckSaveCollectionShortVideo: '/api/v1/check-save-collection-short-video',
 
 }
 

@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       shortVideos.belongsTo(models.User, { foreignKey: 'idUser' })
       shortVideos.hasMany(models.commentShortVideos, { foreignKey: 'idShortVideo' })
       shortVideos.hasMany(models.likeShortVideos, { foreignKey: 'idShortVideo' })
+      shortVideos.hasMany(models.collectionShortVideos, { foreignKey: 'idShortVideo' })
 
     }
   }
