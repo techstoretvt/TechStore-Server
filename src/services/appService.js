@@ -1796,6 +1796,87 @@ const getListCommentShortVideoById = (data) => {
     })
 }
 
+const getListProductHashTagByIdVideo = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idShortVideo) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let video = await db.shortVideos.findOne({
+                    where: {
+                        id: data.idShortVideo
+                    },
+                    attributes: ['id'],
+                    include: [
+                        {
+                            model: db.hashTagVideos,
+                            attributes: ['id'],
+                            include: [
+                                {
+                                    model: db.product,
+                                    attributes: ['id', 'nameProduct', 'priceProduct', 'isSell', 'sold'],
+                                    include: [
+                                        {
+                                            model: db.imageProduct, as: 'imageProduct-product',
+                                            attributes: {
+                                                exclude: ['createdAt', 'updatedAt', 'id']
+                                            },
+                                        },
+                                        {
+                                            model: db.trademark,
+                                            attributes: {
+                                                exclude: ['createdAt', 'updatedAt', 'id']
+                                            }
+                                        },
+                                        {
+                                            model: db.typeProduct,
+                                            attributes: {
+                                                exclude: ['createdAt', 'updatedAt', 'id']
+                                            },
+                                        },
+                                        {
+                                            model: db.classifyProduct, as: 'classifyProduct-product',
+                                            // attributes: {
+                                            //     exclude: ['createdAt', 'updatedAt', 'id']
+                                            // }
+                                        },
+                                        {
+                                            model: db.promotionProduct,
+                                            attributes: {
+                                                exclude: ['createdAt', 'updatedAt', 'id']
+                                            },
+                                        }
+                                    ],
+                                    order: [
+                                        [{ model: db.imageProduct, as: 'imageProduct-product' }, 'STTImage', 'asc']
+                                    ],
+
+                                }
+                            ]
+                        }
+                    ],
+                    raw: false,
+                    nest: true
+                })
+
+                resolve({
+                    errCode: 0,
+                    data: video
+                })
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     getProductPromotionHome,
     getTopSellProduct,
@@ -1814,5 +1895,6 @@ module.exports = {
     getCommentBlogByIdBlog,
     increaseViewBlogById,
     getListShortVideo,
-    getListCommentShortVideoById
+    getListCommentShortVideoById,
+    getListProductHashTagByIdVideo
 }

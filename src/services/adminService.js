@@ -2,6 +2,7 @@ import db from '../models'
 import { v4 as uuidv4 } from 'uuid';
 import { sendEmail } from './commont'
 import { Sequelize } from 'sequelize';
+var cloudinary = require('cloudinary');
 
 const addTypeProduct = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -91,6 +92,9 @@ const deleteTypeProduct = (data) => {
                     raw: false
                 });
                 if (typeProduct) {
+                    let idCloudinary = typeProduct.imageTypeProduct.split("/").pop().split(".")[0];
+                    cloudinary.v2.uploader.destroy(idCloudinary)
+
                     await typeProduct.destroy();
 
                     let restrademark = await db.trademark.findAll({
@@ -169,6 +173,8 @@ const updateTypeProductById = (data) => {
                             .replace(/[\u0300-\u036f]/g, '')
                             .replace(/đ/g, 'd').replace(/Đ/g, 'D')
                         if (data.file) {
+                            let idCloudinary = typeProduct.imageTypeProduct.split("/").pop().split(".")[0];
+                            cloudinary.v2.uploader.destroy(idCloudinary)
                             typeProduct.imageTypeProduct = data.file.path
                         }
                         await typeProduct.save();
@@ -726,6 +732,15 @@ const swapImageProduct = (data) => {
                 })
             }
             else {
+                let listImage = await db.imageProduct.findAll({
+                    where: {
+                        idProduct: data.idProduct
+                    }
+                })
+                listImage.forEach(item => {
+                    let idCloudinary = item.imageTypeProduct.split("/").pop().split(".")[0];
+                    cloudinary.v2.uploader.destroy(idCloudinary)
+                })
 
                 await db.imageProduct.destroy({
                     where: {

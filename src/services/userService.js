@@ -265,10 +265,10 @@ const contentSendEmail = (idUser, keyVerify, firstName) => {
 const CreateToken = (user) => {
    const { id, idGoogle, firstName, idTypeUser } = user;
    const accessToken = jwt.sign({ id, idGoogle, firstName, idTypeUser }, process.env.ACCESS_TOKEN_SECRET, {
-      expiresIn: '1d'
+      expiresIn: '30m'
    });
    const refreshToken = jwt.sign({ id, idGoogle, firstName, idTypeUser }, process.env.REFESH_TOKEN_SECRET, {
-      expiresIn: '3d'
+      expiresIn: '7d'
    });
 
    return { accessToken, refreshToken };
@@ -3176,6 +3176,11 @@ const updateAvatarUser = ({ file, query }) => {
                   })
                }
                else {
+                  if (user.avatarUpdate) {
+                     let idCloudinary = user.avatarUpdate.split("/").pop().split(".")[0];
+                     cloudinary.v2.uploader.destroy(idCloudinary)
+                  }
+
                   user.avatarUpdate = file.path
                   await user.save()
 
