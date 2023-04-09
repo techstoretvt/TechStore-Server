@@ -32,6 +32,7 @@ const initAppRoute = (app) => {
     })
     router.get('/account', userController.accountVerifyPage)
     router.get('/verify-email', userController.verifyEmail)
+    router.get('/api/v1/check-start-server', appController.checkStartServer)
 
     //app api
     router.get(routes.getProductPromotionHome, appController.getProductPromotionHome)

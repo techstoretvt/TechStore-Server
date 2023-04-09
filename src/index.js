@@ -50,6 +50,10 @@ io.on('connection', (socket) => {
             linkFe: process.env.LINK_FONTEND
         })
     });
+
+    socket.on('disconnect', () => {
+        console.log('user disconnected');
+    });
 })
 export const handleEmit = (nameEmit, contentEmit) => {
     io.emit(nameEmit, contentEmit)

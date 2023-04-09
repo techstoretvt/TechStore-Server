@@ -1,5 +1,19 @@
 import appService from '../services/appService'
 
+const checkStartServer = async (req, res) => {
+    try {
+        return res.status(200).json({
+            errCode: 0
+        })
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
 
 const getProductPromotionHome = async (req, res) => {
     try {
@@ -300,6 +314,7 @@ const getListProductHashTagByIdVideo = async (req, res) => {
 }
 
 module.exports = {
+    checkStartServer,
     getProductPromotionHome,
     getTopSellProduct,
     getNewCollectionProduct,
@@ -318,5 +333,6 @@ module.exports = {
     increaseViewBlogById,
     getListShortVideo,
     getListCommentShortVideoById,
-    getListProductHashTagByIdVideo
+    getListProductHashTagByIdVideo,
+
 }
