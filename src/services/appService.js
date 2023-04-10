@@ -1688,7 +1688,48 @@ const getListShortVideo = (data) => {
                     data: listVideo
                 })
             }
+            else if (data._isv) {
+                let listVideo = await db.shortVideos.findOne({
+                    where: {
+                        id: data._isv,
+                        scope: 'public'
+                    },
+                    attributes: ['id', 'idDriveVideo', 'urlImage', 'content', 'scope', 'countLike', 'countComment'],
+                    include: [
+                        {
+                            model: db.hashTagVideos,
+                            attributes: ['id'],
+                            include: [
+                                {
+                                    model: db.product,
+                                    attributes: ['id', 'nameProduct']
+                                }
+                            ]
+                        },
+                        {
+                            model: db.User,
+                            attributes: ['id', 'firstName', 'lastName', 'idTypeUser', 'typeAccount',
+                                'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub', 'avatarUpdate',
+                                'statusUser'
+                            ],
+                            where: {
+                                statusUser: {
+                                    [Op.ne]: 'false'
+                                }
+                            }
+                        }
+                    ],
+                    raw: false,
+                    nest: true,
+                    // limit: 5,
+                    // order: db.sequelize.random()
+                })
 
+                resolve({
+                    errCode: 0,
+                    data: listVideo
+                })
+            }
 
 
         }
