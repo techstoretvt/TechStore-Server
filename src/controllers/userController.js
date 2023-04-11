@@ -1170,6 +1170,36 @@ const CheckSaveCollectionShortVideo = async (req, res) => {
     }
 }
 
+const getListVideoByIdUser = async (req, res) => {
+    try {
+        let data = await userService.getListVideoByIdUser(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const getUserById = async (req, res) => {
+    try {
+        let data = await userService.getUserById(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -1245,5 +1275,7 @@ module.exports = {
     toggleLikeShortVideo,
     checkUserLikeShortVideo,
     saveCollectionShortVideo,
-    CheckSaveCollectionShortVideo
+    CheckSaveCollectionShortVideo,
+    getListVideoByIdUser,
+    getUserById
 }

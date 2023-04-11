@@ -15,7 +15,7 @@ import { handleEmit } from '../index'
 var cloudinary = require('cloudinary');
 
 // await cloudinary.v2.uploader.destroy('vznd4hds4kudr0zbvfop')
-import Sequelize from 'sequelize';
+import sequelize from 'sequelize';
 
 paypal.configure({
    'mode': 'sandbox', //sandbox or live
@@ -5398,6 +5398,250 @@ const CheckSaveCollectionShortVideo = (data) => {
    })
 }
 
+
+const getListVideoByIdUser = (data) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         if ((!data.idUser && !data.accessToken) || !data.page || !data.ft || !data.nav) {
+            resolve({
+               errCode: 1,
+               errMessage: 'Missing required parameter!',
+               data
+            })
+         }
+         else {
+            let idUser = ''
+            if (data.idUser && !data.accessToken) idUser = data.idUser
+            else {
+               let decoded = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+               if (decoded === null) {
+                  resolve({
+                     errCode: 2,
+                     errMessage: 'Đăng nhập đã hết hạn!'
+                  })
+                  return
+               }
+               idUser = decoded.id
+            }
+
+            let count = await db.shortVideos.count({
+               where: {
+                  idUser
+               },
+            })
+
+            let countLike = await db.shortVideos.sum('countLike')
+
+            if (data.nav === 'video') {
+               let listVideo = await db.shortVideos.findAll({
+                  where: {
+                     idUser
+                  },
+
+                  attributes: ['id', 'idDriveVideo', 'urlImage', 'content', 'scope',
+                     'countLike', 'countComment', 'stt',
+                  ],
+                  include: [
+                     {
+                        model: db.hashTagVideos,
+                        attributes: ['id'],
+                        include: [
+                           {
+                              model: db.product,
+                              attributes: ['id', 'nameProduct']
+                           }
+                        ]
+                     },
+                     {
+                        model: db.User,
+                        attributes: ['id', 'firstName', 'lastName', 'idTypeUser', 'typeAccount',
+                           'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub', 'avatarUpdate',
+                           'statusUser'
+                        ],
+                        where: {
+                           statusUser: {
+                              [Op.ne]: 'false'
+                           }
+                        }
+                     }
+                  ],
+                  raw: false,
+                  nest: true,
+                  offset: (data.page * 1 - 1) * 50,
+                  limit: 50,
+                  order: [['stt', data.ft === 'old' ? 'ASC' : 'DESC']]
+               })
+
+
+
+               resolve({
+                  errCode: 0,
+                  data: listVideo,
+                  countPage: count,
+                  countLike
+               })
+            }
+
+            else if (data.nav === 'save') {
+               let listVideo = await db.shortVideos.findAll({
+                  // where: {
+                  //    idUser
+                  // },
+
+                  attributes: ['id', 'idDriveVideo', 'urlImage', 'content', 'scope',
+                     'countLike', 'countComment', 'stt',
+                  ],
+                  include: [
+                     {
+                        model: db.hashTagVideos,
+                        attributes: ['id'],
+                        include: [
+                           {
+                              model: db.product,
+                              attributes: ['id', 'nameProduct']
+                           }
+                        ]
+                     },
+                     {
+                        model: db.User,
+                        attributes: ['id', 'firstName', 'lastName', 'idTypeUser', 'typeAccount',
+                           'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub', 'avatarUpdate',
+                           'statusUser'
+                        ],
+                        where: {
+                           statusUser: {
+                              [Op.ne]: 'false'
+                           }
+                        }
+                     },
+                     {
+                        model: db.collectionShortVideos,
+                        where: {
+                           idUser
+                        },
+                        attributes: ['id']
+                     }
+                  ],
+                  raw: false,
+                  nest: true,
+                  offset: (data.page * 1 - 1) * 50,
+                  limit: 50,
+                  order: [['stt', data.ft === 'old' ? 'ASC' : 'DESC']]
+               })
+
+
+
+               resolve({
+                  errCode: 0,
+                  data: listVideo,
+                  countPage: count,
+                  countLike
+               })
+            }
+            else if (data.nav === 'like') {
+               let listVideo = await db.shortVideos.findAll({
+                  // where: {
+                  //    idUser
+                  // },
+
+                  attributes: ['id', 'idDriveVideo', 'urlImage', 'content', 'scope',
+                     'countLike', 'countComment', 'stt',
+                  ],
+                  include: [
+                     {
+                        model: db.hashTagVideos,
+                        attributes: ['id'],
+                        include: [
+                           {
+                              model: db.product,
+                              attributes: ['id', 'nameProduct']
+                           }
+                        ]
+                     },
+                     {
+                        model: db.User,
+                        attributes: ['id', 'firstName', 'lastName', 'idTypeUser', 'typeAccount',
+                           'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub', 'avatarUpdate',
+                           'statusUser'
+                        ],
+                        where: {
+                           statusUser: {
+                              [Op.ne]: 'false'
+                           }
+                        }
+                     },
+                     {
+                        model: db.likeShortVideos,
+                        where: {
+                           idUser
+                        },
+                        attributes: ['id']
+                     }
+                  ],
+                  raw: false,
+                  nest: true,
+                  offset: (data.page * 1 - 1) * 50,
+                  limit: 50,
+                  order: [['stt', data.ft === 'old' ? 'ASC' : 'DESC']]
+               })
+
+
+
+               resolve({
+                  errCode: 0,
+                  data: listVideo,
+                  countPage: count,
+                  countLike
+               })
+            }
+
+
+         }
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
+
+
+const getUserById = (data) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         if (!data.idUser) {
+            resolve({
+               errCode: 1,
+               errMessage: 'Missing required parameter!',
+               data
+            })
+         }
+         else {
+            let user = await db.User.findOne({
+               where: {
+                  id: data.idUser
+               }
+            })
+
+            if (user) {
+               resolve({
+                  errCode: 0,
+                  data: user
+               })
+            }
+            else {
+               resolve({
+                  errCode: 2,
+                  errMessage: 'Not found user'
+               })
+            }
+         }
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
+
 module.exports = {
    CreateUser, verifyCreateUser, userLogin, refreshToken,
    getUserLogin, loginGoogle, loginFacebook, loginGithub,
@@ -5423,5 +5667,6 @@ module.exports = {
    createCommentShortVideo, deleteCommentShortVideoById,
    editCommentShortVideoById,
    toggleLikeShortVideo,
-   checkUserLikeShortVideo, saveCollectionShortVideo, CheckSaveCollectionShortVideo
+   checkUserLikeShortVideo, saveCollectionShortVideo, CheckSaveCollectionShortVideo,
+   getListVideoByIdUser, getUserById
 }

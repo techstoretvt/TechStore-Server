@@ -42,6 +42,8 @@ const initUserRoute = (app) => {
     router.get(routes.getListCollectionBlogUserByPage, userController.getListCollectionBlogUserByPage)
     router.get(routes.checkUserLikeShortVideo, userController.checkUserLikeShortVideo)
     router.get(routes.CheckSaveCollectionShortVideo, userController.CheckSaveCollectionShortVideo)
+    router.get(routes.getListVideoByIdUser, userController.getListVideoByIdUser)
+    router.get(routes.getUserById, userController.getUserById)
 
 
     router.post(routes.CreateUser, userController.CreateUser)

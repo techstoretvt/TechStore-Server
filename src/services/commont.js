@@ -168,6 +168,8 @@ const routes = {
     checkUserLikeShortVideo: '/api/v1/check-user-like-shortvideo',
     saveCollectionShortVideo: '/api/v1/save-collection-short-video',
     CheckSaveCollectionShortVideo: '/api/v1/check-save-collection-short-video',
+    getListVideoByIdUser: '/api/v1/get-list-video-by-id-user',
+    getUserById: '/api/v1/get-user-by-id'
 
 }
 
