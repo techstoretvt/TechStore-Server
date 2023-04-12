@@ -112,6 +112,7 @@ const initUserRoute = (app) => {
     router.delete(routes.deleteCommentBlogById, userController.deleteCommentBlogById)
     router.delete(routes.deleteCollectBlogById, userController.deleteCollectBlogById)
     router.delete(routes.deleteCommentShortVideoById, userController.deleteCommentShortVideoById)
+    router.delete(routes.deleteShortVideoById, userController.deleteShortVideoById)
 
 
     return app.use('/', router);

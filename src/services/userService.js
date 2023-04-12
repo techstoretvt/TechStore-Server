@@ -5642,6 +5642,86 @@ const getUserById = (data) => {
    })
 }
 
+const deleteShortVideoById = (data) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         if (!data.accessToken || !data.idShortVideo) {
+            resolve({
+               errCode: 1,
+               errMessage: 'Missing required parameter!',
+               data
+            })
+         }
+         else {
+            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+            if (decode === null) {
+               resolve({
+                  errCode: 2,
+                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                  decode
+               })
+            }
+            else {
+               let idUser = decode.id
+               let shortVideo = await db.shortVideos.findOne({
+                  where: {
+                     id: data.idShortVideo,
+                     idUser
+                  },
+                  raw: false
+               })
+               if (!shortVideo) {
+                  resolve({
+                     errCode: 3,
+                     errMessage: 'Không tìm thấy video nào!',
+                  })
+                  return
+               }
+
+               GG_Drive.deleteFile(shortVideo.idDriveVideo)
+               cloudinary.v2.uploader.destroy(shortVideo.idCloudinary)
+
+               await shortVideo.destroy()
+               console.log('xoa shortVideo');
+               await db.hashTagVideos.destroy({
+                  where: {
+                     idShortVideo: data.idShortVideo
+                  }
+               })
+               console.log('xoa hashTagVideos');
+               await db.commentShortVideos.destroy({
+                  where: {
+                     idShortVideo: data.idShortVideo
+                  }
+               })
+               console.log('xoa commentShortVideos');
+               await db.likeShortVideos.destroy({
+                  where: {
+                     idShortVideo: data.idShortVideo
+                  }
+               })
+               console.log('xoa likeShortVideos');
+               await db.collectionShortVideos.destroy({
+                  where: {
+                     idShortVideo: data.idShortVideo
+                  }
+               })
+               console.log('xoa collectionShortVideos');
+
+               resolve({
+                  errCode: 0,
+               })
+
+            }
+         }
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
+
+
 module.exports = {
    CreateUser, verifyCreateUser, userLogin, refreshToken,
    getUserLogin, loginGoogle, loginFacebook, loginGithub,
@@ -5668,5 +5748,5 @@ module.exports = {
    editCommentShortVideoById,
    toggleLikeShortVideo,
    checkUserLikeShortVideo, saveCollectionShortVideo, CheckSaveCollectionShortVideo,
-   getListVideoByIdUser, getUserById
+   getListVideoByIdUser, getUserById, deleteShortVideoById
 }
