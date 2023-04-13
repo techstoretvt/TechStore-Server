@@ -69,6 +69,7 @@ const routes = {
     getListShortVideo: '/api/v1/get-list-short-video',
     getListCommentShortVideoById: '/api/v1/get-list-comment-short-video-by-id',
     getListProductHashTagByIdVideo: '/api/v1/get-list-product-hashtag-by-id-video',
+    getProductById: '/api/v1/get-product-by-id',
 
 
     //admin

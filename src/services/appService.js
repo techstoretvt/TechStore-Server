@@ -1918,6 +1918,98 @@ const getListProductHashTagByIdVideo = (data) => {
     })
 }
 
+const getProductById = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idProduct) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let product = await db.product.findOne({
+                    where: {
+                        id: data.idProduct
+                    },
+                    attributes: ['id', 'nameProduct', 'priceProduct', 'isSell', 'sold', 'contentHTML'],
+                    limit: 10,
+                    include: [
+                        {
+                            model: db.imageProduct, as: 'imageProduct-product',
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'id']
+                            }
+                        },
+                        {
+                            model: db.trademark,
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'id']
+                            }
+                        },
+                        {
+                            model: db.typeProduct,
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'id']
+                            }
+                        },
+                        {
+                            model: db.classifyProduct, as: 'classifyProduct-product',
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'id']
+                            }
+                        },
+                        {
+                            model: db.promotionProduct,
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'id']
+                            },
+                        }
+                    ],
+                    order: [
+                        ['id', 'ASC'],
+                        [{ model: db.imageProduct, as: 'imageProduct-product' }, 'STTImage', 'asc']
+                    ],
+                    raw: false,
+                    nest: true
+                });
+
+                if (product) {
+                    let totalEvaluate = await db.evaluateProduct.sum('starNumber', {
+                        where: {
+                            idProduct: data.idProduct
+                        }
+                    }) || 0
+                    let countEvaluate = await db.evaluateProduct.count('starNumber', {
+                        where: {
+                            idProduct: data.idProduct
+                        }
+                    })
+
+                    resolve({
+                        errCode: 1,
+                        data: product,
+                        countEvaluate: totalEvaluate,
+                        persentElevate: totalEvaluate / countEvaluate
+                    })
+                    return
+                }
+                else {
+                    resolve({
+                        errCode: 1,
+                        data: []
+                    })
+                }
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     getProductPromotionHome,
     getTopSellProduct,
@@ -1937,5 +2029,7 @@ module.exports = {
     increaseViewBlogById,
     getListShortVideo,
     getListCommentShortVideoById,
-    getListProductHashTagByIdVideo
+    getListProductHashTagByIdVideo,
+    getProductById
+
 }
