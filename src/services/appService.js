@@ -1988,7 +1988,7 @@ const getProductById = (data) => {
                     })
 
                     resolve({
-                        errCode: 1,
+                        errCode: 0,
                         data: product,
                         countEvaluate: totalEvaluate,
                         persentElevate: totalEvaluate / countEvaluate
@@ -1997,7 +1997,7 @@ const getProductById = (data) => {
                 }
                 else {
                     resolve({
-                        errCode: 1,
+                        errCode: 0,
                         data: []
                     })
                 }
