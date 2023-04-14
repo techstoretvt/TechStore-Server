@@ -171,7 +171,9 @@ const routes = {
     CheckSaveCollectionShortVideo: '/api/v1/check-save-collection-short-video',
     getListVideoByIdUser: '/api/v1/get-list-video-by-id-user',
     getUserById: '/api/v1/get-user-by-id',
-    deleteShortVideoById: '/api/v1/delete-short-video-by-id'
+    deleteShortVideoById: '/api/v1/delete-short-video-by-id',
+    checkLikeBlogById: '/api/v1/check-like-blog-by-id',
+    checkSaveBlogById: '/api/v1/check-save-blog-by-id',
 
 }
 

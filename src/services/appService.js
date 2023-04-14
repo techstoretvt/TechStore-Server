@@ -1440,27 +1440,29 @@ const getBlogById = (data) => {
                 if (blogs) {
                     let checkLike = false
                     let checkCollection = false
-                    if (data.accessToken) {
-                        let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
 
-                        if (decode !== null) {
-                            let likeBlogUser = await db.likeBlog.findOne({
-                                where: {
-                                    idUser: decode.id,
-                                    idBlog: data.idBlog
-                                }
-                            })
-                            let collectionBlogs = await db.collectionBlogs.findOne({
-                                where: {
-                                    idBlog: data.idBlog,
-                                    idUser: decode.id
-                                }
-                            })
+                    // if (data.accessToken) {
+                    //     let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
 
-                            if (likeBlogUser) checkLike = true
-                            if (collectionBlogs) checkCollection = true
-                        }
-                    }
+                    //     if (decode !== null) {
+                    //         let likeBlogUser = await db.likeBlog.findOne({
+                    //             where: {
+                    //                 idUser: decode.id,
+                    //                 idBlog: data.idBlog
+                    //             }
+                    //         })
+                    //         let collectionBlogs = await db.collectionBlogs.findOne({
+                    //             where: {
+                    //                 idBlog: data.idBlog,
+                    //                 idUser: decode.id
+                    //             }
+                    //         })
+
+                    //         if (likeBlogUser) checkLike = true
+                    //         if (collectionBlogs) checkCollection = true
+                    //     }
+                    // }
+
                     resolve({
                         errCode: 0,
                         data: blogs,
@@ -1534,18 +1536,18 @@ const getCommentBlogByIdBlog = (data) => {
                 })
 
 
-                if (data.accessToken) {
-                    let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-                    if (decode !== null) {
-                        resolve({
-                            errCode: 0,
-                            data: commentBlogs,
-                            idUser: decode.id,
-                            count
-                        })
-                        return
-                    }
-                }
+                // if (data.accessToken) {
+                //     let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                //     if (decode !== null) {
+                //         resolve({
+                //             errCode: 0,
+                //             data: commentBlogs,
+                //             idUser: decode.id,
+                //             count
+                //         })
+                //         return
+                //     }
+                // }
 
 
                 resolve({

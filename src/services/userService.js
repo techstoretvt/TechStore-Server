@@ -5721,6 +5721,91 @@ const deleteShortVideoById = (data) => {
    })
 }
 
+const checkLikeBlogById = (data) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         if (!data.idBlog || !data.accessToken) {
+            resolve({
+               errCode: 1,
+               errMessage: 'Missing required parameter!',
+               data
+            })
+         }
+         else {
+            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+            if (decode === null) {
+               resolve({
+                  errCode: 2,
+                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                  decode
+               })
+            }
+            else {
+               let idUser = decode.id
+               let check = await db.likeBlog.count({
+                  where: {
+                     idUser,
+                     idBlog: data.idBlog
+                  }
+               })
+
+               resolve({
+                  errCode: 0,
+                  data: check === 0 ? false : true
+               })
+
+            }
+         }
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
+
+const checkSaveBlogById = (data) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         if (!data.idBlog || !data.accessToken) {
+            resolve({
+               errCode: 1,
+               errMessage: 'Missing required parameter!',
+               data
+            })
+         }
+         else {
+            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+            if (decode === null) {
+               resolve({
+                  errCode: 2,
+                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                  decode
+               })
+            }
+            else {
+               let idUser = decode.id
+               let check = await db.collectionBlogs.count({
+                  where: {
+                     idUser,
+                     idBlog: data.idBlog
+                  }
+               })
+
+               resolve({
+                  errCode: 0,
+                  data: check === 0 ? false : true
+               })
+
+            }
+         }
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
+
+
 
 module.exports = {
    CreateUser, verifyCreateUser, userLogin, refreshToken,
@@ -5748,5 +5833,6 @@ module.exports = {
    editCommentShortVideoById,
    toggleLikeShortVideo,
    checkUserLikeShortVideo, saveCollectionShortVideo, CheckSaveCollectionShortVideo,
-   getListVideoByIdUser, getUserById, deleteShortVideoById
+   getListVideoByIdUser, getUserById, deleteShortVideoById,
+   checkLikeBlogById, checkSaveBlogById
 }
