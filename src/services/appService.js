@@ -1037,7 +1037,9 @@ const getListBlog = (data) => {
                     where: {
                         timePost: {
                             [Op.lt]: date
-                        }
+                        },
+                        editImage: 'false',
+                        editVideo: 'false'
                     },
                     offset: (data.page - 1) * data.maxCount,
                     limit: data.maxCount,
@@ -1607,7 +1609,11 @@ const getListShortVideo = (data) => {
             //Không có truyền tham số
             if (!data._isv && !data.listIdVideo) {
                 let listVideo = await db.shortVideos.findAll({
-
+                    where: {
+                        scope: 'public',
+                        loadImage: 'true',
+                        loadVideo: 'true'
+                    },
                     attributes: ['id', 'idDriveVideo', 'urlImage', 'content', 'scope',
                         'countLike', 'countComment'
                     ],
@@ -1652,7 +1658,9 @@ const getListShortVideo = (data) => {
                         id: {
                             [Op.notIn]: data.listIdVideo
                         },
-                        scope: 'public'
+                        scope: 'public',
+                        loadImage: 'true',
+                        loadVideo: 'true'
                     },
                     attributes: ['id', 'idDriveVideo', 'urlImage', 'content', 'scope', 'countLike', 'countComment'],
                     include: [
@@ -1694,7 +1702,9 @@ const getListShortVideo = (data) => {
                 let listVideo = await db.shortVideos.findOne({
                     where: {
                         id: data._isv,
-                        scope: 'public'
+                        scope: 'public',
+                        loadImage: 'true',
+                        loadVideo: 'true'
                     },
                     attributes: ['id', 'idDriveVideo', 'urlImage', 'content', 'scope', 'countLike', 'countComment'],
                     include: [

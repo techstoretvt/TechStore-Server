@@ -29,6 +29,12 @@ module.exports = {
       idCloudinary: {
         type: Sequelize.STRING
       },
+      loadImage: {
+        type: Sequelize.STRING
+      },
+      loadVideo: {
+        type: Sequelize.STRING
+      },
 
       countLike: {
         defaultValue: 0,

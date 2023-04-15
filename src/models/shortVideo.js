@@ -27,6 +27,9 @@ module.exports = (sequelize, DataTypes) => {
     countLike: DataTypes.DOUBLE,
     countComment: DataTypes.DOUBLE,
 
+    loadImage: DataTypes.STRING,
+    loadVideo: DataTypes.STRING
+
 
   }, {
     sequelize,

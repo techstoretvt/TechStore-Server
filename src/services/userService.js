@@ -3999,7 +3999,9 @@ const createNewShortVideo = (data) => {
                   id: uuidv4(),
                   idUser,
                   content: data.content,
-                  scope: data.scope
+                  scope: data.scope,
+                  loadImage: 'false',
+                  loadVideo: 'false'
                })
 
                if (data?.listHashTag?.length > 0) {
@@ -4031,6 +4033,28 @@ const uploadCoverImageShortVideo = ({ file, query }) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!file || !query || !query.idShortVideo) {
+            let shortVideo = await db.shortVideos.findOne({
+               where: {
+                  id: query.idShortVideo
+               },
+               raw: false
+            })
+            if (shortVideo.idCloudinary) {
+               await cloudinary.v2.uploader.destroy(shortVideo.idCloudinary)
+            }
+            if (shortVideo.idDriveVideo) {
+               await GG_Drive.deleteFile(shortVideo.idDriveVideo)
+            }
+            await shortVideo.destroy()
+            await db.hashTagVideos.destroy({
+               where: {
+                  idShortVideo: query?.idShortVideo || '123'
+               }
+            })
+            handleEmit(`refresh-short-video-user-${shortVideo?.idUser}`, {
+               status: false
+            })
+
             resolve({
                errCode: 1,
                errMessage: 'Missing required parameter!',
@@ -4052,7 +4076,12 @@ const uploadCoverImageShortVideo = ({ file, query }) => {
 
             shortVideo.urlImage = file.path
             shortVideo.idCloudinary = file.filename
+            shortVideo.loadImage = 'true'
             await shortVideo.save()
+
+            handleEmit(`refresh-short-video-user-${shortVideo?.idUser}`, {
+               status: true
+            })
 
             resolve({
                errCode: 0,
@@ -4082,8 +4111,11 @@ const uploadVideoForShortVideo = (idShortVideo, url) => {
          }
 
          shortVideo.idDriveVideo = urlVideo.id
+         shortVideo.loadVideo = 'true'
          await shortVideo.save()
-
+         handleEmit(`refresh-short-video-user-${shortVideo?.idUser}`, {
+            status: true
+         })
 
          resolve({
             errCode: 0,
@@ -4091,6 +4123,27 @@ const uploadVideoForShortVideo = (idShortVideo, url) => {
 
       }
       catch (e) {
+         let shortVideo = await db.shortVideos.findOne({
+            where: {
+               id: idShortVideo
+            },
+            raw: false
+         })
+         if (shortVideo.idCloudinary) {
+            await cloudinary.v2.uploader.destroy(shortVideo.idCloudinary)
+         }
+         if (shortVideo.idDriveVideo) {
+            await GG_Drive.deleteFile(shortVideo.idDriveVideo)
+         }
+         await shortVideo.destroy()
+         await db.hashTagVideos.destroy({
+            where: {
+               idShortVideo: idShortVideo || '123'
+            }
+         })
+         handleEmit(`refresh-short-video-user-${shortVideo?.idUser}`, {
+            status: false
+         })
          reject(e);
       }
    })
@@ -4184,6 +4237,8 @@ const updateShortVideoById = (data) => {
                if (shortVideo) {
                   shortVideo.content = data.content
                   shortVideo.scope = data.scope
+                  shortVideo.loadImage = data?.editImage ?? 'true'
+                  shortVideo.loadVideo = data?.editVideo ?? 'true'
                   await shortVideo.save();
 
                   await db.hashTagVideos.destroy({
@@ -5435,11 +5490,11 @@ const getListVideoByIdUser = (data) => {
             if (data.nav === 'video') {
                let listVideo = await db.shortVideos.findAll({
                   where: {
-                     idUser
+                     idUser,
                   },
 
                   attributes: ['id', 'idDriveVideo', 'urlImage', 'content', 'scope',
-                     'countLike', 'countComment', 'stt',
+                     'countLike', 'countComment', 'stt', 'loadImage', 'loadVideo'
                   ],
                   include: [
                      {
@@ -5489,7 +5544,7 @@ const getListVideoByIdUser = (data) => {
                   // },
 
                   attributes: ['id', 'idDriveVideo', 'urlImage', 'content', 'scope',
-                     'countLike', 'countComment', 'stt',
+                     'countLike', 'countComment', 'stt', , 'loadImage', 'loadVideo'
                   ],
                   include: [
                      {
@@ -5545,7 +5600,7 @@ const getListVideoByIdUser = (data) => {
                   // },
 
                   attributes: ['id', 'idDriveVideo', 'urlImage', 'content', 'scope',
-                     'countLike', 'countComment', 'stt',
+                     'countLike', 'countComment', 'stt', , 'loadImage', 'loadVideo'
                   ],
                   include: [
                      {
