@@ -1737,6 +1737,13 @@ const getListShortVideo = (data) => {
                     // order: db.sequelize.random()
                 })
 
+                if (!listVideo) {
+                    resolve({
+                        errCode: 1,
+                    })
+                    return
+                }
+
                 resolve({
                     errCode: 0,
                     data: listVideo
@@ -1969,7 +1976,7 @@ const getProductById = (data) => {
                         {
                             model: db.classifyProduct, as: 'classifyProduct-product',
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'id']
+                                exclude: ['createdAt', 'updatedAt']
                             }
                         },
                         {
