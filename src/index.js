@@ -29,7 +29,9 @@ const io = new Server(server, {
 //View engine
 configViewEngine(app);
 
-app.use(cors());
+app.use(cors({
+    exposedHeaders: ['authorization']
+}));
 
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }))
@@ -40,7 +42,7 @@ initAdminRoute(app);
 
 //web socket
 io.on('connection', (socket) => {
-    console.log('user connected');
+    console.log('user connected', Math.floor(Math.random() * 10));
 
     socket.on('send-email-verify', function (from, msg) {
         console.log('MSG', from, ' saying ', msg);

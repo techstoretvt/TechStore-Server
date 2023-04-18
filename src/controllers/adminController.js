@@ -365,6 +365,41 @@ const createNewKeyWord = async (req, res) => {
     }
 }
 
+const createNotify_noimage = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.createNotify_noimage(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const createNotify_image = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.createNotify_image({
+            file: req.file,
+            query: req.query
+        })
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
 module.exports = {
     addTypeProduct,
     getAllTypeProduct,
@@ -387,5 +422,7 @@ module.exports = {
     deleteErrorProduct,
     confirmBillById,
     cancelBillById,
-    createNewKeyWord
+    createNewKeyWord,
+    createNotify_noimage,
+    createNotify_image,
 }

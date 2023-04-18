@@ -4,6 +4,7 @@ const fileUploader = require('../config/cloudinary.config');
 import multer from 'multer';
 import path from 'path'
 import { routes } from '../services/commont'
+var { expressjwt: jwt } = require("express-jwt");
 
 let router = express.Router();
 
@@ -23,11 +24,25 @@ let upload = multer({
     limits: { fileSize: 104857600 }
 })
 
+const jwtMiddleware = jwt({
+    secret: process.env.ACCESS_TOKEN_SECRET,
+    algorithms: ['HS256'],
+    getToken: function (req) {
+        if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+            return req.headers.authorization.split(' ')[1];
+        }
+        return null;
+    }
+});
+
+
 
 const initUserRoute = (app) => {
 
     //user api
     router.get('/cancel', (req, res) => res.send('Cancelled (Đơn hàng đã hủy)'));
+
+    router.get('/api/v1/test-header-login', jwtMiddleware, userController.testHeaderLogin)
 
     router.get(routes.getUserLogin, userController.getUserLogin);
     router.get(routes.getAddressUser, userController.getAddressUser)
@@ -46,6 +61,8 @@ const initUserRoute = (app) => {
     router.get(routes.getUserById, userController.getUserById)
     router.get(routes.checkLikeBlogById, userController.checkLikeBlogById)
     router.get(routes.checkSaveBlogById, userController.checkSaveBlogById)
+    router.get(routes.getListNotifyAll, userController.getListNotifyAll)
+    router.get(routes.getListNotifyByType, userController.getListNotifyByType)
 
 
     router.post(routes.CreateUser, userController.CreateUser)
@@ -103,6 +120,7 @@ const initUserRoute = (app) => {
     router.put(routes.editContentBlogUserById, userController.editContentBlogUserById)
     router.put(routes.updateCommentBlogById, userController.updateCommentBlogById)
     router.put(routes.editCommentShortVideoById, userController.editCommentShortVideoById)
+    router.put(routes.seenNotifyOfUser, userController.seenNotifyOfUser)
 
 
 

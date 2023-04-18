@@ -18,6 +18,7 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.shortVideos, { foreignKey: 'idUser' })
       User.hasMany(models.commentShortVideos, { foreignKey: 'idUser' })
       User.hasMany(models.collectionShortVideos, { foreignKey: 'idUser' })
+      User.hasMany(models.notifycations, { foreignKey: 'idUser' })
     }
   }
   User.init({

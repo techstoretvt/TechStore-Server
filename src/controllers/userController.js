@@ -1245,6 +1245,77 @@ const checkSaveBlogById = async (req, res) => {
     }
 }
 
+const testHeaderLogin = async (req, res) => {
+    try {
+        // let data = await userService.testHeaderLogin(req.query)
+
+        console.log('header', req.headers);
+
+        // if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+        //     console.log(req.headers.authorization.split(' ')[1]);
+        // }
+        // else {
+        //     console.log('ko co');
+        // }
+        res.setHeader('authorization', `Bearer token.sfh.3333`);
+        return res.status(200).json({
+            data: 'sfsdf'
+        })
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const getListNotifyAll = async (req, res) => {
+    try {
+        let data = await userService.getListNotifyAll(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const getListNotifyByType = async (req, res) => {
+    try {
+        let data = await userService.getListNotifyByType(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const seenNotifyOfUser = async (req, res) => {
+    try {
+        let data = await userService.seenNotifyOfUser(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -1325,5 +1396,9 @@ module.exports = {
     getUserById,
     deleteShortVideoById,
     checkLikeBlogById,
-    checkSaveBlogById
+    checkSaveBlogById,
+    testHeaderLogin,
+    getListNotifyAll,
+    getListNotifyByType,
+    seenNotifyOfUser
 }

@@ -3857,6 +3857,11 @@ const toggleLikeBlog = (data) => {
                   where: {
                      id: data.idBlog,
                   },
+                  include: [
+                     {
+                        model: db.imageBlogs
+                     }
+                  ],
                   raw: false
                })
                if (!checkBlogExits) {
@@ -3881,6 +3886,30 @@ const toggleLikeBlog = (data) => {
                if (create) {
                   checkBlogExits.amountLike = checkBlogExits.amountLike + 1
                   await checkBlogExits.save()
+
+                  let user = await db.User.findOne({
+                     where: {
+                        id: idUser
+                     }
+                  })
+
+                  let date = new Date().getTime()
+                  await db.notifycations.create({
+                     id: uuidv4(),
+                     idUser: checkBlogExits.idUser,
+                     title: `Đã có ${checkBlogExits.amountLike} lượt thích bài viết`,
+                     content: `${user.firstName} ${user.lastName} đã yêu thích bài viết của bạn`,
+                     timeCreate: date,
+                     typeNotify: 'blog',
+                     urlImage: checkBlogExits.imageBlogs[0].image,
+                     redirect_to: `/blogs/detail-blog/${checkBlogExits.id}`
+                  })
+
+                  handleEmit(`new-notify-${checkBlogExits.idUser}`, {
+                     title: `Có người thích bài viết của bạn`,
+                     content: `${user.firstName} ${user.lastName} đã yêu thích bài viết của bạn`
+                  })
+
                   resolve({
                      errCode: 0,
                      errMessage: 'Like'
@@ -3890,6 +3919,21 @@ const toggleLikeBlog = (data) => {
                   checkBlogExits.amountLike = checkBlogExits.amountLike - 1
                   await checkBlogExits.save()
                   await likeBlog.destroy()
+
+                  let user = await db.User.findOne({
+                     where: {
+                        id: idUser
+                     }
+                  })
+
+                  await db.notifycations.destroy({
+                     where: {
+                        idUser: checkBlogExits.idUser,
+                        typeNotify: 'blog',
+                        content: `${user.firstName} ${user.lastName} đã yêu thích bài viết của bạn`,
+                        urlImage: checkBlogExits.imageBlogs[0].image,
+                     },
+                  })
 
                   resolve({
                      errCode: 0,
@@ -3954,6 +3998,11 @@ const createNewCommentBlog = (data) => {
                   where: {
                      id: data.idBlog
                   },
+                  include: [
+                     {
+                        model: db.imageBlogs
+                     }
+                  ],
                   raw: false
                })
                if (blog) {
@@ -3961,6 +4010,26 @@ const createNewCommentBlog = (data) => {
                   await blog.save()
                }
 
+               let user = await db.User.findOne({
+                  where: {
+                     id: idUser
+                  }
+               })
+               await db.notifycations.create({
+                  id: uuidv4(),
+                  idUser: blog.idUser,
+                  title: `${user.firstName} ${user.lastName} đã bình luận bài viết`,
+                  content: `${data.content}`,
+                  timeCreate: date,
+                  typeNotify: 'blog',
+                  urlImage: blog.imageBlogs[0].image,
+                  redirect_to: `/blogs/detail-blog/${blog.id}`
+               })
+
+               handleEmit(`new-notify-${blog.idUser}`, {
+                  title: `${user.firstName} ${user.lastName} đã bình luận bài viết`,
+                  content: `${data.content}`
+               })
 
                resolve({
                   errCode: 0,
@@ -5094,6 +5163,33 @@ const createCommentShortVideo = (data) => {
                shortVideo.countComment = shortVideo.countComment + 1
                await shortVideo.save()
 
+               let user = await db.User.findOne({
+                  where: {
+                     id: decode.id
+                  }
+               })
+
+               let date = new Date().getTime()
+               await db.notifycations.create({
+                  id: uuidv4(),
+                  idUser: shortVideo.idUser,
+                  title: 'Bình luận mới trong video của bạn',
+                  content: `${user.firstName} ${user.lastName} đã để lại bình luận: ${data.content}`,
+                  timeCreate: date,
+                  typeNotify: 'short_video',
+                  urlImage: shortVideo.urlImage,
+                  redirect_to: `/short-video/foryou?_isv=${shortVideo.id}`
+               })
+
+               handleEmit(`new-notify-${shortVideo.idUser}`, {
+                  title: `${user.firstName} ${user.lastName} đã bình luận video của bạn`,
+                  content: `${data.content}`
+               })
+
+
+
+
+
                resolve({
                   errCode: 0,
                })
@@ -5271,6 +5367,28 @@ const toggleLikeShortVideo = (data) => {
                   shortVideo.countLike = shortVideo.countLike + 1;
                   await shortVideo.save()
 
+                  let user = await db.User.findOne({
+                     where: {
+                        id: idUser
+                     }
+                  })
+                  let date = new Date().getTime()
+                  await db.notifycations.create({
+                     id: uuidv4(),
+                     idUser: shortVideo.idUser,
+                     title: 'Lượt yêu thích video ngắn mới',
+                     content: `${user.firstName} ${user.lastName} đã thích 1 video của bạn`,
+                     timeCreate: date,
+                     typeNotify: 'short_video',
+                     urlImage: shortVideo.urlImage,
+                     redirect_to: `/short-video/foryou?_isv=${shortVideo.id}`
+                  })
+
+                  handleEmit(`new-notify-${shortVideo.idUser}`, {
+                     title: 'Lượt yêu thích video ngắn mới',
+                     content: `${user.firstName} ${user.lastName} đã thích 1 video của bạn`
+                  })
+
                   resolve({
                      errCode: 0,
                      mess: 'add'
@@ -5286,6 +5404,24 @@ const toggleLikeShortVideo = (data) => {
                         idShortVideo: shortVideo.id
                      }
                   })
+
+                  let user = await db.User.findOne({
+                     where: {
+                        id: idUser
+                     }
+                  })
+
+                  await db.notifycations.destroy({
+                     where: {
+                        idUser: shortVideo.idUser,
+                        title: 'Lượt yêu thích video ngắn mới',
+                        typeNotify: 'short_video',
+                        content: `${user.firstName} ${user.lastName} đã thích 1 video của bạn`,
+                        urlImage: shortVideo.urlImage,
+                     },
+                  })
+
+
 
                   resolve({
                      errCode: 0,
@@ -5861,6 +5997,173 @@ const checkSaveBlogById = (data) => {
 }
 
 
+const testHeaderLogin = (data) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+
+
+
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
+
+const getListNotifyAll = (data) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         if (!data.accessToken) {
+            resolve({
+               errCode: 1,
+               errMessage: 'Missing required parameter!',
+               data
+            })
+         }
+         else {
+            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+            if (decode === null) {
+               resolve({
+                  errCode: 2,
+                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                  decode
+               })
+            }
+            else {
+               let idUser = decode.id
+
+               let date = new Date().getTime() - 259200000
+               let rows = await db.notifycations.findAll({
+                  where: {
+                     idUser,
+                     timeCreate: {
+                        [Op.gt]: date
+                     }
+                  },
+                  limit: 10,
+                  order: [['timeCreate', 'DESC']],
+                  raw: true
+               })
+
+               let count = rows.reduce((n, item) => {
+                  if (item.seen === 'false') return n + 1
+                  return n
+               }, 0)
+               resolve({
+                  errCode: 0,
+                  data: rows,
+                  count
+               })
+            }
+         }
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
+
+const getListNotifyByType = (data) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         if (!data.accessToken || !data.type || !data.page) {
+            resolve({
+               errCode: 1,
+               errMessage: 'Missing required parameter!',
+               data
+            })
+         }
+         else {
+            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+            if (decode === null) {
+               resolve({
+                  errCode: 2,
+                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                  decode
+               })
+            }
+            else {
+               let idUser = decode.id
+
+               let date = new Date().getTime() - 604800000
+               let rows = await db.notifycations.findAll({
+                  where: {
+                     idUser,
+                     timeCreate: {
+                        [Op.gt]: date
+                     },
+                     typeNotify: data.type
+                  },
+                  limit: 20,
+                  offset: (data.page - 1) * 20,
+                  order: [['timeCreate', 'DESC']]
+               })
+
+               let count = await db.notifycations.count({
+                  where: {
+                     idUser,
+                     timeCreate: {
+                        [Op.gt]: date
+                     },
+                     typeNotify: data.type
+                  },
+               })
+
+               resolve({
+                  errCode: 0,
+                  data: rows,
+                  count
+               })
+            }
+         }
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
+
+const seenNotifyOfUser = (data) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         if (!data.accessToken) {
+            resolve({
+               errCode: 1,
+               errMessage: 'Missing required parameter!',
+               data
+            })
+         }
+         else {
+            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+            if (decode === null) {
+               resolve({
+                  errCode: 2,
+                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                  decode
+               })
+            }
+            else {
+               let idUser = decode.id
+
+               await db.notifycations.update({ seen: "true" }, {
+                  where: {
+                     seen: 'false',
+                     idUser
+                  }
+               });
+
+               resolve({
+                  errCode: 0,
+               })
+            }
+         }
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
+
 
 module.exports = {
    CreateUser, verifyCreateUser, userLogin, refreshToken,
@@ -5889,5 +6192,5 @@ module.exports = {
    toggleLikeShortVideo,
    checkUserLikeShortVideo, saveCollectionShortVideo, CheckSaveCollectionShortVideo,
    getListVideoByIdUser, getUserById, deleteShortVideoById,
-   checkLikeBlogById, checkSaveBlogById
+   checkLikeBlogById, checkSaveBlogById, testHeaderLogin, getListNotifyAll, getListNotifyByType, seenNotifyOfUser
 }

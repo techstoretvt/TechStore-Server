@@ -94,6 +94,8 @@ const routes = {
     deleteTypeProduct: '/api/delete-type-product-by-id',
     deleteTrademarkById: '/api/delete-trademark-by-id',
     deleteErrorProduct: '/api/v1/delete-error-product',
+    createNotify_noimage: '/api/v1/create-notify-noimage',
+    createNotify_image: '/api/v1/create-notify-image',
 
     //user
     getUserLogin: '/api/get-user-login',
@@ -174,6 +176,9 @@ const routes = {
     deleteShortVideoById: '/api/v1/delete-short-video-by-id',
     checkLikeBlogById: '/api/v1/check-like-blog-by-id',
     checkSaveBlogById: '/api/v1/check-save-blog-by-id',
+    getListNotifyAll: '/api/v1/get-list-notify-all',
+    getListNotifyByType: '/api/v1/get-list-notify-by-type',
+    seenNotifyOfUser: '/api/v1/seen-notify-of-user'
 
 }
 

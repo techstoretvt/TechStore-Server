@@ -40,6 +40,8 @@ const initAdminRoute = (app) => {
     router.post(routes.addPromotionByIdProduct, adminController.addPromotionByIdProduct);
     router.post(routes.swapImageProduct, adminController.swapImageProduct);
     router.post(routes.createNewKeyWord, adminController.createNewKeyWord)
+    router.post(routes.createNotify_noimage, adminController.createNotify_noimage)
+    router.post(routes.createNotify_image, fileUploader.single('file'), adminController.createNotify_image)
 
 
     router.put(routes.confirmBillById, adminController.confirmBillById)

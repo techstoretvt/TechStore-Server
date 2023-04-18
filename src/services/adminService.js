@@ -3,6 +3,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { sendEmail } from './commont'
 import { Sequelize } from 'sequelize';
 var cloudinary = require('cloudinary');
+const { Op } = require("sequelize");
+import { handleEmit } from '../index'
 
 const addTypeProduct = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -1199,6 +1201,106 @@ const createNewKeyWord = (data) => {
     })
 }
 
+const createNotify_noimage = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.title || !data.content || !data.link || !data.typeNotify) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                })
+            }
+            else {
+                let users = await db.User.findAll({
+                    where: {
+                        statusUser: {
+                            [Op.ne]: 'false'
+                        }
+                    }
+                })
+                let date = new Date().getTime()
+                users = users.filter(item => {
+                    return item.statusUser === 'true' || (item.statusUser * 1) < date
+                })
+
+                let arr = users.map(item => {
+                    return {
+                        id: uuidv4(),
+                        title: data.title,
+                        content: data.content,
+                        redirect_to: data.link,
+                        idUser: item.id,
+                        typeNotify: data.typeNotify,
+                        timeCreate: date,
+                    }
+                })
+
+                await db.notifycations.bulkCreate(arr, { individualHooks: true })
+                handleEmit('new-notify-all', { title: data.title, content: data.content })
+
+                resolve({
+                    errCode: 0,
+                })
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const createNotify_image = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.file || !data.query.title || !data.query.content || !data.query.link || !data.query.typeNotify) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                })
+            }
+            else {
+                console.log(data);
+
+                let users = await db.User.findAll({
+                    where: {
+                        statusUser: {
+                            [Op.ne]: 'false'
+                        }
+                    }
+                })
+                let date = new Date().getTime()
+                users = users.filter(item => {
+                    return item.statusUser === 'true' || (item.statusUser * 1) < date
+                })
+
+                let arr = users.map(item => {
+                    return {
+                        id: uuidv4(),
+                        title: data.query.title,
+                        content: data.query.content,
+                        redirect_to: data.query.link,
+                        idUser: item.id,
+                        typeNotify: data.query.typeNotify,
+                        timeCreate: date,
+                        urlImage: data.file.path
+                    }
+                })
+
+                await db.notifycations.bulkCreate(arr, { individualHooks: true })
+                handleEmit('new-notify-all', { title: data.query.title, content: data.query.content })
+                resolve({
+                    errCode: 0,
+                })
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 
 module.exports = {
     addTypeProduct,
@@ -1222,5 +1324,7 @@ module.exports = {
     deleteErrorProduct,
     confirmBillById,
     cancelBillById,
-    createNewKeyWord
+    createNewKeyWord,
+    createNotify_noimage,
+    createNotify_image,
 }
