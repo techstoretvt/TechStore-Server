@@ -3893,22 +3893,25 @@ const toggleLikeBlog = (data) => {
                      }
                   })
 
-                  let date = new Date().getTime()
-                  await db.notifycations.create({
-                     id: uuidv4(),
-                     idUser: checkBlogExits.idUser,
-                     title: `Đã có ${checkBlogExits.amountLike} lượt thích bài viết`,
-                     content: `${user.firstName} ${user.lastName} đã yêu thích bài viết của bạn`,
-                     timeCreate: date,
-                     typeNotify: 'blog',
-                     urlImage: checkBlogExits.imageBlogs[0].image,
-                     redirect_to: `/blogs/detail-blog/${checkBlogExits.id}`
-                  })
+                  if (user.id !== checkBlogExits.idUser) {
+                     let date = new Date().getTime()
+                     await db.notifycations.create({
+                        id: uuidv4(),
+                        idUser: checkBlogExits.idUser,
+                        title: `Đã có ${checkBlogExits.amountLike} lượt thích bài viết`,
+                        content: `${user.firstName} ${user.lastName} đã yêu thích bài viết của bạn`,
+                        timeCreate: date,
+                        typeNotify: 'blog',
+                        urlImage: checkBlogExits.imageBlogs[0].image,
+                        redirect_to: `/blogs/detail-blog/${checkBlogExits.id}`
+                     })
 
-                  handleEmit(`new-notify-${checkBlogExits.idUser}`, {
-                     title: `Có người thích bài viết của bạn`,
-                     content: `${user.firstName} ${user.lastName} đã yêu thích bài viết của bạn`
-                  })
+                     handleEmit(`new-notify-${checkBlogExits.idUser}`, {
+                        title: `Có người thích bài viết của bạn`,
+                        content: `${user.firstName} ${user.lastName} đã yêu thích bài viết của bạn`
+                     })
+                  }
+
 
                   resolve({
                      errCode: 0,
@@ -4015,21 +4018,24 @@ const createNewCommentBlog = (data) => {
                      id: idUser
                   }
                })
-               await db.notifycations.create({
-                  id: uuidv4(),
-                  idUser: blog.idUser,
-                  title: `${user.firstName} ${user.lastName} đã bình luận bài viết`,
-                  content: `${data.content}`,
-                  timeCreate: date,
-                  typeNotify: 'blog',
-                  urlImage: blog.imageBlogs[0].image,
-                  redirect_to: `/blogs/detail-blog/${blog.id}`
-               })
 
-               handleEmit(`new-notify-${blog.idUser}`, {
-                  title: `${user.firstName} ${user.lastName} đã bình luận bài viết`,
-                  content: `${data.content}`
-               })
+               if (user.id !== blog.idUser) {
+                  await db.notifycations.create({
+                     id: uuidv4(),
+                     idUser: blog.idUser,
+                     title: `${user.firstName} ${user.lastName} đã bình luận bài viết`,
+                     content: `${data.content}`,
+                     timeCreate: date,
+                     typeNotify: 'blog',
+                     urlImage: blog.imageBlogs[0].image,
+                     redirect_to: `/blogs/detail-blog/${blog.id}`
+                  })
+
+                  handleEmit(`new-notify-${blog.idUser}`, {
+                     title: `${user.firstName} ${user.lastName} đã bình luận bài viết`,
+                     content: `${data.content}`
+                  })
+               }
 
                resolve({
                   errCode: 0,
@@ -5169,26 +5175,24 @@ const createCommentShortVideo = (data) => {
                   }
                })
 
-               let date = new Date().getTime()
-               await db.notifycations.create({
-                  id: uuidv4(),
-                  idUser: shortVideo.idUser,
-                  title: 'Bình luận mới trong video của bạn',
-                  content: `${user.firstName} ${user.lastName} đã để lại bình luận: ${data.content}`,
-                  timeCreate: date,
-                  typeNotify: 'short_video',
-                  urlImage: shortVideo.urlImage,
-                  redirect_to: `/short-video/foryou?_isv=${shortVideo.id}`
-               })
+               if (user.id !== shortVideo.idUser) {
+                  let date = new Date().getTime()
+                  await db.notifycations.create({
+                     id: uuidv4(),
+                     idUser: shortVideo.idUser,
+                     title: 'Bình luận mới trong video của bạn',
+                     content: `${user.firstName} ${user.lastName} đã để lại bình luận: ${data.content}`,
+                     timeCreate: date,
+                     typeNotify: 'short_video',
+                     urlImage: shortVideo.urlImage,
+                     redirect_to: `/short-video/foryou?_isv=${shortVideo.id}`
+                  })
 
-               handleEmit(`new-notify-${shortVideo.idUser}`, {
-                  title: `${user.firstName} ${user.lastName} đã bình luận video của bạn`,
-                  content: `${data.content}`
-               })
-
-
-
-
+                  handleEmit(`new-notify-${shortVideo.idUser}`, {
+                     title: `${user.firstName} ${user.lastName} đã bình luận video của bạn`,
+                     content: `${data.content}`
+                  })
+               }
 
                resolve({
                   errCode: 0,
@@ -5372,22 +5376,25 @@ const toggleLikeShortVideo = (data) => {
                         id: idUser
                      }
                   })
-                  let date = new Date().getTime()
-                  await db.notifycations.create({
-                     id: uuidv4(),
-                     idUser: shortVideo.idUser,
-                     title: 'Lượt yêu thích video ngắn mới',
-                     content: `${user.firstName} ${user.lastName} đã thích 1 video của bạn`,
-                     timeCreate: date,
-                     typeNotify: 'short_video',
-                     urlImage: shortVideo.urlImage,
-                     redirect_to: `/short-video/foryou?_isv=${shortVideo.id}`
-                  })
 
-                  handleEmit(`new-notify-${shortVideo.idUser}`, {
-                     title: 'Lượt yêu thích video ngắn mới',
-                     content: `${user.firstName} ${user.lastName} đã thích 1 video của bạn`
-                  })
+                  if (user.id !== shortVideo.idUser) {
+                     let date = new Date().getTime()
+                     await db.notifycations.create({
+                        id: uuidv4(),
+                        idUser: shortVideo.idUser,
+                        title: 'Lượt yêu thích video ngắn mới',
+                        content: `${user.firstName} ${user.lastName} đã thích 1 video của bạn`,
+                        timeCreate: date,
+                        typeNotify: 'short_video',
+                        urlImage: shortVideo.urlImage,
+                        redirect_to: `/short-video/foryou?_isv=${shortVideo.id}`
+                     })
+
+                     handleEmit(`new-notify-${shortVideo.idUser}`, {
+                        title: 'Lượt yêu thích video ngắn mới',
+                        content: `${user.firstName} ${user.lastName} đã thích 1 video của bạn`
+                     })
+                  }
 
                   resolve({
                      errCode: 0,

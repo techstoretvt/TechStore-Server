@@ -1,10 +1,35 @@
 import db from '../models'
 import { v4 as uuidv4 } from 'uuid';
-import { sendEmail } from './commont'
+import { sendEmail, hashPassword, decodeToken } from './commont'
 import { Sequelize } from 'sequelize';
 var cloudinary = require('cloudinary');
 const { Op } = require("sequelize");
 import { handleEmit } from '../index'
+require('dotenv').config();
+import jwt from 'jsonwebtoken'
+// import { v4 as uuidv4 } from 'uuid';
+
+const checkLoginAdmin = async (accessToken) => {
+    try {
+        let decoded = decodeToken(accessToken, process.env.ACCESS_TOKEN_SECRET)
+        if (decoded === null) return false
+
+        let user = await db.User.findOne({
+            where: {
+                id: decoded.id,
+                idTypeUser: {
+                    [Op.or]: ['1', '2']
+                },
+            }
+        })
+        if (!user) return false
+        return true
+
+    } catch (e) {
+        return false
+    }
+}
+
 
 const addTypeProduct = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -17,6 +42,15 @@ const addTypeProduct = (data) => {
             }
             else {
                 //
+                let isLogin = await checkLoginAdmin(data.query.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
+
                 let [typeProduct, created] = await db.typeProduct.findOrCreate({
                     where: { nameTypeProduct: data.query.nameTypeProduct.toLowerCase() },
                     defaults: {
@@ -159,6 +193,15 @@ const updateTypeProductById = (data) => {
                     })
                 }
                 else {
+                    let isLogin = await checkLoginAdmin(data.query.accessToken)
+                    if (!isLogin) {
+                        resolve({
+                            errCode: 2,
+                            errMessage: 'Chưa có đăng nhập!',
+                        })
+                        return
+                    }
+
                     let check = await db.typeProduct.findOne({
                         where: { nameTypeProduct: data.query.nameTypeProduct.toLowerCase() },
                         raw: false
@@ -207,6 +250,14 @@ const addTrademark = (data) => {
                 })
             }
             else {
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
                 let [trademark, created] = await db.trademark.findOrCreate({
                     where: {
                         nameTrademark: data.nameTrademark.toLowerCase(),
@@ -335,7 +386,14 @@ const updateTrademarkById = (data) => {
                 })
             }
             else {
-
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
                 let trademarkEdit = await db.trademark.findOne({
                     where: {
                         id: data.id,
@@ -397,7 +455,14 @@ const createNewProduct = (data) => {
                 })
             }
             else {
-
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
                 let product = await db.product.create({
                     nameProduct: data.nameProduct.toLowerCase(),
                     nameProductEn: data.nameProduct.toLowerCase().normalize('NFD')
@@ -596,6 +661,14 @@ const editProductById = (data) => {
                 })
             }
             else {
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
                 let product = await db.product.findOne({
                     where: {
                         id: data.idProduct
@@ -1211,6 +1284,14 @@ const createNotify_noimage = (data) => {
                 })
             }
             else {
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
                 let users = await db.User.findAll({
                     where: {
                         statusUser: {
@@ -1223,20 +1304,22 @@ const createNotify_noimage = (data) => {
                     return item.statusUser === 'true' || (item.statusUser * 1) < date
                 })
 
-                let arr = users.map(item => {
-                    return {
-                        id: uuidv4(),
-                        title: data.title,
-                        content: data.content,
-                        redirect_to: data.link,
-                        idUser: item.id,
-                        typeNotify: data.typeNotify,
-                        timeCreate: date,
-                    }
-                })
+                setTimeout(async () => {
+                    let arr = users.map(item => {
+                        return {
+                            id: uuidv4(),
+                            title: data.title,
+                            content: data.content,
+                            redirect_to: data.link,
+                            idUser: item.id,
+                            typeNotify: data.typeNotify,
+                            timeCreate: date,
+                        }
+                    })
+                    await db.notifycations.bulkCreate(arr, { individualHooks: true })
+                    handleEmit('new-notify-all', { title: data.title, content: data.content })
 
-                await db.notifycations.bulkCreate(arr, { individualHooks: true })
-                handleEmit('new-notify-all', { title: data.title, content: data.content })
+                }, data.timePost * 1 - date > 0 ? data.timePost * 1 - date : 0);
 
                 resolve({
                     errCode: 0,
@@ -1260,6 +1343,14 @@ const createNotify_image = (data) => {
                 })
             }
             else {
+                let isLogin = await checkLoginAdmin(data.query.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
                 console.log(data);
 
                 let users = await db.User.findAll({
@@ -1274,21 +1365,24 @@ const createNotify_image = (data) => {
                     return item.statusUser === 'true' || (item.statusUser * 1) < date
                 })
 
-                let arr = users.map(item => {
-                    return {
-                        id: uuidv4(),
-                        title: data.query.title,
-                        content: data.query.content,
-                        redirect_to: data.query.link,
-                        idUser: item.id,
-                        typeNotify: data.query.typeNotify,
-                        timeCreate: date,
-                        urlImage: data.file.path
-                    }
-                })
+                setTimeout(async () => {
+                    let arr = users.map(item => {
+                        return {
+                            id: uuidv4(),
+                            title: data.query.title,
+                            content: data.query.content,
+                            redirect_to: data.query.link,
+                            idUser: item.id,
+                            typeNotify: data.query.typeNotify,
+                            timeCreate: date,
+                            urlImage: data.file.path
+                        }
+                    })
 
-                await db.notifycations.bulkCreate(arr, { individualHooks: true })
-                handleEmit('new-notify-all', { title: data.query.title, content: data.query.content })
+                    await db.notifycations.bulkCreate(arr, { individualHooks: true })
+                    handleEmit('new-notify-all', { title: data.query.title, content: data.query.content })
+                }, data.query.timePost * 1 - date > 0 ? data.query.timePost * 1 - date : 0);
+
                 resolve({
                     errCode: 0,
                 })
@@ -1301,6 +1395,128 @@ const createNotify_image = (data) => {
     })
 }
 
+const CreateToken = (user) => {
+    const { id, idGoogle, firstName, idTypeUser } = user;
+    const accessToken = jwt.sign({ id, idGoogle, firstName, idTypeUser }, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: '60m'
+    });
+    const refreshToken = jwt.sign({ id, idGoogle, firstName, idTypeUser }, process.env.REFESH_TOKEN_SECRET, {
+        expiresIn: '7d'
+    });
+
+    return { accessToken, refreshToken };
+}
+
+const CheckLoginAdminAccessToken = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.type) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                })
+            }
+            else {
+                let decode = decodeToken(data.accessToken, data.type === 'accessToken' ? process.env.ACCESS_TOKEN_SECRET : process.env.REFESH_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let type = data.typeUser === 'root' ? ['1'] : ['1', '2']
+
+                    let user = await db.User.findOne({
+                        where: {
+                            id: decode.id,
+                            idTypeUser: {
+                                [Op.or]: type
+                            }
+                        }
+                    })
+                    if (user) {
+                        let tokens
+                        if (data?.type === 'refreshToken') {
+                            tokens = CreateToken(user)
+                        }
+
+                        resolve({
+                            errCode: 0,
+                            data: tokens
+                        })
+                    }
+                    else {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Not found user!',
+                        })
+                    }
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+
+const createNewUserAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.username || !data.pass) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                })
+            }
+            else {
+                let decode = decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let passHash = hashPassword(data.pass)
+                    let [user, create] = await db.User.findOrCreate({
+                        where: {
+                            email: data.username,
+                        },
+                        defaults: {
+                            id: uuidv4(),
+                            pass: passHash,
+                            firstName: 'Admin',
+                            typeAccount: 'web',
+                            idTypeUser: '2',
+                            statusUser: 'true',
+                            avatarUpdate: 'https://res.cloudinary.com/dultkpqjp/image/upload/v1681893132/t%E1%BA%A3i_xu%E1%BB%91ng_ybmngt.png'
+                        }
+                    })
+                    if (create) {
+                        resolve({
+                            errCode: 0,
+                        })
+                        return
+                    }
+                    else {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Tài khoản này đã tồn tại!',
+                        })
+                    }
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
 
 module.exports = {
     addTypeProduct,
@@ -1327,4 +1543,6 @@ module.exports = {
     createNewKeyWord,
     createNotify_noimage,
     createNotify_image,
+    CheckLoginAdminAccessToken,
+    createNewUserAdmin
 }

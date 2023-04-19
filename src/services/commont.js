@@ -96,6 +96,8 @@ const routes = {
     deleteErrorProduct: '/api/v1/delete-error-product',
     createNotify_noimage: '/api/v1/create-notify-noimage',
     createNotify_image: '/api/v1/create-notify-image',
+    CheckLoginAdminAccessToken: '/api/v1/check-login-admin-access-token',
+    createNewUserAdmin: '/api/v1/create-new-user-admin',
 
     //user
     getUserLogin: '/api/get-user-login',
