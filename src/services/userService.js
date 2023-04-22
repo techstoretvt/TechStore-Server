@@ -247,7 +247,7 @@ const contentSendEmail = (idUser, keyVerify, firstName) => {
         cursor: pointer;
         display: block;
         width: fit-content;
-        margin: 14px auto;text-decoration: none;">Xác nhận</a>
+        margin: 14px auto;text-decoration: none;">Kích hoạt</a>
         </div>
         <div>Nếu bạn không liên hệ với TechStore hoặc cảm thấy mình nhận được thông báo này do nhầm lẫn, chỉ cần bỏ
             qua
@@ -1864,16 +1864,25 @@ const createNewBill = (data) => {
 
 
                //handle buy product
+               let date = new Date().getTime()
 
                let bill = await db.bill.create({
                   id: uuidv4(),
                   idUser,
-                  timeBill: new Date().getTime() + '',
-                  idStatusBill: '1',
+                  timeBill: date.toString(),
+                  idStatusBill: 1,
                   idAddressUser: addressUser.id,
                   note: data.note || '',
                   totals: +data.Totals,
                   payment: 'hand'
+               })
+
+               await db.statusBills.create({
+                  id: uuidv4(),
+                  idBill: bill.id,
+                  nameStatus: 'Đặt hàng',
+                  idStatusBill: bill.idStatusBill,
+                  timeStatus: date
                })
 
                let arrayDetailBill = cart.map(item => {
@@ -2146,7 +2155,7 @@ const userCancelBill = (data) => {
                   })
                }
                else {
-                  bill.idStatusBill = '4'
+                  bill.idStatusBill = 4
                   bill.noteCancel = data.note
                   await bill.save();
 
@@ -2583,8 +2592,8 @@ const buyProductByCard = (data) => {
                   }
                })
 
-               console.log("array ", arrayProduct);
-               console.log('totals: ', totals + '.00');
+               // console.log("array ", arrayProduct);
+               // console.log('totals: ', totals + '.00');
 
                const create_payment_json = {
                   "intent": "sale",
@@ -2675,7 +2684,7 @@ const buyProductByCardSucess = (data) => {
                      console.log(error.response);
                      throw error;
                   } else {
-                     console.log('mua thanh cong');
+                     // console.log('mua thanh cong');
 
                      let addressUser = await db.addressUser.findOne({
                         where: {
@@ -2693,16 +2702,23 @@ const buyProductByCardSucess = (data) => {
                      })
 
                      //handle buy product
-
+                     let date = new Date().getTime()
                      let bill = await db.bill.create({
                         id: uuidv4(),
                         idUser,
-                        timeBill: new Date().getTime() + '',
-                        idStatusBill: '1',
+                        timeBill: date.toString(),
+                        idStatusBill: 1,
                         idAddressUser: addressUser.id,
                         note: data.note || '',
                         totals: +data.totalsReq,
                         payment: 'card'
+                     })
+                     await db.statusBills.create({
+                        id: uuidv4(),
+                        idBill: bill.id,
+                        nameStatus: 'Đặt hàng',
+                        idStatusBill: bill.idStatusBill,
+                        timeStatus: date
                      })
 
                      let arrayDetailBill = cart.map(item => {

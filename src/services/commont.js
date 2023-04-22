@@ -70,6 +70,7 @@ const routes = {
     getListCommentShortVideoById: '/api/v1/get-list-comment-short-video-by-id',
     getListProductHashTagByIdVideo: '/api/v1/get-list-product-hashtag-by-id-video',
     getProductById: '/api/v1/get-product-by-id',
+    getListBlogHome: '/api/v1/get-list-blog-home',
 
 
     //admin
@@ -98,6 +99,19 @@ const routes = {
     createNotify_image: '/api/v1/create-notify-image',
     CheckLoginAdminAccessToken: '/api/v1/check-login-admin-access-token',
     createNewUserAdmin: '/api/v1/create-new-user-admin',
+    //winform
+    getListBillNoConfirm: '/api/v1/get-list-bill-no-confirm',
+    getDetailBillAdmin: '/api/v1/get-detail-bill-admin',
+    getListImageProductAdmin: '/api/v1/get-list-image-admin',
+    getInfoProductAdmin: '/api/v1/get-info-product-admin',
+    getClassifyProductAdmin: '/api/v1/get-classify-product-admin',
+    getAddressBillAdmin: '/api/v1/get-address-bill-admin',
+    confirmBillAdmin: '/api/v1/confirm-bill-admin',
+    updateStatusBillAdmin: '/api/v1/update-status-bill-admin',
+    getListStatusBillAdmin: '/api/v1/get-list-status-bill-admin',
+    //end winform
+
+
 
     //user
     getUserLogin: '/api/get-user-login',

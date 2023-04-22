@@ -1,5 +1,5 @@
 import db from '../models'
-const { Op, UUIDV4 } = require("sequelize");
+const { Op } = require("sequelize");
 require('dotenv').config();
 import FuzzySearch from 'fuzzy-search';
 import { v4 as uuidv4 } from 'uuid';
@@ -2029,6 +2029,52 @@ const getProductById = (data) => {
     })
 }
 
+const getListBlogHome = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            // let date = new Date().getTime()
+
+            let blogs = await db.blogs.findAll({
+                where: {
+                    typeBlog: 'default'
+                },
+
+                include: [
+                    {
+                        model: db.User,
+                        where: {
+                            statusUser: {
+                                [Op.ne]: 'false'
+                            }
+                        }
+                    },
+                    {
+                        model: db.imageBlogs,
+                        limit: 1,
+                        order: [['stt', 'asc']]
+                    }
+                ],
+                order: [['createdAt', 'DESC']],
+                limit: 5,
+                raw: false,
+                nest: true
+            })
+            // console.log(blogs);
+
+            resolve({
+                errCode: 0,
+                data: blogs
+            })
+
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     getProductPromotionHome,
     getTopSellProduct,
@@ -2049,6 +2095,7 @@ module.exports = {
     getListShortVideo,
     getListCommentShortVideoById,
     getListProductHashTagByIdVideo,
-    getProductById
+    getProductById,
+    getListBlogHome
 
 }

@@ -31,6 +31,18 @@ const initAdminRoute = (app) => {
     router.get(routes.getAllTrademark, adminController.getAllTrademark)
     router.get(routes.getListProductByPage, adminController.getListProductByPage)
     router.get(routes.getProductBySwapAndPage, adminController.getProductBySwapAndPage);
+    //winform
+    router.get(routes.getListBillNoConfirm, adminController.getListBillNoConfirm)
+    router.get(routes.getDetailBillAdmin, adminController.getDetailBillAdmin)
+    router.get(routes.getListImageProductAdmin, adminController.getListImageProductAdmin)
+    router.get(routes.getInfoProductAdmin, adminController.getInfoProductAdmin)
+    router.get(routes.getClassifyProductAdmin, adminController.getClassifyProductAdmin)
+    router.get(routes.getAddressBillAdmin, adminController.getAddressBillAdmin)
+    router.get(routes.confirmBillAdmin, adminController.confirmBillAdmin)
+    router.get(routes.updateStatusBillAdmin, adminController.updateStatusBillAdmin)
+    router.get(routes.getListStatusBillAdmin, adminController.getListStatusBillAdmin)
+    //end winform
+
 
 
     router.post(routes.addTrademark, adminController.addTrademark)

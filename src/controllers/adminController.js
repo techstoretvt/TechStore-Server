@@ -431,6 +431,125 @@ const createNewUserAdmin = async (req, res) => {
         })
     }
 }
+//winform
+const getListBillNoConfirm = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.getListBillNoConfirm()
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json([])
+    }
+}
+
+const getDetailBillAdmin = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.getDetailBillAdmin(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json([])
+    }
+}
+
+const getListImageProductAdmin = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.getListImageProductAdmin(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json([])
+    }
+}
+
+const getInfoProductAdmin = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.getInfoProductAdmin(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json([])
+    }
+}
+
+const getClassifyProductAdmin = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.getClassifyProductAdmin(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json([])
+    }
+}
+
+const getAddressBillAdmin = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.getAddressBillAdmin(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json([])
+    }
+}
+
+const confirmBillAdmin = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.confirmBillAdmin(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json(false)
+    }
+}
+
+const updateStatusBillAdmin = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.updateStatusBillAdmin(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json(false)
+    }
+}
+
+const getListStatusBillAdmin = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.getListStatusBillAdmin(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json([])
+    }
+}
+
+//end winform
 
 module.exports = {
     addTypeProduct,
@@ -458,5 +577,16 @@ module.exports = {
     createNotify_noimage,
     createNotify_image,
     CheckLoginAdminAccessToken,
-    createNewUserAdmin
+    createNewUserAdmin,
+    //winform
+    getListBillNoConfirm,
+    getDetailBillAdmin,
+    getListImageProductAdmin,
+    getInfoProductAdmin,
+    getClassifyProductAdmin,
+    getAddressBillAdmin,
+    confirmBillAdmin,
+    updateStatusBillAdmin,
+    getListStatusBillAdmin
+    //end winform
 }

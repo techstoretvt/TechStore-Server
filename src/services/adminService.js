@@ -7,6 +7,7 @@ const { Op } = require("sequelize");
 import { handleEmit } from '../index'
 require('dotenv').config();
 import jwt from 'jsonwebtoken'
+import provinces from './provinces.json'
 // import { v4 as uuidv4 } from 'uuid';
 
 const checkLoginAdmin = async (accessToken) => {
@@ -1518,6 +1519,335 @@ const createNewUserAdmin = (data) => {
     })
 }
 
+//winform
+const getListBillNoConfirm = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let listBills = await db.bill.findAll({
+                where: {
+                    idStatusBill: 1
+                }
+            })
+
+            resolve(listBills)
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const getDetailBillAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idBill) {
+                resolve([])
+            }
+            else {
+                let { count, rows } = await db.detailBill.findAndCountAll({
+                    where: {
+                        idBill: data.idBill
+                    },
+                    include: [
+                        {
+                            model: db.product,
+                            // include: [
+                            //     {
+                            //         model: db.classifyProduct, as: 'classifyProduct-product'
+                            //     }
+                            // ]
+                        },
+                        {
+                            model: db.classifyProduct
+                        }
+                    ],
+                    nest: true,
+                    raw: false
+                })
+
+                let data2 = []
+
+                for (let i = 0; i < count; i++) {
+                    let donGia
+                    if (rows[i].classifyProduct.nameClassifyProduct !== 'default')
+                        donGia = rows[i].classifyProduct.priceClassify
+                    else
+                        donGia = rows[i].product.priceProduct * 1
+
+
+
+                    let obj = {
+                        maSP: rows[i].product.id,
+                        tenSP: rows[i].product.nameProduct,
+                        donGia,
+                        soLuong: rows[i].amount,
+                        phanLoai: rows[i].classifyProduct.nameClassifyProduct,
+                    }
+                    data2.push(obj)
+                }
+
+                resolve(data2)
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const getListImageProductAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idProduct) {
+                resolve([])
+            }
+            else {
+                let images = await db.imageProduct.findAll({
+                    where: {
+                        idProduct: data.idProduct
+                    }
+                })
+                // console.log('images', images);
+
+                resolve(images)
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const getInfoProductAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idProduct) {
+                resolve([])
+            }
+            else {
+                let product = await db.product.findOne({
+                    where: {
+                        id: data.idProduct
+                    },
+                    include: [
+                        { model: db.typeProduct },
+                        { model: db.trademark }
+                    ],
+                    raw: false,
+                    nest: true
+                })
+
+                resolve([{
+                    tenSP: product.nameProduct,
+                    daBan: product.sold,
+                    tinhTrang: product.isSell === 'true' ? 'Còn bán' : 'Ngừng bán',
+                    danhMuc: product.typeProduct.nameTypeProduct,
+                    thuongHieu: product.trademark.nameTrademark
+                }])
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const getClassifyProductAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idProduct) {
+                resolve([])
+            }
+            else {
+
+                let listClassifys = await db.classifyProduct.findAll({
+                    where: {
+                        idProduct: data.idProduct
+                    }
+                })
+
+                resolve(listClassifys)
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const getAddressBillAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idBill) {
+                resolve([])
+            }
+            else {
+
+                let address = await db.addressUser.findOne({
+                    include: [
+                        {
+                            model: db.bill,
+                            where: {
+                                id: data.idBill
+                            }
+                        }
+                    ],
+                    raw: false,
+                    nest: true
+                })
+                // console.log(address);
+
+                resolve([{
+                    tenNguoiMua: address.fullname,
+                    soDienThoai: address.sdt,
+                    ghiChuDiaChi: address.addressText,
+                    tinhThanh: provinces[address.country * 1].name,
+                    quanHuyen: provinces[address.country * 1].districts[address.district * 1].name
+                }])
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const confirmBillAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idBill) {
+                resolve(false)
+            }
+            else {
+                let bill = await db.bill.findOne({
+                    where: {
+                        id: data.idBill,
+                        idStatusBill: 1
+                    },
+                    raw: false
+                })
+
+                if (!bill) {
+                    resolve(false)
+                    return
+                }
+
+                bill.idStatusBill = 2
+                await bill.save()
+
+                await db.statusBills.create({
+                    id: uuidv4(),
+                    idBill: bill.id,
+                    nameStatus: 'Đang giao',
+                    idStatusBill: bill.idStatusBill,
+                    timeStatus: new Date().getTime()
+                })
+
+
+                resolve(true)
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const updateStatusBillAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idBill || !data.nameStatus) {
+                resolve(false)
+            }
+            else {
+                let bill = await db.bill.findOne({
+                    where: {
+                        id: data.idBill,
+                        idStatusBill: {
+                            [Op.between]: [2, 2.99]
+                        }
+                    },
+                    raw: false
+                })
+
+                if (!bill) {
+                    resolve(false)
+                    return
+                }
+
+                if (data.nameStatus === 'success') {
+                    bill.idStatusBill = 3
+                    await bill.save()
+
+                    await db.statusBills.create({
+                        id: uuidv4(),
+                        idBill: bill.id,
+                        nameStatus: 'Đã giao',
+                        idStatusBill: 3,
+                        timeStatus: new Date().getTime()
+                    })
+                }
+                else if (data.nameStatus === 'fail') {
+                    bill.idStatusBill = 4
+                    await bill.save()
+
+                    await db.statusBills.create({
+                        id: uuidv4(),
+                        idBill: bill.id,
+                        nameStatus: 'Đã hủy',
+                        idStatusBill: 4,
+                        timeStatus: new Date().getTime()
+                    })
+                }
+                else {
+                    bill.idStatusBill = (bill.idStatusBill + 0.01).toFixed(2)
+                    await bill.save()
+
+                    await db.statusBills.create({
+                        id: uuidv4(),
+                        idBill: bill.id,
+                        nameStatus: data.nameStatus,
+                        idStatusBill: bill.idStatusBill,
+                        timeStatus: new Date().getTime()
+                    })
+                }
+
+                resolve(true)
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const getListStatusBillAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idBill) {
+                resolve([])
+            }
+            else {
+                let statusBills = await db.statusBills.findAll({
+                    where: {
+                        idBill: data.idBill
+                    },
+                    order: [['stt', 'ASC']]
+                })
+                resolve(statusBills)
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+//end winform
+
 module.exports = {
     addTypeProduct,
     getAllTypeProduct,
@@ -1544,5 +1874,16 @@ module.exports = {
     createNotify_noimage,
     createNotify_image,
     CheckLoginAdminAccessToken,
-    createNewUserAdmin
+    createNewUserAdmin,
+    //winform
+    getListBillNoConfirm,
+    getDetailBillAdmin,
+    getListImageProductAdmin,
+    getInfoProductAdmin,
+    getClassifyProductAdmin,
+    getAddressBillAdmin,
+    confirmBillAdmin,
+    updateStatusBillAdmin,
+    getListStatusBillAdmin
+    //end winform
 }

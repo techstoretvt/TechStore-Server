@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('bills', {
+    await queryInterface.createTable('statusBills', {
       id: {
         allowNull: false,
         autoIncrement: false,
@@ -11,30 +11,23 @@ module.exports = {
       },
 
 
-      idUser: {
+      idBill: {
         type: Sequelize.STRING
       },
-      timeBill: {
+      nameStatus: {
         type: Sequelize.STRING
       },
       idStatusBill: {
         type: Sequelize.FLOAT
       },
-      idAddressUser: {
-        type: Sequelize.STRING
+      stt: {
+        autoIncrement: true,
+        type: Sequelize.INTEGER
       },
-      note: {
-        type: Sequelize.STRING
-      },
-      totals: {
+      timeStatus: {
         type: Sequelize.DOUBLE
       },
-      noteCancel: {
-        type: Sequelize.STRING
-      },
-      payment: {
-        type: Sequelize.STRING
-      },
+
 
       createdAt: {
         allowNull: false,
@@ -47,6 +40,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('bills');
+    await queryInterface.dropTable('statusBills');
   }
 };
