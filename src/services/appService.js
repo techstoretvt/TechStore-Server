@@ -845,7 +845,7 @@ const getEvaluateByIdProduct = (data) => {
 const searchProduct = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.keyword || !data.page) {
+            if (!data.page) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
@@ -899,6 +899,25 @@ const searchProduct = (data) => {
                     }
                 }
 
+                let date = new Date().getTime()
+                let wherePromotion = () => {
+                    if (!data.promotion || data.promotion !== 'true') return {}
+                    return {
+                        [Op.and]: [
+                            {
+                                numberPercent: {
+                                    [Op.gt]: 0
+                                },
+                            },
+                            {
+                                timePromotion: {
+                                    [Op.gt]: date
+                                }
+                            }
+                        ]
+                    }
+                }
+
                 // let arrOrder = () => {
                 //     if (!data.order) return null
 
@@ -914,6 +933,53 @@ const searchProduct = (data) => {
                 let arrOrder = [['nameProduct', 'asc'], ['stt', 'DESC'], ['isSell', 'DESC']]
                 let indexOrder = !data.order ? 0 : data.order === 'latest' ? 1 : data.order === 'selling' ? 2 : 0
 
+
+                if (data.promotion && data.promotion === 'true' && !data.keyword) {
+                    let listProducts = await db.product.findAll({
+                        where: whereStatus(),
+                        offset: (+data.page - 1) * data.maxProduct,
+                        limit: data.maxProduct,
+                        include: [
+                            {
+                                model: db.trademark,
+                                where: whereTrademark()
+                            },
+                            {
+                                model: db.typeProduct,
+                                where: whereTypeProduct()
+                            },
+                            {
+                                model: db.imageProduct, as: 'imageProduct-product'
+                            },
+                            {
+                                model: db.classifyProduct, as: 'classifyProduct-product',
+                                where: wherePrice(),
+                            },
+                            {
+                                model: db.promotionProduct,
+                                where: wherePromotion()
+                            },
+                            {
+                                model: db.evaluateProduct,
+                                where: whereRating()
+                            }
+                        ],
+                        order: [
+                            [{ model: db.imageProduct, as: 'imageProduct-product' }, 'STTImage', 'asc'],
+                            [{ model: db.classifyProduct, as: 'classifyProduct-product' }, 'priceClassify', 'asc'],
+                            arrOrder[indexOrder]
+                        ],
+                        raw: false,
+                        nest: true
+                    })
+
+                    resolve({
+                        errCode: 0,
+                        countProduct: listProducts.length,
+                        data: listProducts,
+                    })
+                    return
+                }
 
                 let listProducts = await db.product.findAll({
                     where: whereStatus(),
@@ -936,7 +1002,8 @@ const searchProduct = (data) => {
                             where: wherePrice(),
                         },
                         {
-                            model: db.promotionProduct
+                            model: db.promotionProduct,
+                            where: wherePromotion()
                         },
                         {
                             model: db.evaluateProduct,
@@ -962,7 +1029,7 @@ const searchProduct = (data) => {
 
                 const result = searcher.search(key);
 
-                let start = (data.page - 1) * data.maxProduct
+                let start = (+data.page - 1) * data.maxProduct
                 let end = start + data.maxProduct
 
                 resolve({

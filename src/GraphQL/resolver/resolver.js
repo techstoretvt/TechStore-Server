@@ -70,6 +70,8 @@ const resolvers = {
         },
         listTrademarkSearch: async (parent, args) => {
             let list = await ListTrademarkSearch();
+            if (args.keyword === 'all')
+                return list
 
             const searcher = new FuzzySearch(list, ['nameTrademarkEn', 'typeProduct.nameTypeProductEn', 'products.nameProductEn'], {
                 caseSensitive: false,
@@ -86,6 +88,8 @@ const resolvers = {
         },
         listTypeProductSearch: async (parent, args) => {
             let list = await ListTypeProductSearch();
+            if (args.keyword === 'all')
+                return list
 
             const searcher = new FuzzySearch(list, ['nameTypeProductEn', 'trademark.nameTrademarkEn', 'products.nameProductEn'], {
                 caseSensitive: false,
