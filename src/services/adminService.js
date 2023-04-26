@@ -10,6 +10,57 @@ import jwt from 'jsonwebtoken'
 import provinces from './provinces.json'
 // import { v4 as uuidv4 } from 'uuid';
 
+//timer notifycations
+setInterval(async () => {
+    let date = new Date().getTime()
+    console.log('kiem tra thong bao: ', date);
+    let notifys = await db.timerNotifys.findAll({
+        where: {
+            status: "false",
+            timer: {
+                [Op.lt]: date
+            }
+        }
+    })
+    if (notifys.length > 0) {
+        let users = await db.User.findAll({
+            where: {
+                statusUser: {
+                    [Op.ne]: 'false'
+                }
+            }
+        })
+        users = users.filter(user => {
+            return user.statusUser === 'true' || (user.statusUser * 1) < date
+        })
+        notifys.forEach(async item => {
+            let arr = users.map(user => {
+                return {
+                    id: uuidv4(),
+                    title: item.title,
+                    content: item.content,
+                    redirect_to: item.redirect_to,
+                    idUser: user.id,
+                    typeNotify: item.typeNotify,
+                    timeCreate: date,
+                    urlImage: item.urlImage ?? ''
+                }
+            })
+            await db.notifycations.bulkCreate(arr, { individualHooks: true })
+            handleEmit('new-notify-all', { title: item.title, content: item.content })
+        })
+        await db.timerNotifys.update({ status: 'true' }, {
+            where: {
+                status: 'false'
+            }
+        })
+    }
+
+
+}, 60000)
+
+
+
 const checkLoginAdmin = async (accessToken) => {
     try {
         let decoded = decodeToken(accessToken, process.env.ACCESS_TOKEN_SECRET)
@@ -1293,19 +1344,19 @@ const createNotify_noimage = (data) => {
                     })
                     return
                 }
-                let users = await db.User.findAll({
-                    where: {
-                        statusUser: {
-                            [Op.ne]: 'false'
-                        }
-                    }
-                })
-                let date = new Date().getTime()
-                users = users.filter(item => {
-                    return item.statusUser === 'true' || (item.statusUser * 1) < date
-                })
 
-                setTimeout(async () => {
+                if (!data.timePost || +data.timePost === 0) {
+                    let users = await db.User.findAll({
+                        where: {
+                            statusUser: {
+                                [Op.ne]: 'false'
+                            }
+                        }
+                    })
+                    let date = new Date().getTime()
+                    users = users.filter(item => {
+                        return item.statusUser === 'true' || (item.statusUser * 1) < date
+                    })
                     let arr = users.map(item => {
                         return {
                             id: uuidv4(),
@@ -1319,8 +1370,35 @@ const createNotify_noimage = (data) => {
                     })
                     await db.notifycations.bulkCreate(arr, { individualHooks: true })
                     handleEmit('new-notify-all', { title: data.title, content: data.content })
+                }
+                else {
+                    await db.timerNotifys.create({
+                        id: uuidv4(),
+                        title: data.title,
+                        content: data.content,
+                        redirect_to: data.link,
+                        typeNotify: data.typeNotify,
+                        status: 'false',
+                        timer: +data.timePost
+                    })
+                }
 
-                }, data.timePost * 1 - date > 0 ? data.timePost * 1 - date : 0);
+                // setTimeout(async () => {
+                //     let arr = users.map(item => {
+                //         return {
+                //             id: uuidv4(),
+                //             title: data.title,
+                //             content: data.content,
+                //             redirect_to: data.link,
+                //             idUser: item.id,
+                //             typeNotify: data.typeNotify,
+                //             timeCreate: date,
+                //         }
+                //     })
+                //     await db.notifycations.bulkCreate(arr, { individualHooks: true })
+                //     handleEmit('new-notify-all', { title: data.title, content: data.content })
+
+                // }, data.timePost * 1 - date > 0 ? data.timePost * 1 - date : 0);
 
                 resolve({
                     errCode: 0,
@@ -1352,21 +1430,20 @@ const createNotify_image = (data) => {
                     })
                     return
                 }
-                console.log(data);
+                // console.log(data);
 
-                let users = await db.User.findAll({
-                    where: {
-                        statusUser: {
-                            [Op.ne]: 'false'
+                if (!data.query.timePost || +data.query.timePost === 0) {
+                    let users = await db.User.findAll({
+                        where: {
+                            statusUser: {
+                                [Op.ne]: 'false'
+                            }
                         }
-                    }
-                })
-                let date = new Date().getTime()
-                users = users.filter(item => {
-                    return item.statusUser === 'true' || (item.statusUser * 1) < date
-                })
-
-                setTimeout(async () => {
+                    })
+                    let date = new Date().getTime()
+                    users = users.filter(item => {
+                        return item.statusUser === 'true' || (item.statusUser * 1) < date
+                    })
                     let arr = users.map(item => {
                         return {
                             id: uuidv4(),
@@ -1379,10 +1456,21 @@ const createNotify_image = (data) => {
                             urlImage: data.file.path
                         }
                     })
-
                     await db.notifycations.bulkCreate(arr, { individualHooks: true })
                     handleEmit('new-notify-all', { title: data.query.title, content: data.query.content })
-                }, data.query.timePost * 1 - date > 0 ? data.query.timePost * 1 - date : 0);
+                }
+                else {
+                    await db.timerNotifys.create({
+                        id: uuidv4(),
+                        title: data.query.title,
+                        content: data.query.content,
+                        redirect_to: data.query.link,
+                        typeNotify: data.query.typeNotify,
+                        status: 'false',
+                        urlImage: data.file.path,
+                        timer: +data.query.timePost
+                    })
+                }
 
                 resolve({
                     errCode: 0,
@@ -1715,6 +1803,12 @@ const getAddressBillAdmin = (data) => {
     })
 }
 
+const contentEmailConfirmBill = () => {
+    return `
+        <h2>Vào website để xem chi tiết</h2>
+    `
+}
+
 const confirmBillAdmin = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -1746,6 +1840,40 @@ const confirmBillAdmin = (data) => {
                     timeStatus: new Date().getTime()
                 })
 
+                let user = await db.User.findOne({
+                    include: [
+                        {
+                            model: db.bill,
+                            where: {
+                                id: data.idBill
+                            }
+                        }
+                    ],
+                    nest: true,
+                    raw: false
+                })
+                let date = new Date().getTime()
+                await db.notifycations.create({
+                    id: uuidv4(),
+                    title: 'Đơn hàng đã xác nhận',
+                    content: `Đơn hàng ${data.idBill} đã được xác nhận`,
+                    timeCreate: date,
+                    typeNotify: 'order',
+                    idUser: user.id,
+                    redirect_to: '/user/purchase?type=2'
+                })
+
+                handleEmit(`new-notify-${user.id}`, {
+                    title: 'Đơn hàng của bạn đã được xác nhận',
+                    content: 'Vào website để xem chi tiết'
+                })
+
+                //send email
+                if (user?.typeAccount === 'web') {
+                    let content = contentEmailConfirmBill()
+                    sendEmail(user.email, 'Đơn hàng của bạn đã được xác nhận', content)
+                }
+
 
                 resolve(true)
             }
@@ -1754,6 +1882,24 @@ const confirmBillAdmin = (data) => {
             reject(e);
         }
     })
+}
+
+let contentUpdateStatusBill = () => {
+    return `
+    <h3>Vào website để xem chi tiết đơn hàng</h3>
+    `
+}
+
+let contentSuccessBill = () => {
+    return `
+    <h3>Vào website để xem chi tiết đơn hàng</h3>
+    `
+}
+
+let contentFailBill = () => {
+    return `
+    <h3>Vào website để xem chi tiết đơn hàng</h3>
+    `
 }
 
 const updateStatusBillAdmin = (data) => {
@@ -1777,6 +1923,19 @@ const updateStatusBillAdmin = (data) => {
                     resolve(false)
                     return
                 }
+                let date = new Date().getTime()
+                let user = await db.User.findOne({
+                    include: [
+                        {
+                            model: db.bill,
+                            where: {
+                                id: data.idBill
+                            }
+                        }
+                    ],
+                    nest: true,
+                    raw: false
+                })
 
                 if (data.nameStatus === 'success') {
                     bill.idStatusBill = 3
@@ -1789,6 +1948,27 @@ const updateStatusBillAdmin = (data) => {
                         idStatusBill: 3,
                         timeStatus: new Date().getTime()
                     })
+
+                    await db.notifycations.create({
+                        id: uuidv4(),
+                        title: `Đơn hàng ${data.idBill} đã hoàn thành`,
+                        content: 'Đơn hàng đã đến tay người mua',
+                        timeCreate: date,
+                        typeNotify: 'order',
+                        idUser: user.id,
+                        redirect_to: '/user/purchase?type=3'
+                    })
+
+                    handleEmit(`new-notify-${user.id}`, {
+                        title: 'Giao thành công',
+                        content: `Đơn hàng ${data.idBill} đã được hoàn thành`
+                    })
+
+                    //send email
+                    if (user?.typeAccount === 'web') {
+                        let content = contentSuccessBill()
+                        sendEmail(user.email, 'Giao hàng thành công', content)
+                    }
                 }
                 else if (data.nameStatus === 'fail') {
                     bill.idStatusBill = 4
@@ -1801,6 +1981,28 @@ const updateStatusBillAdmin = (data) => {
                         idStatusBill: 4,
                         timeStatus: new Date().getTime()
                     })
+
+                    await db.notifycations.create({
+                        id: uuidv4(),
+                        title: `Đơn hàng ${data.idBill} đã bị hủy`,
+                        content: 'Giao hàng thất bại',
+                        timeCreate: date,
+                        typeNotify: 'order',
+                        idUser: user.id,
+                        redirect_to: '/user/purchase?type=4'
+                    })
+
+                    handleEmit(`new-notify-${user.id}`, {
+                        title: 'Giao hàng thất bại',
+                        content: `Đơn hàng ${data.idBill} đã bị hủy`
+                    })
+
+                    //send email
+                    if (user?.typeAccount === 'web') {
+                        let content = contentFailBill()
+                        sendEmail(user.email, `Đơn hàng ${data.idBill} đã bị hủy`, content)
+                    }
+
                 }
                 else {
                     bill.idStatusBill = (bill.idStatusBill + 0.01).toFixed(2)
@@ -1813,6 +2015,30 @@ const updateStatusBillAdmin = (data) => {
                         idStatusBill: bill.idStatusBill,
                         timeStatus: new Date().getTime()
                     })
+
+
+
+                    await db.notifycations.create({
+                        id: uuidv4(),
+                        title: `Cập nhật trạng thái đơn hàng ${data.idBill}`,
+                        content: data.nameStatus,
+                        timeCreate: date,
+                        typeNotify: 'order',
+                        idUser: user.id,
+                        redirect_to: '/user/purchase?type=2'
+                    })
+
+
+                    handleEmit(`new-notify-${user.id}`, {
+                        title: data.nameStatus,
+                        content: 'Vào website để xem chi tiết'
+                    })
+
+                    //send email
+                    if (user?.typeAccount === 'web') {
+                        let content = contentUpdateStatusBill()
+                        sendEmail(user.email, 'Đơn hàng của bạn đã được xác nhận', content)
+                    }
                 }
 
                 resolve(true)

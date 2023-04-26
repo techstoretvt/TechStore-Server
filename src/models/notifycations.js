@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
     title: DataTypes.STRING,
     content: DataTypes.STRING,
     timeCreate: DataTypes.DOUBLE,
-    typeNotify: DataTypes.STRING,//system,promotion,short_video,blog
+    typeNotify: DataTypes.STRING,//order,system,promotion,short_video,blog
     idUser: DataTypes.STRING,
     urlImage: DataTypes.TEXT,
     redirect_to: DataTypes.STRING,

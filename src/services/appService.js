@@ -35,7 +35,7 @@ const getProductPromotionHome = () => {
                     {
                         model: db.classifyProduct, as: 'classifyProduct-product',
                         attributes: {
-                            exclude: ['createdAt', 'updatedAt', 'id']
+                            exclude: ['createdAt', 'updatedAt']
                         }
                     },
                     {
@@ -84,7 +84,7 @@ const getProductPromotionHome = () => {
                     {
                         model: db.classifyProduct, as: 'classifyProduct-product',
                         attributes: {
-                            exclude: ['createdAt', 'updatedAt', 'id']
+                            exclude: ['createdAt', 'updatedAt']
                         }
                     },
                     {
@@ -150,7 +150,7 @@ const getTopSellProduct = () => {
                     {
                         model: db.classifyProduct, as: 'classifyProduct-product',
                         attributes: {
-                            exclude: ['createdAt', 'updatedAt', 'id']
+                            exclude: ['createdAt', 'updatedAt']
                         }
                     },
                     {
@@ -228,7 +228,7 @@ const getNewCollectionProduct = (data) => {
                         {
                             model: db.classifyProduct, as: 'classifyProduct-product',
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'id']
+                                exclude: ['createdAt', 'updatedAt']
                             }
                         },
                         {
@@ -299,7 +299,7 @@ const getProductFlycam = () => {
                     {
                         model: db.classifyProduct, as: 'classifyProduct-product',
                         attributes: {
-                            exclude: ['createdAt', 'updatedAt', 'id']
+                            exclude: ['createdAt', 'updatedAt']
                         }
                     },
                     {
@@ -385,7 +385,7 @@ const getListProductMayLike = (data) => {
                         {
                             model: db.classifyProduct, as: 'classifyProduct-product',
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'id']
+                                exclude: ['createdAt', 'updatedAt']
                             }
                         },
                         {

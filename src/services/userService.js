@@ -8,14 +8,14 @@ const { Op } = require("sequelize");
 const paypal = require('paypal-rest-sdk');
 import commont from '../services/commont'
 const { google } = require('googleapis');
-const { OAuth2Client } = require('google-auth-library');
+// const { OAuth2Client } = require('google-auth-library');
 const fs = require('fs');
 const path = require('path');
 import { handleEmit } from '../index'
 var cloudinary = require('cloudinary');
 
 // await cloudinary.v2.uploader.destroy('vznd4hds4kudr0zbvfop')
-import sequelize from 'sequelize';
+// import sequelize from 'sequelize';
 
 paypal.configure({
    'mode': 'sandbox', //sandbox or live
@@ -883,7 +883,6 @@ const addProductToCart = (data) => {
                      })
                      return;
                   }
-
                   if (+data.amount > classifyProduct.amount) {
                      resolve({
                         errCode: 5,
