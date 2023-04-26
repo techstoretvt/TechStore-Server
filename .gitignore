@@ -4,3 +4,4 @@
 .idea/
 .env
 /src/public/videoTam/*.mp4
+/build

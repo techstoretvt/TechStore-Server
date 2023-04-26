@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon --exec babel-node src/index.js",
-    "start2": "pm2 start --name server src/index.js --watch --ignore-watch='node_modules'"
+    "start": "nodemon --exec babel-node src/index.js"
   },
   "keywords": [
     "fullstack",
@@ -43,6 +42,7 @@
     "uuid": "9.0.0"
   },
   "devDependencies": {
+    "@babel/cli": "^7.21.0",
     "@babel/core": "^7.12.10",
     "@babel/node": "^7.12.10",
     "@babel/preset-env": "^7.12.10",
