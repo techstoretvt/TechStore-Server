@@ -980,6 +980,13 @@ const searchProduct = (data) => {
                     })
                     return
                 }
+                if (!data.keyword) {
+                    resolve({
+                        errCode: -1,
+                        errMessage: 'Not found keyword'
+                    })
+                    return
+                }
 
                 let listProducts = await db.product.findAll({
                     where: whereStatus(),
@@ -1023,7 +1030,7 @@ const searchProduct = (data) => {
                     caseSensitive: false,
                     sort: true
                 });
-                let key = data.keyword.normalize('NFD')
+                let key = data.keyword?.normalize('NFD')
                     .replace(/[\u0300-\u036f]/g, '')
                     .replace(/đ/g, 'd').replace(/Đ/g, 'D');
 
