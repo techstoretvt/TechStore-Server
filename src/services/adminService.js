@@ -1583,7 +1583,7 @@ const createNewUserAdmin = (data) => {
                             typeAccount: 'web',
                             idTypeUser: '2',
                             statusUser: 'true',
-                            avatarUpdate: 'https://res.cloudinary.com/dultkpqjp/image/upload/v1681893132/t%E1%BA%A3i_xu%E1%BB%91ng_ybmngt.png'
+                            avatarUpdate: `${process.env.LINK_FONTEND}/images/user/avatar_admin.png`
                         }
                     })
                     if (create) {

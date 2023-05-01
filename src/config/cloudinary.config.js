@@ -14,7 +14,19 @@ const storage = new CloudinaryStorage({
     allowedFormats: ['jpg', 'png', 'jpeg', 'webp'],
     filename: function (req, file, cb) {
         cb(null, file.originalname);
-    }
+    },
+    params: {
+        // folder: 'avatar_user',
+        format: async (req, file) => 'png', // định dạng file ảnh sau khi upload lên Cloudinary
+        transformation: [
+            { // filter ảnh
+                width: 1000, height: 1000,
+                crop: 'limit'
+            },
+            { effect: "sharpen" },
+            { quality: "auto" }
+        ]
+    },
 });
 
 const uploadCloud = multer({ storage });
