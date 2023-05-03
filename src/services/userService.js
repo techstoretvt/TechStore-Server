@@ -5287,8 +5287,9 @@ const createCommentShortVideo = (data) => {
                   return
                }
 
+               let idCmt = uuidv4()
                await db.commentShortVideos.create({
-                  id: uuidv4(),
+                  id: idCmt,
                   idUser: decode.id,
                   idShortVideo: data.idShortVideo,
                   content: data.content
@@ -5302,7 +5303,7 @@ const createCommentShortVideo = (data) => {
                      id: decode.id
                   }
                })
-
+               //notify
                if (user.id !== shortVideo.idUser) {
                   let date = new Date().getTime()
                   await db.notifycations.create({
@@ -5324,6 +5325,7 @@ const createCommentShortVideo = (data) => {
 
                resolve({
                   errCode: 0,
+                  idCmt: idCmt
                })
             }
          }
