@@ -1115,7 +1115,7 @@ const getListBlog = (data) => {
                         editImage: 'false',
                         editVideo: 'false'
                     },
-                    offset: (data.page - 1) * data.maxCount,
+                    offset: (+data.page - 1) * data.maxCount,
                     limit: data.maxCount,
                     attributes: {
                         exclude: ['createdAt', 'updatedAt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
@@ -1184,8 +1184,26 @@ const getListBlog = (data) => {
                     where: {
                         timePost: {
                             [Op.lt]: date
-                        }
+                        },
+                        editImage: 'false',
+                        editVideo: 'false'
                     },
+                    include: [
+                        {
+                            model: db.User,
+                            attributes: {
+                                exclude: [
+                                    'updatedAt', 'statusUser', 'sdt', 'pass', 'keyVerify', 'idGoogle', 'idGithub', 'idFacebook', 'email', 'createdAt', 'birtday', 'gender'
+                                ]
+                            },
+                            where: {
+                                statusUser: {
+                                    [Op.ne]: 'false'
+                                }
+                            },
+
+                        },
+                    ],
                 })
 
 

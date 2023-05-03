@@ -31,6 +31,7 @@ const initAdminRoute = (app) => {
     router.get(routes.getAllTrademark, adminController.getAllTrademark)
     router.get(routes.getListProductByPage, adminController.getListProductByPage)
     router.get(routes.getProductBySwapAndPage, adminController.getProductBySwapAndPage);
+    router.get(routes.getListUserAdmin, adminController.getListUserAdmin)
     //winform
     router.get(routes.getListBillNoConfirm, adminController.getListBillNoConfirm)
     router.get(routes.getDetailBillAdmin, adminController.getDetailBillAdmin)
@@ -65,6 +66,7 @@ const initAdminRoute = (app) => {
     router.put(routes.editProductById, adminController.editProductById)
     router.put(routes.blockProduct, adminController.blockProduct)
     router.put(routes.editImageProduct, fileUploader.single('file'), adminController.editImageProduct)
+    router.put(routes.lockUserAdmin, adminController.lockUserAdmin)
 
 
     router.delete(routes.deleteTypeProduct, adminController.deleteTypeProduct)

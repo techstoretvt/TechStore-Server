@@ -370,6 +370,14 @@ const userLogin = (data) => {
                   }
                   else {
                      //check thời gian còn lại khi bị khóa
+                     let remaining = timeBlock - timeCurrent
+                     let H = Math.floor(remaining / 3600000)
+                     remaining = remaining - (H * 3600000)
+                     let M = Math.floor(remaining / 60000)
+                     resolve({
+                        errCode: 4,
+                        errMessage: `Vui lòng chờ sau ${H} giờ ${M} phút để tiếp tục!`,
+                     })
 
                   }
                }
@@ -1834,33 +1842,57 @@ const createNewBill = (data) => {
                   return;
                }
 
-               //check isSell product
-               let IsSell = true;
-               let nameProductIsSell
-               cart.forEach(async item => {
-                  let product = await db.product.findOne({
-                     where: {
-                        id: item.idProduct,
-                        isSell: "false",
-                     }
-                  })
-                  if (product) {
-                     IsSell = false;
-                     nameProductIsSell = product.nameProduct
+               //check sell product
+               let listIdProduct = cart.map(item => (
+                  item.idProduct
+               ))
+
+               let productUnSell = await db.product.findOne({
+                  where: {
+                     id: {
+                        [Op.in]: listIdProduct
+                     },
+                     isSell: 'false'
                   }
                })
 
-               if (!IsSell) {
+               if (productUnSell) {
                   resolve({
                      errCode: 5,
-                     errMessage: `Sản phâm "${nameProductIsSell}" đã không còn bán nửa.`
+                     errMessage: `Sản phẩm "${productUnSell.nameProduct}" đã không còn bán nửa.`
                   })
-
-                  return;
+                  return
                }
 
+               //check amount
+               let listIdClassify = cart.map(item => (
+                  item.idClassifyProduct
+               ))
+               let listClassify = await db.classifyProduct.findAll({
+                  where: {
+                     id: {
+                        [Op.in]: listIdClassify
+                     }
+                  }
+               })
+               let checkAmountClassify = true
+               for (let i = 0; i < cart.length; i++)
+                  for (let j = 0; j < listClassify.length; j++) {
+                     if (listClassify[j].id === cart[i].idClassifyProduct) {
+                        if (listClassify[j].amount < cart[i].amount) {
+                           checkAmountClassify = false
+                           break;
+                        }
+                     }
+                  }
 
-
+               if (!checkAmountClassify) {
+                  resolve({
+                     errCode: 6,
+                     errMessage: `Vui lòng chọn số lượng phù hợp hoặc thay đổi phân loại sản phẩm!`
+                  })
+                  return
+               }
 
                //handle buy product
                let date = new Date().getTime()
@@ -1896,6 +1928,19 @@ const createNewBill = (data) => {
                })
 
                await db.detailBill.bulkCreate(arrayDetailBill, { individualHooks: true })
+
+               cart.forEach(async item => {
+                  let classify = await db.classifyProduct.findOne({
+                     where: {
+                        id: item.idClassifyProduct
+                     },
+                     raw: false
+                  })
+                  if (classify) {
+                     classify.amount = classify.amount - item.amount
+                     await classify.save()
+                  }
+               })
 
                await db.cart.destroy({
                   where: {
@@ -2156,7 +2201,37 @@ const userCancelBill = (data) => {
                else {
                   bill.idStatusBill = 4
                   bill.noteCancel = data.note
+                  bill.timeBill = new Date().getTime().toString()
                   await bill.save();
+
+                  await db.statusBills.create({
+                     id: uuidv4(),
+                     idBill: bill.id,
+                     nameStatus: 'Đã hủy',
+                     idStatusBill: 4,
+                     timeStatus: new Date().getTime()
+                  })
+
+                  //increase amount product
+                  let detailBills = await db.detailBill.findAll({
+                     where: {
+                        idBill: bill.id
+                     }
+                  })
+
+                  detailBills.forEach(async item => {
+                     let classify = await db.classifyProduct.findOne({
+                        where: {
+                           id: item.idClassifyProduct
+                        },
+                        raw: false
+                     })
+                     if (classify) {
+                        classify.amount = classify.amount + item.amount
+                        await classify.save()
+                     }
+                  })
+
 
                   resolve({
                      errCode: 0,
@@ -2434,8 +2509,17 @@ const hasReceivedProduct = (data) => {
                   })
                }
                else {
-                  bill.idStatusBill = '3'
+                  bill.idStatusBill = 3
+                  bill.timeBill = new Date().getTime()
                   await bill.save();
+
+                  await db.statusBills.create({
+                     id: uuidv4(),
+                     idBill: bill.id,
+                     nameStatus: 'Hoàn thành',
+                     idStatusBill: 3,
+                     timeStatus: new Date().getTime()
+                  })
 
 
                   let detailBill = await db.detailBill.findAll({
@@ -2527,28 +2611,59 @@ const buyProductByCard = (data) => {
                }
 
                //check isSell product
-               let IsSell = true;
-               let nameProductIsSell
-               cart.forEach(async item => {
-                  let product = await db.product.findOne({
-                     where: {
-                        id: item.idProduct,
-                        isSell: "false",
-                     }
-                  })
-                  if (product) {
-                     IsSell = false;
-                     nameProductIsSell = product.nameProduct
+               let listIdProduct = cart.map(item => (
+                  item.idProduct
+               ))
+
+               let productUnSell = await db.product.findOne({
+                  where: {
+                     id: {
+                        [Op.in]: listIdProduct
+                     },
+                     isSell: 'false'
                   }
                })
 
-               if (!IsSell) {
+               if (productUnSell) {
                   resolve({
                      errCode: 5,
-                     errMessage: `Sản phâm "${nameProductIsSell}" đã không còn bán nửa.`
+                     errMessage: `Sản phẩm "${productUnSell.nameProduct}" đã không còn bán nửa.`
                   })
-                  return;
+                  return
                }
+
+               //check amount
+               let listIdClassify = cart.map(item => (
+                  item.idClassifyProduct
+               ))
+               let listClassify = await db.classifyProduct.findAll({
+                  where: {
+                     id: {
+                        [Op.in]: listIdClassify
+                     }
+                  }
+               })
+               let checkAmountClassify = true
+               for (let i = 0; i < cart.length; i++)
+                  for (let j = 0; j < listClassify.length; j++) {
+                     if (listClassify[j].id === cart[i].idClassifyProduct) {
+                        if (listClassify[j].amount < cart[i].amount) {
+                           checkAmountClassify = false
+                           break;
+                        }
+                     }
+                  }
+
+               if (!checkAmountClassify) {
+                  resolve({
+                     errCode: 6,
+                     errMessage: `Vui lòng chọn số lượng phù hợp hoặc thay đổi phân loại sản phẩm!`
+                  })
+                  return
+               }
+
+
+               //handle buy
 
                let cart2 = await db.cart.findAll({
                   where: {
@@ -2591,8 +2706,6 @@ const buyProductByCard = (data) => {
                   }
                })
 
-               // console.log("array ", arrayProduct);
-               // console.log('totals: ', totals + '.00');
 
                const create_payment_json = {
                   "intent": "sale",

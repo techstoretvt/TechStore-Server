@@ -99,6 +99,8 @@ const routes = {
     createNotify_image: '/api/v1/create-notify-image',
     CheckLoginAdminAccessToken: '/api/v1/check-login-admin-access-token',
     createNewUserAdmin: '/api/v1/create-new-user-admin',
+    getListUserAdmin: '/api/v1/get-list-user',
+    lockUserAdmin: '/api/v1/lock-user',
     //winform
     getListBillNoConfirm: '/api/v1/get-list-bill-no-confirm',
     getDetailBillAdmin: '/api/v1/get-detail-bill-admin',
@@ -194,7 +196,8 @@ const routes = {
     checkSaveBlogById: '/api/v1/check-save-blog-by-id',
     getListNotifyAll: '/api/v1/get-list-notify-all',
     getListNotifyByType: '/api/v1/get-list-notify-by-type',
-    seenNotifyOfUser: '/api/v1/seen-notify-of-user'
+    seenNotifyOfUser: '/api/v1/seen-notify-of-user',
+
 
 }
 

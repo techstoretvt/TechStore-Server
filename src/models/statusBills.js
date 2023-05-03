@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       // bill.belongsTo(models.statusBill, { foreignKey: 'idStatusBill' })
       // bill.belongsTo(models.addressUser, { foreignKey: 'idAddressUser' })
       // bill.hasMany(models.detailBill, { foreignKey: 'idBill' })
+      statusBills.belongsTo(models.bill, { foreignKey: 'idBill' })
     }
   }
   statusBills.init({

@@ -431,6 +431,40 @@ const createNewUserAdmin = async (req, res) => {
         })
     }
 }
+
+const getListUserAdmin = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.getListUserAdmin(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const lockUserAdmin = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.lockUserAdmin(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+
 //winform
 const getListBillNoConfirm = async (req, res) => {
     try {
@@ -578,6 +612,8 @@ module.exports = {
     createNotify_image,
     CheckLoginAdminAccessToken,
     createNewUserAdmin,
+    getListUserAdmin,
+    lockUserAdmin,
     //winform
     getListBillNoConfirm,
     getDetailBillAdmin,

@@ -6,6 +6,7 @@ var cloudinary = require('cloudinary');
 const { Op } = require("sequelize");
 import { handleEmit } from '../index'
 require('dotenv').config();
+import FuzzySearch from 'fuzzy-search';
 import jwt from 'jsonwebtoken'
 import provinces from './provinces.json'
 // import { v4 as uuidv4 } from 'uuid';
@@ -1607,6 +1608,130 @@ const createNewUserAdmin = (data) => {
     })
 }
 
+const getListUserAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || data.nameUser === undefined) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data: data
+                })
+            }
+            else {
+                let decode = decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+
+                    if (data.nameUser === '') {
+                        let listUsers = await db.User.findAll({
+                            attributes: ['id', 'firstName', 'lastName', 'sdt', 'gender', 'avatarGoogle', 'avatarFacebook', 'avatarGithub', 'avatarUpdate', 'typeAccount', 'statusUser'],
+                            where: {
+                                idTypeUser: {
+                                    [Op.notIn]: ['1', '2']
+                                }
+                            },
+                            limit: 50
+                        })
+
+                        resolve({
+                            errCode: 0,
+                            data: listUsers
+                        })
+                    }
+                    else {
+                        let listUsers = await db.User.findAll({
+                            attributes: ['id', 'firstName', 'lastName', 'sdt', 'gender', 'avatarGoogle', 'avatarFacebook', 'avatarGithub', 'avatarUpdate', 'typeAccount', 'statusUser'],
+                            where: {
+                                idTypeUser: {
+                                    [Op.notIn]: ['1', '2']
+                                },
+                            }
+                        })
+
+                        const searcher = new FuzzySearch(listUsers, ['firstName'], {
+                            caseSensitive: false,
+                            sort: true
+                        });
+                        // let key = args.keyword.normalize('NFD')
+                        //     .replace(/[\u0300-\u036f]/g, '')
+                        //     .replace(/đ/g, 'd').replace(/Đ/g, 'D');
+
+                        const result = searcher.search(data.nameUser);
+
+                        resolve({
+                            errCode: 0,
+                            data: result
+                        })
+                    }
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const lockUserAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idUser || !data.status) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data: data
+                })
+            }
+            else {
+                let decode = decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (decode === null) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        decode
+                    })
+                }
+                else {
+                    let user = await db.User.findOne({
+                        where: {
+                            id: data.idUser
+                        },
+                        raw: false
+                    })
+
+                    if (!user) {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'Không tìm thấy tài khoản này!',
+                        })
+                        return
+                    }
+                    else {
+
+                        user.statusUser = data.status
+                        await user.save()
+
+                        resolve({
+                            errCode: 0,
+                        })
+
+                    }
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 //winform
 const getListBillNoConfirm = () => {
     return new Promise(async (resolve, reject) => {
@@ -1923,6 +2048,7 @@ const updateStatusBillAdmin = (data) => {
                     resolve(false)
                     return
                 }
+
                 let date = new Date().getTime()
                 let user = await db.User.findOne({
                     include: [
@@ -1938,14 +2064,15 @@ const updateStatusBillAdmin = (data) => {
                 })
 
                 if (data.nameStatus === 'success') {
-                    bill.idStatusBill = 3
+                    bill.idStatusBill = 2.99
+                    bill.timeBill = date
                     await bill.save()
 
                     await db.statusBills.create({
                         id: uuidv4(),
                         idBill: bill.id,
                         nameStatus: 'Đã giao',
-                        idStatusBill: 3,
+                        idStatusBill: 2.99,
                         timeStatus: new Date().getTime()
                     })
 
@@ -1972,6 +2099,8 @@ const updateStatusBillAdmin = (data) => {
                 }
                 else if (data.nameStatus === 'fail') {
                     bill.idStatusBill = 4
+                    bill.timeBill = date
+                    bill.noteCancel = 'Giao hàng thất bại'
                     await bill.save()
 
                     await db.statusBills.create({
@@ -1982,6 +2111,28 @@ const updateStatusBillAdmin = (data) => {
                         timeStatus: new Date().getTime()
                     })
 
+                    //increase amount product
+                    let detailBills = await db.detailBill.findAll({
+                        where: {
+                            idBill: bill.id
+                        }
+                    })
+
+                    detailBills.forEach(async item => {
+                        let classify = await db.classifyProduct.findOne({
+                            where: {
+                                id: item.idClassifyProduct
+                            },
+                            raw: false
+                        })
+                        if (classify) {
+                            classify.amount = classify.amount + item.amount
+                            await classify.save()
+                        }
+                    })
+
+
+                    //notify
                     await db.notifycations.create({
                         id: uuidv4(),
                         title: `Đơn hàng ${data.idBill} đã bị hủy`,
@@ -2006,6 +2157,7 @@ const updateStatusBillAdmin = (data) => {
                 }
                 else {
                     bill.idStatusBill = (bill.idStatusBill + 0.01).toFixed(2)
+                    bill.timeBill = date
                     await bill.save()
 
                     await db.statusBills.create({
@@ -2101,6 +2253,8 @@ module.exports = {
     createNotify_image,
     CheckLoginAdminAccessToken,
     createNewUserAdmin,
+    getListUserAdmin,
+    lockUserAdmin,
     //winform
     getListBillNoConfirm,
     getDetailBillAdmin,
