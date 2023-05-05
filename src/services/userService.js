@@ -602,7 +602,7 @@ const loginGoogle = (data) => {
             //
             let [user, created] = await db.User.findOrCreate({
                where: {
-                  idGoogle: data.idGoogle,
+                  idGoogle: data.idGoogle.toString(),
                   typeAccount: 'google',
                },
                defaults: {
@@ -689,7 +689,7 @@ const loginFacebook = (data) => {
          else {
             //
             let [user, created] = await db.User.findOrCreate({
-               where: { idFacebook: data.idFacebook },
+               where: { idFacebook: data.idFacebook.toString() },
                defaults: {
                   firstName: data.firstName,
                   lastName: data.lastName,
@@ -774,12 +774,12 @@ const loginGithub = (data) => {
          else {
             //
             let [user, created] = await db.User.findOrCreate({
-               where: { idGithub: data.idGithub },
+               where: { idGithub: data.idGithub.toString() },
                defaults: {
                   firstName: data.firstName,
-                  lastName: 'none',
-                  email: 'none',
-                  idTypeUser: 3,
+                  lastName: '0',
+                  // email: 'none',
+                  idTypeUser: '3',
                   typeAccount: 'github',
 
                   statusUser: 'true',
@@ -793,6 +793,7 @@ const loginGithub = (data) => {
 
             if (user.statusUser === 'true') {
                user.avatarGithub = data.avatarGithub
+               await user.save()
                //create token
                let tokens = CreateToken(user);
                resolve({
@@ -826,6 +827,8 @@ const loginGithub = (data) => {
                }
                else {
                   //create token
+                  user.avatarGithub = data.avatarGithub
+                  await user.save()
                   let tokens = CreateToken(user);
                   resolve({
                      errCode: 0,
