@@ -2718,7 +2718,7 @@ const buyProductByCard = (data) => {
                   "redirect_urls": {
                      "return_url":
                         `${process.env.LINK_BACKEND}/api/v1/buy-product-by-card/success?price=${totals + '.00'}&accessToken=${data.accessToken}&totalsReq=${data.totalsReq}`,
-                     "cancel_url": `${process.env.LINK_BACKEND}/api/v1/buy-product-by-card/cancel`
+                     "cancel_url": `${process.env.LINK_FONTEND}/cart`
                   },
                   "transactions": [{
                      "item_list": {
