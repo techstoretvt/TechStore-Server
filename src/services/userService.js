@@ -65,12 +65,11 @@ let GG_Drive = {
          const createFile = await drive.files.create({
             requestBody: {
                name: `Video-${date}`,
-               mimeType: 'video/mp4',
+               mimeType: 'video/*',
                parents: [idForder],
-               // parents: ['19zNlML-kybw2jufbGE7L5VesvrJ-WIQi'],
             },
             media: {
-               mimeType: 'video/mp4',
+               mimeType: 'video/*',
                body: fs.createReadStream(path.join(__dirname, `../public/videoTam/${name}`))
             }
          })
@@ -4303,6 +4302,7 @@ const uploadCoverImageShortVideo = ({ file, query }) => {
 const uploadVideoForShortVideo = (idShortVideo, url) => {
    return new Promise(async (resolve, reject) => {
       try {
+
          let urlVideo = await GG_Drive.uploadFile(url, process.env.ID_FOLDER_SHORT_VIDEO)
 
          let shortVideo = await db.shortVideos.findOne({
@@ -4319,6 +4319,13 @@ const uploadVideoForShortVideo = (idShortVideo, url) => {
          shortVideo.idDriveVideo = urlVideo.id
          shortVideo.loadVideo = 'true'
          await shortVideo.save()
+
+
+
+
+
+
+
          handleEmit(`refresh-short-video-user-${shortVideo?.idUser}`, {
             status: true
          })
@@ -5814,13 +5821,41 @@ const getListVideoByIdUser = (data) => {
             }
 
             else if (data.nav === 'save') {
+
+               let count = await db.shortVideos.count({
+
+                  include: [
+                     {
+                        model: db.User,
+                        attributes: ['id', 'firstName', 'lastName', 'idTypeUser', 'typeAccount',
+                           'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub', 'avatarUpdate',
+                           'statusUser'
+                        ],
+                        where: {
+                           statusUser: {
+                              [Op.ne]: 'false'
+                           }
+                        }
+                     },
+                     {
+                        model: db.collectionShortVideos,
+                        where: {
+                           idUser
+                        },
+                        attributes: ['id']
+                     }
+                  ],
+                  raw: false,
+                  nest: true,
+               })
+
                let listVideo = await db.shortVideos.findAll({
                   // where: {
-                  //    idUser
+                  //    idUser,
                   // },
 
                   attributes: ['id', 'idDriveVideo', 'urlImage', 'content', 'scope',
-                     'countLike', 'countComment', 'stt', , 'loadImage', 'loadVideo'
+                     'countLike', 'countComment', 'stt', 'loadImage', 'loadVideo'
                   ],
                   include: [
                      {
@@ -5860,8 +5895,6 @@ const getListVideoByIdUser = (data) => {
                   order: [['stt', data.ft === 'old' ? 'ASC' : 'DESC']]
                })
 
-
-
                resolve({
                   errCode: 0,
                   data: listVideo,
@@ -5870,13 +5903,36 @@ const getListVideoByIdUser = (data) => {
                })
             }
             else if (data.nav === 'like') {
+               let count = await db.shortVideos.count({
+
+                  include: [
+                     {
+                        model: db.User,
+                        attributes: ['id', 'firstName', 'lastName', 'idTypeUser', 'typeAccount',
+                           'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub', 'avatarUpdate',
+                           'statusUser'
+                        ],
+                        where: {
+                           statusUser: {
+                              [Op.ne]: 'false'
+                           }
+                        }
+                     },
+                     {
+                        model: db.likeShortVideos,
+                        where: {
+                           idUser
+                        },
+                        // attributes: ['id']
+                     }
+                  ],
+                  raw: false,
+                  nest: true,
+               })
                let listVideo = await db.shortVideos.findAll({
-                  // where: {
-                  //    idUser
-                  // },
 
                   attributes: ['id', 'idDriveVideo', 'urlImage', 'content', 'scope',
-                     'countLike', 'countComment', 'stt', , 'loadImage', 'loadVideo'
+                     'countLike', 'countComment', 'stt', 'loadImage', 'loadVideo'
                   ],
                   include: [
                      {
@@ -5915,6 +5971,7 @@ const getListVideoByIdUser = (data) => {
                   limit: 50,
                   order: [['stt', data.ft === 'old' ? 'ASC' : 'DESC']]
                })
+
 
 
 
