@@ -31,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
     idTypeUser: DataTypes.STRING,
     //1 admin root, 2 admin phu, 3 user
 
-    statusUser: DataTypes.STRING, //true, false , timestamp,wait
+    statusUser: DataTypes.STRING, //true, false , timestamp, wait
     idGoogle: DataTypes.STRING,
     avatarGoogle: DataTypes.TEXT,
     typeAccount: DataTypes.STRING, //web, google, facebook, github

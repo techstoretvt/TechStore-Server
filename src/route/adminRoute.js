@@ -1,9 +1,14 @@
 import express from 'express'
 import adminController from '../controllers/adminController'
-const fileUploader = require('../config/cloudinary.config');
 import multer from 'multer';
 import path from 'path'
 import { routes } from '../services/commont'
+
+const fileUploader = require('../config/cloudinary.config');
+import cloudinary_product from '../utils/cloudinary/cloudinary_product'
+import cloudinary_typePoduct from '../utils/cloudinary/cloudinary_typeProduct'
+import cloudinary_notify from '../utils/cloudinary/cloudinary_notify'
+
 
 let router = express.Router();
 
@@ -47,25 +52,25 @@ const initAdminRoute = (app) => {
 
 
     router.post(routes.addTrademark, adminController.addTrademark)
-    router.post(routes.addTypeProduct, fileUploader.single('file'), adminController.addTypeProduct)
-    router.post(routes.cloudinaryUpload, fileUploader.array('file'), adminController.cloudinaryUpload);
+    router.post(routes.addTypeProduct, cloudinary_typePoduct.single('file'), adminController.addTypeProduct)
+    router.post(routes.cloudinaryUpload, cloudinary_product.array('file'), adminController.cloudinaryUpload);
     router.post(routes.createNewProduct, adminController.createNewProduct)
     router.post(routes.addPromotionByIdProduct, adminController.addPromotionByIdProduct);
     router.post(routes.swapImageProduct, adminController.swapImageProduct);
     router.post(routes.createNewKeyWord, adminController.createNewKeyWord)
     router.post(routes.createNotify_noimage, adminController.createNotify_noimage)
-    router.post(routes.createNotify_image, fileUploader.single('file'), adminController.createNotify_image)
+    router.post(routes.createNotify_image, cloudinary_notify.single('file'), adminController.createNotify_image)
     router.post(routes.CheckLoginAdminAccessToken, adminController.CheckLoginAdminAccessToken)
     router.post(routes.createNewUserAdmin, adminController.createNewUserAdmin)
 
 
     router.put(routes.confirmBillById, adminController.confirmBillById)
     router.put(routes.cancelBillById, adminController.cancelBillById)
-    router.put(routes.updateTypeProductById, fileUploader.single('file'), adminController.updateTypeProductById)
+    router.put(routes.updateTypeProductById, cloudinary_typePoduct.single('file'), adminController.updateTypeProductById)
     router.put(routes.updateTrademarkById, adminController.updateTrademarkById)
     router.put(routes.editProductById, adminController.editProductById)
     router.put(routes.blockProduct, adminController.blockProduct)
-    router.put(routes.editImageProduct, fileUploader.single('file'), adminController.editImageProduct)
+    router.put(routes.editImageProduct, cloudinary_product.single('file'), adminController.editImageProduct) //error
     router.put(routes.lockUserAdmin, adminController.lockUserAdmin)
 
 

@@ -12,53 +12,53 @@ import provinces from './provinces.json'
 // import { v4 as uuidv4 } from 'uuid';
 
 //timer notifycations
-setInterval(async () => {
-    let date = new Date().getTime()
-    console.log('kiem tra thong bao: ', date);
-    let notifys = await db.timerNotifys.findAll({
-        where: {
-            status: "false",
-            timer: {
-                [Op.lt]: date
-            }
-        }
-    })
-    if (notifys.length > 0) {
-        let users = await db.User.findAll({
-            where: {
-                statusUser: {
-                    [Op.ne]: 'false'
-                }
-            }
-        })
-        users = users.filter(user => {
-            return user.statusUser === 'true' || (user.statusUser * 1) < date
-        })
-        notifys.forEach(async item => {
-            let arr = users.map(user => {
-                return {
-                    id: uuidv4(),
-                    title: item.title,
-                    content: item.content,
-                    redirect_to: item.redirect_to,
-                    idUser: user.id,
-                    typeNotify: item.typeNotify,
-                    timeCreate: date,
-                    urlImage: item.urlImage ?? ''
-                }
-            })
-            await db.notifycations.bulkCreate(arr, { individualHooks: true })
-            handleEmit('new-notify-all', { title: item.title, content: item.content })
-        })
-        await db.timerNotifys.update({ status: 'true' }, {
-            where: {
-                status: 'false'
-            }
-        })
-    }
+// setInterval(async () => {
+//     let date = new Date().getTime()
+//     console.log('kiem tra thong bao: ', date);
+//     let notifys = await db.timerNotifys.findAll({
+//         where: {
+//             status: "false",
+//             timer: {
+//                 [Op.lt]: date
+//             }
+//         }
+//     })
+//     if (notifys.length > 0) {
+//         let users = await db.User.findAll({
+//             where: {
+//                 statusUser: {
+//                     [Op.ne]: 'false'
+//                 }
+//             }
+//         })
+//         users = users.filter(user => {
+//             return user.statusUser === 'true' || (user.statusUser * 1) < date
+//         })
+//         notifys.forEach(async item => {
+//             let arr = users.map(user => {
+//                 return {
+//                     id: uuidv4(),
+//                     title: item.title,
+//                     content: item.content,
+//                     redirect_to: item.redirect_to,
+//                     idUser: user.id,
+//                     typeNotify: item.typeNotify,
+//                     timeCreate: date,
+//                     urlImage: item.urlImage ?? ''
+//                 }
+//             })
+//             await db.notifycations.bulkCreate(arr, { individualHooks: true })
+//             handleEmit('new-notify-all', { title: item.title, content: item.content })
+//         })
+//         await db.timerNotifys.update({ status: 'true' }, {
+//             where: {
+//                 status: 'false'
+//             }
+//         })
+//     }
 
 
-}, 60000)
+// }, 60000)
 
 
 
@@ -866,16 +866,17 @@ const swapImageProduct = (data) => {
                     }
                 })
                 listImage.forEach(item => {
-                    let idCloudinary = item.imageTypeProduct.split("/").pop().split(".")[0];
+                    let idCloudinary = item.imagebase64.split("/").pop().split(".")[0];
                     cloudinary.v2.uploader.destroy(idCloudinary)
                 })
+                console.log('vao 1');
 
                 await db.imageProduct.destroy({
                     where: {
                         idProduct: data.idProduct
                     }
                 })
-
+                console.log('vao 2');
                 let arrImageProduct = data.imageProducts.map((item) => {
                     return {
                         idProduct: data.idProduct,
@@ -884,9 +885,8 @@ const swapImageProduct = (data) => {
                         id: uuidv4()
                     }
                 })
-
+                console.log('vao 3');
                 await db.imageProduct.bulkCreate(arrImageProduct, { individualHooks: true })
-
                 resolve({
                     errCode: 0,
                     errMessage: 'Sắp xếp ảnh thành công!',

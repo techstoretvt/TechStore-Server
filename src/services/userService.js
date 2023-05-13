@@ -13,8 +13,11 @@ const fs = require('fs');
 const path = require('path');
 import { handleEmit } from '../index'
 var cloudinary = require('cloudinary');
-
 // await cloudinary.v2.uploader.destroy('vznd4hds4kudr0zbvfop')
+
+
+
+
 // import sequelize from 'sequelize';
 
 paypal.configure({
@@ -107,6 +110,7 @@ let verifier_email = new Verifier(process.env.API_KEY_VERIFY_EMAIL, {
 const CreateUser = (data) => {
    return new Promise(async (resolve, reject) => {
       try {
+
          if (!data.firstName || !data.lastName || !data.pass || !data.email) {
             resolve({
                errCode: 1,
@@ -116,9 +120,10 @@ const CreateUser = (data) => {
          let hasePass = commont.hashPassword(data.pass);
          let keyVerify = commont.randomString();
 
-
          verifier_email.verify(data.email, { hardRefresh: true }, async (err, res) => {
-            if (err) throw err;
+            if (err) {
+               throw err
+            };
             if (res.smtpCheck === 'false') {
                resolve({
                   errCode: 3,
@@ -156,6 +161,8 @@ const CreateUser = (data) => {
 
                if (!created) {
 
+
+
                   //Tài khoản đã tồn tại
                   if (user.statusUser === 'true') {
                      resolve({
@@ -179,6 +186,7 @@ const CreateUser = (data) => {
                      //send email
                      let title = 'Xác nhận tạo tài khoản TechStoreTvT';
                      let contentHtml = contentSendEmail(user.id, user.keyVerify, user.firstName);
+
                      commont.sendEmail(user.email, title, contentHtml)
 
                      resolve({
@@ -200,6 +208,7 @@ const CreateUser = (data) => {
                   //send email
                   let title = 'Xác nhận tạo tài khoản TechStoreTvT';
                   let contentHtml = contentSendEmail(user.id, user.keyVerify, user.firstName);
+
                   commont.sendEmail(user.email, title, contentHtml)
 
                   resolve({
@@ -219,6 +228,7 @@ const CreateUser = (data) => {
 
       }
       catch (e) {
+         console.log('lỗi');
          reject(e);
       }
    })
@@ -621,8 +631,10 @@ const loginGoogle = (data) => {
             });
 
             if (user.statusUser === 'true') {
-               user.avatarGoogle = data.avatar
-               await user.save();
+               if (user.avatarUpdate) {
+                  user.avatarGoogle = data.avatar
+                  await user.save();
+               }
                //create token
                let tokens = CreateToken(user);
                resolve({
@@ -655,6 +667,10 @@ const loginGoogle = (data) => {
                   })
                }
                else {
+                  if (user.avatarUpdate) {
+                     user.avatarGoogle = data.avatar
+                     await user.save();
+                  }
                   //create token
                   let tokens = CreateToken(user);
                   resolve({
@@ -706,8 +722,11 @@ const loginFacebook = (data) => {
             });
 
             if (user.statusUser === 'true') {
-               user.avatarFacebook = data.avatarFacebook
-               await user.save();
+               if (user.avatarUpdate) {
+                  user.avatarFacebook = data.avatarFacebook
+                  await user.save();
+               }
+
                //create token
                let tokens = CreateToken(user);
                resolve({
@@ -740,6 +759,10 @@ const loginFacebook = (data) => {
                   })
                }
                else {
+                  if (user.avatarUpdate) {
+                     user.avatarFacebook = data.avatarFacebook
+                     await user.save();
+                  }
                   //create token
                   let tokens = CreateToken(user);
                   resolve({
@@ -791,8 +814,11 @@ const loginGithub = (data) => {
             });
 
             if (user.statusUser === 'true') {
-               user.avatarGithub = data.avatarGithub
-               await user.save()
+               if (user.avatarUpdate) {
+                  user.avatarGithub = data.avatarGithub
+                  await user.save()
+               }
+
                //create token
                let tokens = CreateToken(user);
                resolve({
@@ -826,8 +852,10 @@ const loginGithub = (data) => {
                }
                else {
                   //create token
-                  user.avatarGithub = data.avatarGithub
-                  await user.save()
+                  if (user.avatarUpdate) {
+                     user.avatarGithub = data.avatarGithub
+                     await user.save()
+                  }
                   let tokens = CreateToken(user);
                   resolve({
                      errCode: 0,
@@ -2048,11 +2076,72 @@ const getListBillByType = (data) => {
                   },
                })
 
-               if (data.type !== '0') {
+               if (+data.type === 1 || +data.type === 3 || +data.type === 4) {
                   let listBills = await db.bill.findAll({
                      where: {
                         idUser,
-                        idStatusBill: data.type,
+                        idStatusBill: +data.type
+                     },
+                     limit: 5,
+                     offset: data.offset,
+                     include: [
+                        {
+                           model: db.detailBill,
+                           include: [
+                              {
+                                 model: db.product,
+                                 include: [
+                                    {
+                                       model: db.imageProduct, as: 'imageProduct-product',
+                                    },
+                                    { model: db.promotionProduct },
+                                 ],
+                              },
+                              {
+                                 model: db.classifyProduct,
+                              },
+                           ],
+                        }
+                     ],
+                     order: [
+                        ['updatedAt', 'DESC']
+                     ],
+                     raw: false,
+                     nest: true
+
+                  })
+                  let count = await db.bill.count({
+                     where: {
+                        idUser,
+                        idStatusBill: +data.type,
+                     }
+                  })
+                  resolve({
+                     errCode: 0,
+                     data: listBills,
+                     count,
+                     countType1,
+                     countType2,
+                  })
+               }
+               else if (+data.type >= 2 && +data.type < 3) {
+                  let listBills = await db.bill.findAll({
+                     where: {
+                        idUser,
+                        [Op.and]: [
+                           {
+                              idStatusBill: {
+                                 [Op.gte]: 2
+                              }
+                           },
+                           {
+                              idStatusBill: {
+                                 [Op.lt]: 3
+                              }
+                           },
+                        ],
+
+
                      },
                      limit: 5,
                      offset: data.offset,

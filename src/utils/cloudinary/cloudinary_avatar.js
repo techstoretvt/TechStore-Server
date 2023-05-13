@@ -18,10 +18,10 @@ const storage = new CloudinaryStorage({
     params: {
         // folder: 'avatar_user',
         format: async (req, file) => 'webp', // định dạng file ảnh sau khi upload lên Cloudinary
-        // folder: 'Image_product',
+        folder: 'avatar_user',
         transformation: [
             { // filter ảnh
-                width: 1000, height: 1000,
+                width: 100, height: 100,
                 crop: 'limit'
             },
             { effect: "sharpen" },

@@ -1,10 +1,17 @@
 import express from 'express'
 import userController from '../controllers/userController'
-const fileUploader = require('../config/cloudinary.config');
 import multer from 'multer';
 import path from 'path'
 import { routes } from '../services/commont'
 var { expressjwt: jwt } = require("express-jwt");
+
+const fileUploader = require('../config/cloudinary.config');
+import cloudinary_evaluate from '../utils/cloudinary/cloudinary_evaluate'
+import cloudinary_blog from '../utils/cloudinary/cloudinary_blog'
+import cloudinary_shortvideo from '../utils/cloudinary/cloudinary_shortvideo'
+import cloudinary_avatar from '../utils/cloudinary/cloudinary_avatar'
+
+
 
 let router = express.Router();
 
@@ -80,10 +87,10 @@ const initUserRoute = (app) => {
     router.post(routes.checkKeyVerify, userController.checkKeyVerify)
     router.post(routes.buyProductByCard, userController.buyProductByCard)
     router.post(routes.createNewEvaluateProduct, userController.createNewEvaluateProduct)
-    router.post(routes.uploadImagesEvaluateProduct, fileUploader.array('file'), userController.uploadImagesEvaluateProduct)
+    router.post(routes.uploadImagesEvaluateProduct, cloudinary_evaluate.array('file'), userController.uploadImagesEvaluateProduct)
     router.post(routes.updateVideoEvaluate, upload.single('video'), userController.updateVideoEvaluate)
     router.post(routes.createNewBlog, userController.createNewBlog)
-    router.post(routes.createNewImageBlog, fileUploader.array('file'), userController.createNewImageBlog)
+    router.post(routes.createNewImageBlog, cloudinary_blog.array('file'), userController.createNewImageBlog)
     router.post(routes.uploadVideoNewBlog, upload.single('video'), userController.uploadVideoNewBlog)
     router.post(routes.uploadVideoEvaluateProduct, upload.single('video'), userController.uploadVideoEvaluateProduct)
     router.post(routes.shareProduct, userController.shareProduct)
@@ -91,7 +98,7 @@ const initUserRoute = (app) => {
     router.post(routes.toggleLikeBlog, userController.toggleLikeBlog)
     router.post(routes.createNewCommentBlog, userController.createNewCommentBlog)
     router.post(routes.createNewShortVideo, userController.createNewShortVideo)
-    router.post(routes.uploadCoverImageShortVideo, fileUploader.single('file'), userController.uploadCoverImageShortVideo)
+    router.post(routes.uploadCoverImageShortVideo, cloudinary_shortvideo.single('file'), userController.uploadCoverImageShortVideo)
     router.post(routes.uploadVideoForShortVideo, upload.single('video'), userController.uploadVideoForShortVideo)
     router.post(routes.saveBlogCollection, userController.saveBlogCollection)
     router.post(routes.createCommentShortVideo, userController.createCommentShortVideo)
@@ -112,7 +119,7 @@ const initUserRoute = (app) => {
     router.put(routes.hasReceivedProduct, userController.hasReceivedProduct)
     router.put(routes.updataEvaluateProduct, userController.updataEvaluateProduct)
     router.put(routes.updateProfileUser, userController.updateProfileUser)
-    router.put(routes.updateAvatarUser, fileUploader.single('file'), userController.updateAvatarUser)
+    router.put(routes.updateAvatarUser, cloudinary_avatar.single('file'), userController.updateAvatarUser)
     router.put(routes.getConfirmCodeChangePass, userController.getConfirmCodeChangePass)
     router.put(routes.confirmCodeChangePass, userController.confirmCodeChangePass)
     router.put(routes.updateBlog, userController.updateBlog)

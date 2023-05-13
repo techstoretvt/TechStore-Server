@@ -29,6 +29,10 @@ const sendEmail = async (toEmail, title, contentHTML) => {
             user: process.env.EMAIL,
             pass: process.env.PASS_EMAIL,
         },
+        tls: {
+            rejectUnauthorized: false,
+            // minVersion: "TLSv1.2"
+        }
     });
 
 
