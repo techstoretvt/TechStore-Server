@@ -75,6 +75,8 @@ const routes = {
     getListProductHashTagByIdVideo: '/api/v1/get-list-product-hashtag-by-id-video',
     getProductById: '/api/v1/get-product-by-id',
     getListBlogHome: '/api/v1/get-list-blog-home',
+    getEventPromotionById: '/api/v1/get-event-promotion-by-id',
+    upLoadImageCoverPromotion: '/api/v1/upload-image-cover-promotion',
 
 
     //admin
@@ -105,6 +107,7 @@ const routes = {
     createNewUserAdmin: '/api/v1/create-new-user-admin',
     getListUserAdmin: '/api/v1/get-list-user',
     lockUserAdmin: '/api/v1/lock-user',
+    createEventPromotion: '/api/v1/create-event-promotion',
     //winform
     getListBillNoConfirm: '/api/v1/get-list-bill-no-confirm',
     getDetailBillAdmin: '/api/v1/get-detail-bill-admin',
@@ -201,6 +204,7 @@ const routes = {
     getListNotifyAll: '/api/v1/get-list-notify-all',
     getListNotifyByType: '/api/v1/get-list-notify-by-type',
     seenNotifyOfUser: '/api/v1/seen-notify-of-user',
+    sendEmailFromContact: '/api/v1/send-email-from-contact'
 
 
 }

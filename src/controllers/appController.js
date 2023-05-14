@@ -341,6 +341,20 @@ const getListBlogHome = async (req, res) => {
     }
 }
 
+const getEventPromotionById = async (req, res) => {
+    try {
+        let data = await appService.getEventPromotionById(req.query)
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
 module.exports = {
     checkStartServer,
     getProductPromotionHome,
@@ -363,5 +377,6 @@ module.exports = {
     getListCommentShortVideoById,
     getListProductHashTagByIdVideo,
     getProductById,
-    getListBlogHome
+    getListBlogHome,
+    getEventPromotionById
 }

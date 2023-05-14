@@ -139,6 +139,7 @@ const typeDefs = gql`
     type Query {
         typeproducts: [typeProduct]
         typeproduct (id: ID!): typeProduct
+        products: [product]
         product (id: String!): product
         searchProduct (keyword: String!): [product]
         listBillByType (type: String!): [bill]

@@ -18,7 +18,7 @@ const storage = new CloudinaryStorage({
     params: {
         // folder: 'avatar_user',
         format: async (req, file) => 'jpg', // định dạng file ảnh sau khi upload lên Cloudinary
-        folder: 'Image_product',
+        folder: 'event-promotion',
         transformation: [
             { // filter ảnh
                 width: 1000, height: 1000,

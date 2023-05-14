@@ -104,6 +104,7 @@ const initUserRoute = (app) => {
     router.post(routes.createCommentShortVideo, userController.createCommentShortVideo)
     router.post(routes.toggleLikeShortVideo, userController.toggleLikeShortVideo)
     router.post(routes.saveCollectionShortVideo, userController.saveCollectionShortVideo)
+    router.post(routes.sendEmailFromContact, userController.sendEmailFromContact)
 
 
 

@@ -240,7 +240,7 @@ const contentSendEmail = (idUser, keyVerify, firstName) => {
     <div style="background-color: #cfcfcf59;
     padding-top: 10px;">
         <div
-            style="background-image: url(https://lh3.googleusercontent.com/fife/AAbDypAdsHNBHCVq3uw3uJQOMh2ziZ4jnrolzc784lF36xx776YKpDtD6qaJh1BkxPHJO3edFvMN3HMycQORpUKbFLDPMvT0uX-mDIVHSGW0Lq8EmthaE5GZTmxlh8cCVsL5uwDl-LLLYe96rlQUNrSHmOeAh_zwvbtAKZmKsB3LqHXSmkEvtLMwFWkEmfMqxNrz7cbj5LsmqyLgCNQzXawTmcMgk1VC9kZBHIHaz7poGA0Y8uYd7wjmZagyYwALxa4Om1Zt0vcPMXWpf8EA8OMq6FY6OdIUVWOAxtIvmnpDNvgPGbCA_RfOr9IOefJaUJL7thOYd8TS9x9rPdieUVt1V5NxnbednRk6Cf2LPGZ4Y4Hku3e3oeJ1deoZFKXUZ82cEF0HAzpa14p_4GEuFI9ab6oU7xyYg4XaSadEsaC_MFdZUWWpe8xAs64a9UD3rGPgtO52iETIK-Q_rw40-uOXb_w2SeLF-tb04-SODAv4fOl4jut5hubNHhgpIJxZqoh_RT6dr5iAVg7d-9aQH2J9LggL_EI5yHj05z9c4XEsRWi-ODVHOUc1BjgjKHhs6CKkXGmRadOigsr--XJyl1RwBAdL2VP-8esNe9b6Nhry0c0PHxVBoYSCnbdT5Ci0AB_dYp8wGe1_upt05jYl7JSYDnVytXLQj2PtKuL7SZkpuqFQTaaj-9srFTbXcCi9TpGluMXpAp63m8PzuiJmREN9XhHowbiCB6Vi59pJ-PuofqoD3ON0WrwSm3BGp_1D3klbji23Fmgbom9eqAHBC732wa-Pd1tD6fflsiFxHBO9jNc4lKwGrPD7Kq8w9tX3LsnUM7ebAqTvtUuLicfwRp4LdlZ57TsVIkgfhyo7LUftSxs7WqF6RahIdlwuRAUFaZG32iMFUpfP5irTSEzBp8px7af-vLYDRAyzJUfEERnJ47MzrFAjB9GESWXg4qcBgL9afjHeZ55Sjj7h2o7FmtRzSQdyQS8As1nyUqw_EYa_KJwDaWAbh5G69RoGdlxIjo9CL1Vj_7dHpdyFf-0KdS2gMbCZScjlPNTq-TxClGCx8x3BGwOTVY1tyHmZYxiJN7ixBZclk17OgXt_euHmKSa6GpyirTuiGQK5aQ-glVEysGCkW8WPNjuq9n3XfUghn1y4gwOvjCIg1N7yVOpCA7-_3VYdtDEHkeZEFo6pmLxCyo9Uars0-Pc-vLamcuwNVVQnkEzwLDd7VdlKuWlebBqcrCnI_Tt5_NO-L4w28d7evy9Mt4ao9WJDReq4c0cJGmVDF9sxGnZAi5hJF33BSPYAEs67V2PxUb4tzwJ_eVL5sxKEq9mmUyNWhSePpfchUUCOeA1-G0Z2ohR7TRqjOaeew33mMp11VeKw3LAelLVX1GwnhbSTtl3A0cLFtRDi9L_h7okAP41rdBPHXsxvzwRQd0cs3E10r9KsOxJwcqDSoY5ukaZM4FKeGFa7Qodo6jm7TeSX65C32zXbjAK5F1ibV8z1cEBhuCE80sluX4bwr3LSvdEWalhNIwpgj2862Lpo_iL_upU1zoiuzQCSkmlw0u5nEfbILZJT6rYpiXi6Lr4UkL6jJzBEMJhSPw=w1920-h901);background-size: cover;width: 150px;height: 90px;">
+            style="background-image: url(https://res.cloudinary.com/dultkpqjp/image/upload/v1683945571/image_twddrb.png);background-size: cover;width: 130px;height: 54px;">
         </div>
     </div>
     <div style="    padding: 10px;">
@@ -652,18 +652,18 @@ const loginGoogle = (data) => {
                   errMessage: 'Tài khoản đã bị khóa vĩnh viễn!'
                })
             }
-            else if (user.statusUser === 'wait') {
-               resolve({
-                  errCode: 3,
-                  errMessage: 'Tài khoản chưa được kích hoạt!'
-               })
-            }
             else {
                const date = new Date().getTime()
                if (+user.statusUser > date) {
+
+                  let remaining = +user.statusUser - date
+                  let H = Math.floor(remaining / 3600000)
+                  remaining = remaining - (H * 3600000)
+                  let M = Math.floor(remaining / 60000)
+
                   resolve({
                      errCode: 4,
-                     errMessage: 'Tài khoản đang bị tạm khóa!'
+                     errMessage: `Vui lòng chờ sau ${H} giờ ${M} phút để tiếp tục!`,
                   })
                }
                else {
@@ -753,9 +753,14 @@ const loginFacebook = (data) => {
             else {
                const date = new Date().getTime()
                if (+user.statusUser > date) {
+                  let remaining = +user.statusUser - date
+                  let H = Math.floor(remaining / 3600000)
+                  remaining = remaining - (H * 3600000)
+                  let M = Math.floor(remaining / 60000)
+
                   resolve({
                      errCode: 4,
-                     errMessage: 'Tài khoản đã bị khóa theo ngày!'
+                     errMessage: `Vui lòng chờ sau ${H} giờ ${M} phút để tiếp tục!`,
                   })
                }
                else {
@@ -845,9 +850,14 @@ const loginGithub = (data) => {
             else {
                const date = new Date().getTime()
                if (+user.statusUser > date) {
+                  let remaining = +user.statusUser - date
+                  let H = Math.floor(remaining / 3600000)
+                  remaining = remaining - (H * 3600000)
+                  let M = Math.floor(remaining / 60000)
+
                   resolve({
                      errCode: 4,
-                     errMessage: 'Tài khoản đã bị khóa theo ngày!'
+                     errMessage: `Vui lòng chờ sau ${H} giờ ${M} phút để tiếp tục!`,
                   })
                }
                else {
@@ -6450,6 +6460,32 @@ const seenNotifyOfUser = (data) => {
    })
 }
 
+const sendEmailFromContact = (data) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         if (!data.name || !data.email || !data.sdt || !data.content) {
+            resolve({
+               errCode: 1,
+               errMessage: 'Missing required parameter!',
+               data
+            })
+         }
+         else {
+
+            commont.sendEmail('ngoantung2565@gmail.com', data.name + ' đã gửi tin nhắn từ TechStoreTvT', "Nội dụng tin nhắn từ (" + data.email + " - " + data.sdt + "): " + data.content)
+
+            resolve({
+               errCode: 0,
+            })
+         }
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
+
+
 
 module.exports = {
    CreateUser, verifyCreateUser, userLogin, refreshToken,
@@ -6478,5 +6514,6 @@ module.exports = {
    toggleLikeShortVideo,
    checkUserLikeShortVideo, saveCollectionShortVideo, CheckSaveCollectionShortVideo,
    getListVideoByIdUser, getUserById, deleteShortVideoById,
-   checkLikeBlogById, checkSaveBlogById, testHeaderLogin, getListNotifyAll, getListNotifyByType, seenNotifyOfUser
+   checkLikeBlogById, checkSaveBlogById, testHeaderLogin, getListNotifyAll, getListNotifyByType, seenNotifyOfUser,
+   sendEmailFromContact
 }

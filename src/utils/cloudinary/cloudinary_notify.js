@@ -17,11 +17,11 @@ const storage = new CloudinaryStorage({
     },
     params: {
         // folder: 'avatar_user',
-        format: async (req, file) => 'webp', // định dạng file ảnh sau khi upload lên Cloudinary
+        format: async (req, file) => 'jpg', // định dạng file ảnh sau khi upload lên Cloudinary
         folder: 'notify',
         transformation: [
             { // filter ảnh
-                width: 500, height: 500,
+                width: 1000, height: 1000,
                 crop: 'limit'
             },
             { effect: "sharpen" },

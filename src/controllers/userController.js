@@ -1316,6 +1316,21 @@ const seenNotifyOfUser = async (req, res) => {
     }
 }
 
+const sendEmailFromContact = async (req, res) => {
+    try {
+        let data = await userService.sendEmailFromContact(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -1400,5 +1415,6 @@ module.exports = {
     testHeaderLogin,
     getListNotifyAll,
     getListNotifyByType,
-    seenNotifyOfUser
+    seenNotifyOfUser,
+    sendEmailFromContact
 }

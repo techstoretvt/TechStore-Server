@@ -33,8 +33,8 @@ app.use(cors({
     exposedHeaders: ['authorization']
 }));
 
-app.use(bodyParser.json({ limit: '50mb' }));
-app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }))
+app.use(bodyParser.json({ limit: '100mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '100mb' }))
 
 initAppRoute(app);
 initUserRoute(app);

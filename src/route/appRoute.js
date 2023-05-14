@@ -53,6 +53,7 @@ const initAppRoute = (app) => {
     router.get(routes.getListProductHashTagByIdVideo, appController.getListProductHashTagByIdVideo)
     router.get(routes.getProductById, appController.getProductById)
     router.get(routes.getListBlogHome, appController.getListBlogHome)
+    router.get(routes.getEventPromotionById, appController.getEventPromotionById)
 
 
 

@@ -8,6 +8,7 @@ const fileUploader = require('../config/cloudinary.config');
 import cloudinary_product from '../utils/cloudinary/cloudinary_product'
 import cloudinary_typePoduct from '../utils/cloudinary/cloudinary_typeProduct'
 import cloudinary_notify from '../utils/cloudinary/cloudinary_notify'
+import cloudinary_eventPromotion from '../utils/cloudinary/cloudinary_eventPromotion'
 
 
 let router = express.Router();
@@ -62,6 +63,8 @@ const initAdminRoute = (app) => {
     router.post(routes.createNotify_image, cloudinary_notify.single('file'), adminController.createNotify_image)
     router.post(routes.CheckLoginAdminAccessToken, adminController.CheckLoginAdminAccessToken)
     router.post(routes.createNewUserAdmin, adminController.createNewUserAdmin)
+    router.post(routes.createEventPromotion, adminController.createEventPromotion)
+    router.post(routes.upLoadImageCoverPromotion, cloudinary_eventPromotion.single('file'), adminController.upLoadImageCoverPromotion)
 
 
     router.put(routes.confirmBillById, adminController.confirmBillById)

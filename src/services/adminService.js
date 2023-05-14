@@ -1732,6 +1732,108 @@ const lockUserAdmin = (data) => {
     })
 }
 
+const createEventPromotion = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.nameEvent || !data.timeStart || !data.timeEnd || !data.arrProduct) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data: data
+                })
+            }
+            else {
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
+
+                let arrProduct = JSON.parse(data?.arrProduct);
+                if (arrProduct?.length < 5) {
+                    resolve({
+                        errCode: 3,
+                        errMessage: 'Vui lòng chọn ít nhất 5 sản phẩm cho sự kiện!',
+                    })
+                    return
+                }
+
+                let idEventPromotion = uuidv4()
+
+                await db.eventPromotions.create({
+                    id: idEventPromotion,
+                    nameEvent: data.nameEvent,
+                    timeStart: +data.timeStart,
+                    timeEnd: +data.timeEnd,
+                    // cover: data.file.path,
+                    // idCover: data.file.filename,
+                    firstContent: data.firstContent ?? '',
+                    lastContent: data.lastContent ?? ''
+                })
+
+                let arrProductEvent = arrProduct?.map(item => ({
+                    id: uuidv4(),
+                    idEventPromotion,
+                    idProduct: item.id
+                }))
+
+                await db.productEvents.bulkCreate(arrProductEvent, { individualHooks: true })
+
+                arrProduct?.forEach(async item => {
+                    await db.promotionProduct.update({ timePromotion: +data.timeEnd, numberPercent: +item.numberPercent }, {
+                        where: {
+                            idProduct: item.id
+                        }
+                    });
+                })
+
+
+                resolve({
+                    errCode: 0,
+                    idEventPromotion
+                })
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const upLoadImageCoverPromotion = ({ file, query }) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!file || !query.idEventPromotion) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data: data
+                })
+            }
+            else {
+
+                await db.eventPromotions.update({ cover: file.path, idCover: file.filename }, {
+                    where: {
+                        id: query.idEventPromotion
+                    }
+                });
+
+                resolve({
+                    errCode: 0,
+                })
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 //winform
 const getListBillNoConfirm = () => {
     return new Promise(async (resolve, reject) => {
@@ -2255,6 +2357,8 @@ module.exports = {
     createNewUserAdmin,
     getListUserAdmin,
     lockUserAdmin,
+    createEventPromotion,
+    upLoadImageCoverPromotion,
     //winform
     getListBillNoConfirm,
     getDetailBillAdmin,

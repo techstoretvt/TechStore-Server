@@ -2079,7 +2079,7 @@ const getProductById = (data) => {
                         }
                     ],
                     order: [
-                        ['id', 'ASC'],
+                        // ['id', 'ASC'],
                         [{ model: db.imageProduct, as: 'imageProduct-product' }, 'STTImage', 'asc']
                     ],
                     raw: false,
@@ -2167,6 +2167,112 @@ const getListBlogHome = () => {
     })
 }
 
+const getEventPromotionById = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idEventPromotion || !data.page) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let date = new Date().getTime()
+                let eventPromotion = await db.eventPromotions.findOne({
+                    where: {
+                        id: data.idEventPromotion,
+                        timeStart: {
+                            [Op.lt]: date
+                        },
+                        timeEnd: {
+                            [Op.gte]: date
+                        }
+                    },
+                    include: [
+                        {
+                            model: db.productEvents,
+                            include: [
+                                {
+                                    model: db.product,
+                                    attributes: ['id', 'nameProduct', 'priceProduct', 'isSell', 'sold', 'contentHTML'],
+                                    include: [
+                                        {
+                                            model: db.imageProduct, as: 'imageProduct-product',
+                                            attributes: {
+                                                exclude: ['createdAt', 'updatedAt', 'id']
+                                            }
+                                        },
+                                        {
+                                            model: db.trademark,
+                                            attributes: {
+                                                exclude: ['createdAt', 'updatedAt', 'id']
+                                            }
+                                        },
+                                        {
+                                            model: db.typeProduct,
+                                            attributes: {
+                                                exclude: ['createdAt', 'updatedAt', 'id']
+                                            }
+                                        },
+                                        {
+                                            model: db.classifyProduct, as: 'classifyProduct-product',
+                                            attributes: {
+                                                exclude: ['createdAt', 'updatedAt']
+                                            }
+                                        },
+                                        {
+                                            model: db.promotionProduct,
+                                            attributes: {
+                                                exclude: ['createdAt', 'updatedAt', 'id']
+                                            },
+                                        }
+                                    ],
+                                    order: [
+                                        ['id', 'ASC'],
+                                        [{ model: db.imageProduct, as: 'imageProduct-product' }, 'STTImage', 'asc']
+                                    ],
+                                }
+                            ],
+                            limit: 30,
+                            offset: (+data.page - 1) * 30
+                        }
+                    ],
+                    raw: false,
+                    nest: true
+                })
+
+                if (eventPromotion) {
+
+                    let count = await db.productEvents.count({
+                        where: {
+                            idEventPromotion: data.idEventPromotion
+                        }
+                    })
+
+
+                    resolve({
+                        errCode: 0,
+                        data: eventPromotion,
+                        count
+                    })
+                }
+                else {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Sự kiện chưa bắt đầu hoặc đã kết thúc!',
+                    })
+                }
+
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     getProductPromotionHome,
     getTopSellProduct,
@@ -2188,6 +2294,7 @@ module.exports = {
     getListCommentShortVideoById,
     getListProductHashTagByIdVideo,
     getProductById,
-    getListBlogHome
+    getListBlogHome,
+    getEventPromotionById
 
 }

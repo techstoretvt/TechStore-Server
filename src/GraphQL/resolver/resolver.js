@@ -36,6 +36,10 @@ const resolvers = {
         typeproduct: (parent, args) => {
             return Listtypeproducts.find(item => item.id === +args.id)
         },
+        products: async (parent, args) => {
+            let products = await ListProducts();
+            return products
+        },
         product: async (parent, args) => {
             let products = await ListProducts();
             return products.find(item => item.id === args.id)
