@@ -495,6 +495,38 @@ const upLoadImageCoverPromotion = async (req, res) => {
     }
 }
 
+const getListEventPromotion = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.getListEventPromotion()
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const editEventPromotion = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.editEventPromotion(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
 
 //winform
 const getListBillNoConfirm = async (req, res) => {
@@ -647,6 +679,8 @@ module.exports = {
     lockUserAdmin,
     createEventPromotion,
     upLoadImageCoverPromotion,
+    getListEventPromotion,
+    editEventPromotion,
     //winform
     getListBillNoConfirm,
     getDetailBillAdmin,

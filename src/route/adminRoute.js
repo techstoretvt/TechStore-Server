@@ -38,6 +38,7 @@ const initAdminRoute = (app) => {
     router.get(routes.getListProductByPage, adminController.getListProductByPage)
     router.get(routes.getProductBySwapAndPage, adminController.getProductBySwapAndPage);
     router.get(routes.getListUserAdmin, adminController.getListUserAdmin)
+    router.get(routes.getListEventPromotion, adminController.getListEventPromotion)
     //winform
     router.get(routes.getListBillNoConfirm, adminController.getListBillNoConfirm)
     router.get(routes.getDetailBillAdmin, adminController.getDetailBillAdmin)
@@ -75,6 +76,7 @@ const initAdminRoute = (app) => {
     router.put(routes.blockProduct, adminController.blockProduct)
     router.put(routes.editImageProduct, cloudinary_product.single('file'), adminController.editImageProduct) //error
     router.put(routes.lockUserAdmin, adminController.lockUserAdmin)
+    router.put(routes.editEventPromotion, adminController.editEventPromotion)
 
 
     router.delete(routes.deleteTypeProduct, adminController.deleteTypeProduct)

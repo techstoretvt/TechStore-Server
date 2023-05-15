@@ -108,6 +108,8 @@ const routes = {
     getListUserAdmin: '/api/v1/get-list-user',
     lockUserAdmin: '/api/v1/lock-user',
     createEventPromotion: '/api/v1/create-event-promotion',
+    getListEventPromotion: '/api/v1/get-list-event-promotion',
+    editEventPromotion: '/api/v1/edit-event-promotion',
     //winform
     getListBillNoConfirm: '/api/v1/get-list-bill-no-confirm',
     getDetailBillAdmin: '/api/v1/get-detail-bill-admin',

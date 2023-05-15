@@ -1834,6 +1834,80 @@ const upLoadImageCoverPromotion = ({ file, query }) => {
     })
 }
 
+const getListEventPromotion = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let date = new Date().getTime()
+            let listEventPromotion = await db.eventPromotions.findAll({
+                where: {
+                    timeEnd: {
+                        [Op.gt]: date
+                    }
+                },
+                order: [['stt', 'DESC']]
+            })
+
+
+            resolve({
+                errCode: 0,
+                data: listEventPromotion
+            })
+
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const editEventPromotion = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.nameEvent || !data.timeStart || !data.timeEnd || !data.idEventPromotion) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data: data
+                })
+            }
+            else {
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
+
+                await db.eventPromotions.update({
+                    nameEvent: data.nameEvent,
+                    timeStart: +data.timeStart,
+                    timeEnd: +data.timeEnd,
+                    firstContent: data.firstContent ?? '',
+                    lastContent: data.lastContent ?? ''
+                }, {
+                    where: {
+                        id: data.idEventPromotion
+                    }
+                });
+
+
+                resolve({
+                    errCode: 0,
+                })
+
+            }
+
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 //winform
 const getListBillNoConfirm = () => {
     return new Promise(async (resolve, reject) => {
@@ -2359,6 +2433,8 @@ module.exports = {
     lockUserAdmin,
     createEventPromotion,
     upLoadImageCoverPromotion,
+    getListEventPromotion,
+    editEventPromotion,
     //winform
     getListBillNoConfirm,
     getDetailBillAdmin,
