@@ -74,7 +74,7 @@ const initAdminRoute = (app) => {
     router.put(routes.updateTrademarkById, adminController.updateTrademarkById)
     router.put(routes.editProductById, adminController.editProductById)
     router.put(routes.blockProduct, adminController.blockProduct)
-    router.put(routes.editImageProduct, cloudinary_product.single('file'), adminController.editImageProduct) //error
+    router.put(routes.editImageProduct, cloudinary_product.single('file'), adminController.editImageProduct)
     router.put(routes.lockUserAdmin, adminController.lockUserAdmin)
     router.put(routes.editEventPromotion, adminController.editEventPromotion)
 

@@ -10,6 +10,11 @@ import FuzzySearch from 'fuzzy-search';
 import jwt from 'jsonwebtoken'
 import provinces from './provinces.json'
 // import { v4 as uuidv4 } from 'uuid';
+// cloudinary.config({
+//     cloud_name: process.env.CLOUDINARY_NAME,
+//     api_key: process.env.CLOUDINARY_KEY,
+//     api_secret: process.env.CLOUDINARY_SECRET
+// });
 
 //timer notifycations
 // setInterval(async () => {
@@ -823,6 +828,12 @@ const editImageProduct = (data) => {
                 })
 
                 if (imageProduct) {
+                    console.log('xoa 2');
+                    let idCloudinary = imageProduct.imagebase64.split("/").pop().split(".")[0];
+                    cloudinary.v2.uploader.destroy(`Image_product/${idCloudinary}`).then(res => {
+                        console.log('res: ', res);
+                    })
+
                     imageProduct.imagebase64 = data.file.path
                     await imageProduct.save()
                     resolve({
@@ -860,33 +871,39 @@ const swapImageProduct = (data) => {
                 })
             }
             else {
+                let arrImg = data.imageProducts.map(item => (item.url))
                 let listImage = await db.imageProduct.findAll({
                     where: {
-                        idProduct: data.idProduct
+                        idProduct: data.idProduct,
+                        imagebase64: {
+                            [Op.notIn]: arrImg
+                        }
                     }
                 })
-                listImage.forEach(item => {
+                listImage.forEach(async item => {
+                    console.log('xoa 1');
                     let idCloudinary = item.imagebase64.split("/").pop().split(".")[0];
+                    console.log('idcloud', idCloudinary);
                     cloudinary.v2.uploader.destroy(idCloudinary)
                 })
-                console.log('vao 1');
 
                 await db.imageProduct.destroy({
                     where: {
-                        idProduct: data.idProduct
-                    }
-                })
-                console.log('vao 2');
-                let arrImageProduct = data.imageProducts.map((item) => {
-                    return {
                         idProduct: data.idProduct,
-                        imagebase64: item.url,
-                        STTImage: +item.num,
-                        id: uuidv4()
+                        imagebase64: {
+                            [Op.notIn]: arrImg
+                        }
                     }
                 })
-                console.log('vao 3');
-                await db.imageProduct.bulkCreate(arrImageProduct, { individualHooks: true })
+                // let arrImageProduct = data.imageProducts.map((item) => {
+                //     return {
+                //         idProduct: data.idProduct,
+                //         imagebase64: item.url,
+                //         STTImage: +item.num,
+                //         id: uuidv4()
+                //     }
+                // })
+                // await db.imageProduct.bulkCreate(arrImageProduct, { individualHooks: true })
                 resolve({
                     errCode: 0,
                     errMessage: 'Sắp xếp ảnh thành công!',
