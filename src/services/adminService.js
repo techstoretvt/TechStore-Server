@@ -277,7 +277,7 @@ const updateTypeProductById = (data) => {
                             .replace(/đ/g, 'd').replace(/Đ/g, 'D')
                         if (data.file) {
                             let idCloudinary = typeProduct.imageTypeProduct.split("/").pop().split(".")[0];
-                            cloudinary.v2.uploader.destroy(idCloudinary)
+                            cloudinary.v2.uploader.destroy(`type_product/${idCloudinary}`)
                             typeProduct.imageTypeProduct = data.file.path
                         }
                         await typeProduct.save();

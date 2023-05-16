@@ -3191,7 +3191,7 @@ const updataEvaluateProduct = (data) => {
                      }
                   })
                   imageEvaluateProduct.forEach(async item => {
-                     await cloudinary.v2.uploader.destroy(item.idCloudinary)
+                     await cloudinary.v2.uploader.destroy(`evaluate/${item.idCloudinary}`)
                   })
 
                   await db.imageEvaluateProduct.destroy({
@@ -3407,7 +3407,7 @@ const updateAvatarUser = ({ file, query }) => {
                else {
                   if (user.avatarUpdate) {
                      let idCloudinary = user.avatarUpdate.split("/").pop().split(".")[0];
-                     cloudinary.v2.uploader.destroy(idCloudinary)
+                     cloudinary.v2.uploader.destroy(`avatar_user/${idCloudinary}`)
                   }
 
                   user.avatarUpdate = file.path
