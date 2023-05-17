@@ -91,7 +91,7 @@ const addTrademark = async (req, res) => {
 const getAllTrademark = async (req, res) => {
     try {
         //call service data
-        let data = await adminService.getAllTrademark()
+        let data = await adminService.getAllTrademark(req.query)
 
         return res.status(200).json(data)
     }

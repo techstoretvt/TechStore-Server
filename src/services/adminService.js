@@ -316,7 +316,7 @@ const addTrademark = (data) => {
                     })
                     return
                 }
-                let [trademark, created] = await db.trademark.findOrCreate({
+                let [trademark, created] = await db.trademark.trim().findOrCreate({
                     where: {
                         nameTrademark: data.nameTrademark.toLowerCase(),
                         idTypeProduct: data.idTypeProduct,
@@ -350,13 +350,27 @@ const addTrademark = (data) => {
     })
 }
 
-const getAllTrademark = () => {
+const getAllTrademark = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
+            if (!data.idTypeProduct && data.idTypeProduct === '') {
+                resolve({
+                    errCode: 0,
+                    data: []
+                })
+                return
+            }
 
             const trademarks = await db.trademark.findAll({
+                where: {
+                    idTypeProduct: data.idTypeProduct
+                },
                 include: [
-                    { model: db.typeProduct, attributes: ['id', 'nameTypeProduct'] },
+                    {
+                        model: db.typeProduct,
+                        attributes: ['id', 'nameTypeProduct'],
+
+                    },
                 ],
                 order: [
                     ['idTypeProduct', 'ASC'],
