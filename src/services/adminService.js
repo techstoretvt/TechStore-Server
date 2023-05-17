@@ -316,9 +316,9 @@ const addTrademark = (data) => {
                     })
                     return
                 }
-                let [trademark, created] = await db.trademark.trim().findOrCreate({
+                let [trademark, created] = await db.trademark.findOrCreate({
                     where: {
-                        nameTrademark: data.nameTrademark.toLowerCase(),
+                        nameTrademark: data.nameTrademark.trim().toLowerCase(),
                         idTypeProduct: data.idTypeProduct,
                     },
                     defaults: {
