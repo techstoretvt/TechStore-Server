@@ -353,18 +353,9 @@ const addTrademark = (data) => {
 const getAllTrademark = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.idTypeProduct && data.idTypeProduct === '') {
-                resolve({
-                    errCode: 0,
-                    data: []
-                })
-                return
-            }
+
 
             const trademarks = await db.trademark.findAll({
-                where: {
-                    idTypeProduct: data.idTypeProduct
-                },
                 include: [
                     {
                         model: db.typeProduct,
