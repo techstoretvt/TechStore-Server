@@ -293,7 +293,7 @@ const getProductFlycam = () => {
                             exclude: ['createdAt', 'updatedAt', 'id']
                         },
                         where: {
-                            nameTypeProduct: 'điện thoại'
+                            nameTypeProduct: 'flycam'
                         }
                     },
                     {
@@ -2272,6 +2272,8 @@ const getEventPromotionById = (data) => {
         }
     })
 }
+
+
 
 module.exports = {
     getProductPromotionHome,

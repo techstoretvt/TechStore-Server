@@ -79,6 +79,7 @@ const routes = {
     upLoadImageCoverPromotion: '/api/v1/upload-image-cover-promotion',
 
 
+
     //admin
     getAllTypeProduct: '/api/get-all-type-product',
     getAllTrademark: '/api/get-all-trademark',
