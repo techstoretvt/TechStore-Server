@@ -1866,7 +1866,10 @@ const getListEventPromotion = () => {
                         [Op.gt]: date
                     }
                 },
-                order: [['stt', 'DESC']]
+                order: [['stt', 'DESC']],
+                // attributes: {
+                //     exclude: ['firstContent', 'lastContent']
+                // }
             })
 
 

@@ -77,6 +77,7 @@ const routes = {
     getListBlogHome: '/api/v1/get-list-blog-home',
     getEventPromotionById: '/api/v1/get-event-promotion-by-id',
     upLoadImageCoverPromotion: '/api/v1/upload-image-cover-promotion',
+    getListEventPromotionHome: '/api/v1/get-list-event-promotion-home',
 
 
 

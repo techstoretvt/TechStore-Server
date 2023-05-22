@@ -54,6 +54,7 @@ const initAppRoute = (app) => {
     router.get(routes.getProductById, appController.getProductById)
     router.get(routes.getListBlogHome, appController.getListBlogHome)
     router.get(routes.getEventPromotionById, appController.getEventPromotionById)
+    router.get(routes.getListEventPromotionHome, appController.getListEventPromotionHome)
 
 
 

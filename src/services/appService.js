@@ -2186,7 +2186,7 @@ const getEventPromotionById = (data) => {
                             [Op.lt]: date
                         },
                         timeEnd: {
-                            [Op.gte]: date
+                            [Op.gt]: date
                         }
                     },
                     include: [
@@ -2273,6 +2273,40 @@ const getEventPromotionById = (data) => {
     })
 }
 
+const getListEventPromotionHome = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+
+            let date = new Date().getTime()
+            let eventPromotion = await db.eventPromotions.findAll({
+                where: {
+                    timeStart: {
+                        [Op.lt]: date
+                    },
+                    timeEnd: {
+                        [Op.gt]: date
+                    }
+                },
+                attributes: ['id', 'cover'],
+                order: [['stt', 'asc']]
+
+            })
+
+
+            resolve({
+                errCode: 0,
+                data: eventPromotion
+            })
+
+
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 
 
 module.exports = {
@@ -2297,6 +2331,7 @@ module.exports = {
     getListProductHashTagByIdVideo,
     getProductById,
     getListBlogHome,
-    getEventPromotionById
+    getEventPromotionById,
+    getListEventPromotionHome
 
 }
