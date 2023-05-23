@@ -557,7 +557,7 @@ const createNewProduct = (data) => {
                             amount: item.amount,
                             nameClassifyProduct: item.nameClassify.toLowerCase() !== 'default' ?
                                 item.nameClassify.toLowerCase() : 'Mặt định',
-                            STTImg: item.STTImg ? +item.STTImg : 100,
+                            STTImg: item.STTImg ? +item.STTImg : -1,
                             priceClassify: +item.priceClassify,
                             id: uuidv4()
                         })
@@ -568,6 +568,7 @@ const createNewProduct = (data) => {
                         idProduct: product.dataValues.id,
                         amount: +data.sl,
                         nameClassifyProduct: 'default',
+                        STTImg: -1,
                         id: uuidv4()
                     })
                 }
@@ -631,8 +632,50 @@ const getListProductByPage = (data) => {
                 })
             }
             else {
+                // let whereType = data.idTypeProduct !== 'all' || !data.idTypeProduct ? {
+                //     idTypeProduct: data.idTypeProduct
+                // } : null
+
+                // let wherename = data?.nameProduct ? {
+                //     nameProduct: {
+                //         [Op.substring]: data?.nameProduct
+                //     }
+                // } : null
+
+                let where
+                if ((!data.idTypeProduct || data.idTypeProduct === 'all') && !data?.nameProduct) {
+                    where = null
+                }
+                else if (data?.idTypeProduct !== 'all' && data?.nameProduct) {
+                    where = {
+                        idTypeProduct: data.idTypeProduct,
+                        nameProduct: {
+                            [Op.substring]: data?.nameProduct
+                        }
+                    }
+                }
+                else if (data?.idTypeProduct && data?.idTypeProduct !== 'all' && !data?.nameProduct) {
+                    where = {
+                        idTypeProduct: data.idTypeProduct,
+                    }
+                }
+                else if ((!data.idTypeProduct || data.idTypeProduct === 'all') && data?.nameProduct) {
+                    where = {
+                        nameProduct: {
+                            [Op.substring]: data?.nameProduct
+                        }
+                    }
+                }
+
+
+
+
+
+
+
                 let page = +data.page
                 let products = await db.product.findAll({
+                    where: where,
                     offset: (page - 1) * 5,
                     limit: 5,
                     include: [
@@ -655,7 +698,7 @@ const getListProductByPage = (data) => {
                     raw: false
                 })
 
-                const count = await db.product.count();
+                const count = await db.product.count({ where: where });
 
                 resolve({
                     errCode: 0,
@@ -769,6 +812,7 @@ const editProductById = (data) => {
                             idProduct: data.idProduct,
                             amount: +data.sl,
                             nameClassifyProduct: 'default',
+                            STTImg: -1,
                             id: uuidv4()
                         })
 
@@ -785,7 +829,7 @@ const editProductById = (data) => {
                                 idProduct: data.idProduct,
                                 amount: +item.amount,
                                 nameClassifyProduct: item.nameClassify.toLowerCase(),
-                                STTImg: item.STTImg ? +item.STTImg : 100,
+                                STTImg: item.STTImg ? +item.STTImg : -1,
                                 priceClassify: item.priceClassify,
                                 id: uuidv4().toString()
                             }
@@ -1812,6 +1856,20 @@ const createEventPromotion = (data) => {
                     });
                 })
 
+                const date = new Date(+data.timeStart);
+
+                const day = date.getDate();
+                const month = date.getMonth() + 1;
+                const year = date.getFullYear();
+
+                const formattedDate = `${day}/${month}/${year}`;
+
+                await db.notifycations.create({
+                    title: data.nameEvent,
+                    content: `Sự kiến mới sắp ra mắt từ ${formattedDate}`
+                })
+
+                handleEmit('new-notify-all', { title: data.nameEvent, content: `Sự kiến mới sắp ra mắt từ ${formattedDate}` })
 
                 resolve({
                     errCode: 0,
@@ -1926,6 +1984,379 @@ const editEventPromotion = (data) => {
             }
 
 
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const getListBillByTypeAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.type || !data.page) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data
+                })
+            }
+            else {
+
+                if (+data.type === 1 || +data.type === 3 || +data.type === 4) {
+                    if (+data.type === 3) {
+                        let listBill = await db.bill.findAll({
+                            where: {
+                                idStatusBill: {
+                                    [Op.between]: [2.99, 3]
+                                }
+                            }
+                        })
+                        resolve({
+                            errCode: 0,
+                            data: listBill
+                        })
+
+                        return
+                    }
+                    let listBill = await db.bill.findAll({
+                        where: {
+                            idStatusBill: +data.type
+                        }
+                    })
+                    resolve({
+                        errCode: 0,
+                        data: listBill
+                    })
+                }
+                else if (+data.type === 2) {
+                    let listBill = await db.bill.findAll({
+                        where: {
+                            idStatusBill: {
+                                [Op.between]: [2, 2.98]
+                            }
+                        }
+                    })
+                    resolve({
+                        errCode: 0,
+                        data: listBill
+                    })
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const updateStatusBillAdminWeb = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idBill || !data.status) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data
+                })
+            }
+            else {
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
+
+                let bill = await db.bill.findOne({
+                    where: {
+                        id: data.idBill
+                    },
+                    raw: false
+                })
+
+                if (!bill) {
+                    resolve({
+                        errCode: 3,
+                        errMessage: 'Không tìm thấy hóa đơn!',
+                    })
+                    return
+                }
+
+                let date = new Date().getTime()
+                //xac nhan
+                if (data.status === 'confirm') {
+                    if (bill.idStatusBill === 1) {
+                        bill.idStatusBill = 2
+                        await bill.save()
+
+                        await db.statusBills.create({
+                            id: uuidv4(),
+                            idBill: bill.id,
+                            nameStatus: 'Đang giao',
+                            idStatusBill: bill.idStatusBill,
+                            timeStatus: new Date().getTime()
+                        })
+
+                        let user = await db.User.findOne({
+                            include: [
+                                {
+                                    model: db.bill,
+                                    where: {
+                                        id: data.idBill
+                                    }
+                                }
+                            ],
+                            nest: true,
+                            raw: false
+                        })
+                        await db.notifycations.create({
+                            id: uuidv4(),
+                            title: 'Đơn hàng đã xác nhận',
+                            content: `Đơn hàng ${data.idBill} đã được xác nhận`,
+                            timeCreate: date,
+                            typeNotify: 'order',
+                            idUser: user.id,
+                            redirect_to: '/user/purchase?type=2'
+                        })
+
+                        handleEmit(`new-notify-${user.id}`, {
+                            title: 'Đơn hàng của bạn đã được xác nhận',
+                            content: 'Vào website để xem chi tiết'
+                        })
+
+                        //send email
+                        if (user?.typeAccount === 'web') {
+                            let content = contentEmailConfirmBill()
+                            sendEmail(user.email, 'Đơn hàng của bạn đã được xác nhận', content)
+                        }
+                    }
+                    resolve({
+                        errCode: 0,
+                    })
+                    return
+                }
+
+                //thay doi trang thai
+                if (data.status === 'change') {
+                    if (!data.nameStatus) {
+                        resolve({
+                            errCode: 4,
+                            errMessage: 'Vui lòng cung cấp mô tả cho cập nhật này!',
+                        })
+                        return
+                    }
+
+
+                    let user = await db.User.findOne({
+                        include: [
+                            {
+                                model: db.bill,
+                                where: {
+                                    id: data.idBill
+                                }
+                            }
+                        ],
+                        nest: true,
+                        raw: false
+                    })
+
+                    bill.idStatusBill = (bill.idStatusBill + 0.01).toFixed(2)
+                    bill.timeBill = date
+                    await bill.save()
+
+                    await db.statusBills.create({
+                        id: uuidv4(),
+                        idBill: bill.id,
+                        nameStatus: data.nameStatus,
+                        idStatusBill: bill.idStatusBill,
+                        timeStatus: new Date().getTime()
+                    })
+
+
+                    // await notifycations.destroy({
+                    //     where: {
+                    //         title: `Cập nhật trạng thái đơn hàng ${data.idBill}`
+                    //     }
+                    // });
+
+                    await db.notifycations.create({
+                        id: uuidv4(),
+                        title: `Cập nhật trạng thái đơn hàng ${data.idBill}`,
+                        content: data.nameStatus,
+                        timeCreate: date,
+                        typeNotify: 'order',
+                        idUser: user.id,
+                        redirect_to: '/user/purchase?type=2'
+                    })
+
+
+                    handleEmit(`new-notify-${user.id}`, {
+                        title: data.nameStatus,
+                        content: 'Vào website để xem chi tiết'
+                    })
+
+                    //send email
+                    if (user?.typeAccount === 'web') {
+                        let content = contentUpdateStatusBill()
+                        sendEmail(user.email, 'Cập nhật trạng thái đơn hàng', content)
+                    }
+
+                    resolve({
+                        errCode: 0,
+                    })
+                    return
+
+                }
+
+                //hoan thanh
+                if (data.status === 'success') {
+                    let user = await db.User.findOne({
+                        include: [
+                            {
+                                model: db.bill,
+                                where: {
+                                    id: data.idBill
+                                }
+                            }
+                        ],
+                        nest: true,
+                        raw: false
+                    })
+
+
+                    bill.idStatusBill = 2.99
+                    bill.timeBill = date
+                    await bill.save()
+
+                    await db.statusBills.create({
+                        id: uuidv4(),
+                        idBill: bill.id,
+                        nameStatus: 'Đã giao',
+                        idStatusBill: 2.99,
+                        timeStatus: new Date().getTime()
+                    })
+
+                    await db.notifycations.create({
+                        id: uuidv4(),
+                        title: `Đơn hàng ${data.idBill} đã hoàn thành`,
+                        content: 'Đơn hàng đã đến tay người mua',
+                        timeCreate: date,
+                        typeNotify: 'order',
+                        idUser: user.id,
+                        redirect_to: '/user/purchase?type=3'
+                    })
+
+                    handleEmit(`new-notify-${user.id}`, {
+                        title: 'Giao thành công',
+                        content: `Đơn hàng ${data.idBill} đã được hoàn thành`
+                    })
+
+                    //send email
+                    if (user?.typeAccount === 'web') {
+                        let content = contentSuccessBill()
+                        sendEmail(user.email, 'Giao hàng thành công', content)
+                    }
+
+                    resolve({
+                        errCode: 0,
+                    })
+                    return
+                }
+
+
+                //huy don
+                if (data.status === 'cancel') {
+                    if (!data.noteCancel) {
+                        resolve({
+                            errCode: 4,
+                            errMessage: 'Vui lòng cung cấp mô tả cho cập nhật này!',
+                        })
+                        return
+                    }
+                    let user = await db.User.findOne({
+                        include: [
+                            {
+                                model: db.bill,
+                                where: {
+                                    id: data.idBill
+                                }
+                            }
+                        ],
+                        nest: true,
+                        raw: false
+                    })
+
+                    bill.idStatusBill = 4
+                    bill.timeBill = date
+                    bill.noteCancel = data.noteCancel
+                    await bill.save()
+
+                    await db.statusBills.create({
+                        id: uuidv4(),
+                        idBill: bill.id,
+                        nameStatus: 'Đã hủy',
+                        idStatusBill: 4,
+                        timeStatus: new Date().getTime()
+                    })
+
+                    //increase amount product
+                    let detailBills = await db.detailBill.findAll({
+                        where: {
+                            idBill: bill.id
+                        }
+                    })
+
+                    detailBills.forEach(async item => {
+                        let classify = await db.classifyProduct.findOne({
+                            where: {
+                                id: item.idClassifyProduct
+                            },
+                            raw: false
+                        })
+                        if (classify) {
+                            classify.amount = classify.amount + item.amount
+                            await classify.save()
+                        }
+                    })
+
+
+                    //notify
+                    await db.notifycations.create({
+                        id: uuidv4(),
+                        title: `Đơn hàng ${data.idBill} đã bị hủy`,
+                        content: 'Giao hàng thất bại',
+                        timeCreate: date,
+                        typeNotify: 'order',
+                        idUser: user.id,
+                        redirect_to: '/user/purchase?type=4'
+                    })
+
+                    handleEmit(`new-notify-${user.id}`, {
+                        title: 'Giao hàng thất bại',
+                        content: `Đơn hàng ${data.idBill} đã bị hủy`
+                    })
+
+                    //send email
+                    if (user?.typeAccount === 'web') {
+                        let content = contentFailBill()
+                        sendEmail(user.email, `Đơn hàng ${data.idBill} đã bị hủy`, content)
+                    }
+
+                    resolve({
+                        errCode: 0,
+                    })
+                    return
+                }
+
+
+
+
+
+
+            }
         }
         catch (e) {
             reject(e);
@@ -2460,6 +2891,8 @@ module.exports = {
     upLoadImageCoverPromotion,
     getListEventPromotion,
     editEventPromotion,
+    getListBillByTypeAdmin,
+    updateStatusBillAdminWeb,
     //winform
     getListBillNoConfirm,
     getDetailBillAdmin,

@@ -112,6 +112,8 @@ const routes = {
     createEventPromotion: '/api/v1/create-event-promotion',
     getListEventPromotion: '/api/v1/get-list-event-promotion',
     editEventPromotion: '/api/v1/edit-event-promotion',
+    getListBillByTypeAdmin: '/api/v1/get-list-bill-by-type-admin',
+    updateStatusBillAdminWeb: '/api/v1/update-status-bill-admin-web',
     //winform
     getListBillNoConfirm: '/api/v1/get-list-bill-no-confirm',
     getDetailBillAdmin: '/api/v1/get-detail-bill-admin',

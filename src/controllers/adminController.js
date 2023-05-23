@@ -527,6 +527,38 @@ const editEventPromotion = async (req, res) => {
     }
 }
 
+const getListBillByTypeAdmin = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.getListBillByTypeAdmin(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const updateStatusBillAdminWeb = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.updateStatusBillAdminWeb(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
 
 //winform
 const getListBillNoConfirm = async (req, res) => {
@@ -681,6 +713,8 @@ module.exports = {
     upLoadImageCoverPromotion,
     getListEventPromotion,
     editEventPromotion,
+    getListBillByTypeAdmin,
+    updateStatusBillAdminWeb,
     //winform
     getListBillNoConfirm,
     getDetailBillAdmin,
