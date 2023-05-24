@@ -17,7 +17,7 @@ const storage = new CloudinaryStorage({
     },
     params: {
         // folder: 'avatar_user',
-        format: async (req, file) => 'png', // định dạng file ảnh sau khi upload lên Cloudinary
+        format: async (req, file) => 'webp', // định dạng file ảnh sau khi upload lên Cloudinary
         folder: 'avatar_user',
         transformation: [
             { // filter ảnh

@@ -114,6 +114,14 @@ const routes = {
     editEventPromotion: '/api/v1/edit-event-promotion',
     getListBillByTypeAdmin: '/api/v1/get-list-bill-by-type-admin',
     updateStatusBillAdminWeb: '/api/v1/update-status-bill-admin-web',
+    getListVideoAdminByPage: '/api/v1/get-list-video-admin-by-page',
+    deleteShortVideoAdmin: '/api/v1/delete-short-video-admin',
+    getListReportAdmin: '/api/v1/get-list-report-admin',
+    skipReportVideoAdmin: '/api/v1/skip-report-video-admin',
+    getListBlogAdminByPage: '/api/v1/get-list-blog-admin-by-page',
+    deleteBlogAdminById: '/api/v1/delete-blog-admin-by-id',
+    getListReportBlogAdmin: '/api/v1/get-list-report-blog-admin',
+    skipReportBlogAdmin: '/api/v1/skip-report-blog-admin',
     //winform
     getListBillNoConfirm: '/api/v1/get-list-bill-no-confirm',
     getDetailBillAdmin: '/api/v1/get-detail-bill-admin',
@@ -210,7 +218,9 @@ const routes = {
     getListNotifyAll: '/api/v1/get-list-notify-all',
     getListNotifyByType: '/api/v1/get-list-notify-by-type',
     seenNotifyOfUser: '/api/v1/seen-notify-of-user',
-    sendEmailFromContact: '/api/v1/send-email-from-contact'
+    sendEmailFromContact: '/api/v1/send-email-from-contact',
+    createNewReportVideo: '/api/v1/create-new-report-video',
+    createNewReportBlog: '/api/v1/create-new-report-blog',
 
 
 }

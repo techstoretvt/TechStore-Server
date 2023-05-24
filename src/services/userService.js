@@ -6486,6 +6486,84 @@ const sendEmailFromContact = (data) => {
 }
 
 
+const createNewReportVideo = (data) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         if (!data.accessToken || !data.idShortVideo || !data.content) {
+            resolve({
+               errCode: 1,
+               errMessage: 'Missing required parameter!',
+               data
+            })
+         }
+         else {
+            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+            if (decode === null) {
+               resolve({
+                  errCode: 2,
+                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                  decode
+               })
+               return
+            }
+
+            await db.reportVideos.create({
+               id: uuidv4(),
+               idShortVideo: data.idShortVideo,
+               idUser: decode.id,
+               content: data.content,
+               status: 'true'
+            })
+            resolve({
+               errCode: 0,
+            })
+         }
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
+
+const createNewReportBlog = (data) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         if (!data.accessToken || !data.idBlog || !data.content) {
+            resolve({
+               errCode: 1,
+               errMessage: 'Missing required parameter!',
+               data
+            })
+         }
+         else {
+            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+            if (decode === null) {
+               resolve({
+                  errCode: 2,
+                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                  decode
+               })
+               return
+            }
+
+            await db.reportBlogs.create({
+               id: uuidv4(),
+               idBlog: data.idBlog,
+               idUser: decode.id,
+               content: data.content,
+               status: 'true'
+            })
+            resolve({
+               errCode: 0,
+            })
+         }
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
+
 
 module.exports = {
    CreateUser, verifyCreateUser, userLogin, refreshToken,
@@ -6515,5 +6593,5 @@ module.exports = {
    checkUserLikeShortVideo, saveCollectionShortVideo, CheckSaveCollectionShortVideo,
    getListVideoByIdUser, getUserById, deleteShortVideoById,
    checkLikeBlogById, checkSaveBlogById, testHeaderLogin, getListNotifyAll, getListNotifyByType, seenNotifyOfUser,
-   sendEmailFromContact
+   sendEmailFromContact, createNewReportVideo, createNewReportBlog
 }

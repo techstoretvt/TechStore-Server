@@ -12,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
       shortVideos.hasMany(models.commentShortVideos, { foreignKey: 'idShortVideo' })
       shortVideos.hasMany(models.likeShortVideos, { foreignKey: 'idShortVideo' })
       shortVideos.hasMany(models.collectionShortVideos, { foreignKey: 'idShortVideo' })
+      shortVideos.hasMany(models.reportVideos, { foreignKey: 'idShortVideo' })
 
     }
   }

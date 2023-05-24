@@ -16,6 +16,7 @@ module.exports = (sequelize, DataTypes) => {
       blogs.hasOne(models.blogShares, { foreignKey: 'idBlogShare', as: 'blogs-blogShares-child' })
       blogs.hasMany(models.blogShares, { foreignKey: 'idBlogShare', as: 'listBlogShare' })
       blogs.hasMany(models.collectionBlogs, { foreignKey: 'idBlog' })
+      blogs.hasMany(models.reportBlogs, { foreignKey: 'idBlog' })
     }
   }
   blogs.init({

@@ -9,6 +9,7 @@ require('dotenv').config();
 import FuzzySearch from 'fuzzy-search';
 import jwt from 'jsonwebtoken'
 import provinces from './provinces.json'
+const { google } = require('googleapis');
 // import { v4 as uuidv4 } from 'uuid';
 // cloudinary.config({
 //     cloud_name: process.env.CLOUDINARY_NAME,
@@ -64,6 +65,81 @@ import provinces from './provinces.json'
 
 
 // }, 60000)
+
+
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
+const REDIRECT_URI = process.env.REDIRECT_URI;
+const REFRESH_TOKEN = process.env.REFRESH_TOKEN;
+
+
+
+const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
+oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+
+const drive = google.drive({
+    version: 'v3',
+    auth: oAuth2Client
+})
+
+let GG_Drive = {
+    setFilePublic: async (fileId) => {
+        try {
+            await drive.permissions.create({
+                fileId,
+                requestBody: {
+                    role: 'reader',
+                    type: 'anyone'
+                }
+            })
+
+            const getUrl = await drive.files.get({
+                fileId,
+                fields: 'webViewLink, webContentLink'
+            })
+
+            return getUrl;
+        } catch (error) {
+            console.error(error);
+        }
+    },
+    uploadFile: async (name, idForder = "") => {
+        try {
+            let date = new Date().getTime()
+
+            const createFile = await drive.files.create({
+                requestBody: {
+                    name: `Video-${date}`,
+                    mimeType: 'video/*',
+                    parents: [idForder],
+                },
+                media: {
+                    mimeType: 'video/*',
+                    body: fs.createReadStream(path.join(__dirname, `../public/videoTam/${name}`))
+                }
+            })
+            const fileId = createFile.data.id;
+            const getUrl = await GG_Drive.setFilePublic(fileId);
+
+            return {
+                url: getUrl.data.webViewLink,
+                id: createFile.data.id
+            }
+
+        } catch (error) {
+            console.error('Loi tu upload', error);
+        }
+    },
+    deleteFile: async (fileId) => {
+        try {
+            const deleteFile = await drive.files.delete({
+                fileId: fileId
+            })
+        } catch (error) {
+            console.error(error);
+        }
+    }
+}
 
 
 
@@ -1857,6 +1933,7 @@ const createEventPromotion = (data) => {
                 })
 
                 const date = new Date(+data.timeStart);
+                const date2 = new Date().getTime();
 
                 const day = date.getDate();
                 const month = date.getMonth() + 1;
@@ -1865,8 +1942,13 @@ const createEventPromotion = (data) => {
                 const formattedDate = `${day}/${month}/${year}`;
 
                 await db.notifycations.create({
+                    id: uuidv4(),
                     title: data.nameEvent,
-                    content: `Sự kiến mới sắp ra mắt từ ${formattedDate}`
+                    content: `Sự kiến mới sắp ra mắt từ ${formattedDate}`,
+                    timeCreate: date2,
+                    typeNotify: 'promotion',
+                    idUser: user.id,
+                    redirect_to: `/promotion/${idEventPromotion}`
                 })
 
                 handleEmit('new-notify-all', { title: data.nameEvent, content: `Sự kiến mới sắp ra mắt từ ${formattedDate}` })
@@ -2364,6 +2446,655 @@ const updateStatusBillAdminWeb = (data) => {
     })
 }
 
+const getListVideoAdminByPage = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.page) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data
+                })
+            }
+            else {
+
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
+
+                let where = null
+                if (data.idSearch) {
+                    where = {
+                        id: {
+                            [Op.substring]: data.idSearch
+                        }
+                    }
+                }
+
+                else if (data.titleSearch) {
+                    where = {
+                        content: {
+                            [Op.substring]: data.titleSearch
+                        }
+                    }
+                }
+
+
+
+                let listVideo = await db.shortVideos.findAll({
+                    where: where,
+                    limit: 10,
+                    offset: (+data.page - 1) * 10,
+                    include: [
+                        {
+                            model: db.User
+                        }
+                    ],
+                    raw: false,
+                    nest: true
+                })
+
+                let count = await db.shortVideos.count({ where: where, })
+
+                resolve({
+                    errCode: 0,
+                    data: listVideo,
+                    count
+                })
+
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const deleteShortVideoAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idShortVideo || !data.note) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data
+                })
+            }
+            else {
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
+
+
+                // let user1 = await db.User.findOne({
+                //     include: [
+                //         {
+                //             model: db.shortVideos,
+                //             where: {
+                //                 id: data.idShortVideo
+                //             }
+                //         }
+                //     ],
+                //     nest: true,
+                //     raw: false
+                // })
+                // console.log(!user1);
+                // resolve({
+                //     errCode: 0,
+                //     errMessage: 'Not found',
+                // })
+                // return
+
+
+
+
+                let shortVideo = await db.shortVideos.findOne({
+                    where: {
+                        id: data.idShortVideo
+                    },
+                    raw: false
+                })
+
+                if (!shortVideo) {
+                    resolve({
+                        errCode: 3,
+                        errMessage: 'Not found',
+                    })
+                    return
+                }
+
+                cloudinary.v2.uploader.destroy(`${shortVideo.idCloudinary}`)
+                GG_Drive.deleteFile(shortVideo.idDriveVideo)
+
+
+
+
+
+                db.hashTagVideos.destroy({
+                    where: {
+                        idShortVideo: data.idShortVideo
+                    }
+                })
+
+                db.commentShortVideos.destroy({
+                    where: {
+                        idShortVideo: data.idShortVideo
+                    }
+                })
+
+                db.likeShortVideos.destroy({
+                    where: {
+                        idShortVideo: data.idShortVideo
+                    }
+                })
+
+                db.collectionShortVideos.destroy({
+                    where: {
+                        idShortVideo: data.idShortVideo
+                    }
+                })
+
+
+
+
+                //thong bao
+                let user = await db.User.findOne({
+                    include: [
+                        {
+                            model: db.shortVideos,
+                            where: {
+                                id: data.idShortVideo
+                            }
+                        }
+                    ],
+                    nest: true,
+                    raw: false
+                })
+
+                console.log(user);
+                let date = new Date().getTime()
+
+                if (!user) {
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'Không tìm thấy tác giả này',
+                    })
+                    return
+                }
+
+                await db.notifycations.create({
+                    id: uuidv4(),
+                    title: `Video của bạn đã bị xóa`,
+                    content: data.note,
+                    timeCreate: date,
+                    typeNotify: 'short_video',
+                    idUser: user.id,
+                    redirect_to: '/short-video/user'
+                })
+
+                handleEmit(`new-notify-${user.id}`, {
+                    title: 'Video của bạn đã bị xóa',
+                    content: `${data.note}`
+                })
+
+                //send email
+                if (user?.typeAccount === 'web') {
+                    let content = contentSuccessBill()
+                    sendEmail(user.email, 'Video của bạn đã bị xóa', content)
+                }
+
+
+                shortVideo.destroy()
+                resolve({
+                    errCode: 0,
+                })
+
+
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const getListReportAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.page) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data
+                })
+            }
+            else {
+
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
+
+                let listReportVideo = await db.reportVideos.findAll({
+                    where: {
+                        status: 'true'
+                    },
+                    include: [
+                        {
+                            model: db.shortVideos,
+                            attributes: ['id', 'urlImage'],
+                            where: {
+                                id: {
+                                    [Op.ne]: 'false'
+                                }
+                            }
+                        },
+                        {
+                            model: db.User,
+                            attributes: ['id', 'firstName']
+                        }
+                    ],
+                    limit: 10,
+                    offset: (+data.page - 1) * 10,
+                    raw: false,
+                    nest: true
+                })
+
+
+                let count = await db.reportVideos.count({
+                    where: {
+                        status: 'true'
+                    }
+                })
+
+                resolve({
+                    errCode: 0,
+                    data: listReportVideo,
+                    count
+                })
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const skipReportVideoAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idReportVideo) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data
+                })
+            }
+            else {
+
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
+
+                await db.reportVideos.update({ status: "false" }, {
+                    where: {
+                        id: data.idReportVideo
+                    }
+                });
+
+                resolve({
+                    errCode: 0,
+                })
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const getListBlogAdminByPage = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.page) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data
+                })
+            }
+            else {
+
+
+
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
+
+
+                let where = null
+                if (data.idSearch) {
+                    where = {
+                        id: {
+                            [Op.substring]: data.idSearch
+                        }
+                    }
+                }
+                else if (data.contentSearch) {
+                    where = {
+                        contentHTML: {
+                            [Op.substring]: data.contentSearch
+                        }
+                    }
+                }
+
+
+
+
+                let listBlog = await db.blogs.findAll({
+                    where: where,
+                    limit: 10,
+                    offset: (+data.page - 1) * 10,
+                    include: [
+                        {
+                            model: db.User, attributes: ['id', 'firstName']
+                        }
+                    ],
+                    raw: false,
+                    nest: true
+                })
+
+                let count = await db.blogs.count({ where: where })
+
+
+
+                resolve({
+                    errCode: 0,
+                    data: listBlog,
+                    count
+                })
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const deleteBlogAdminById = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idBlog || !data.note) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data
+                })
+            }
+            else {
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
+
+                //xoa blog
+                let blog = await db.blogs.findOne({
+                    where: {
+                        id: data.idBlog
+                    },
+                    raw: false
+                })
+
+                if (!blog) {
+                    resolve({
+                        errCode: 3,
+                        errMessage: 'Not found!',
+                    })
+                    return
+                }
+
+                let videoBlog = await db.videoBlogs.findOne({
+                    where: {
+                        idBlog: data.idBlog
+                    },
+                    raw: false
+                })
+                if (videoBlog) {
+                    GG_Drive.deleteFile(videoBlog.idDrive)
+                    videoBlog.destroy()
+                }
+                let imageBlogs = await db.imageBlogs.findAll({
+                    where: {
+                        idBlog: data.idBlog
+                    }
+                })
+                if (imageBlogs && imageBlogs.length > 0) {
+                    imageBlogs.map(item => {
+                        cloudinary.v2.uploader.destroy(item.idCloudinary)
+                    })
+                }
+                db.imageBlogs.destroy({
+                    where: {
+                        idBlog: data.idBlog
+                    }
+                })
+
+                db.likeBlog.destroy({
+                    where: {
+                        idBlog: data.idBlog
+                    }
+                })
+
+                db.blogShares.destroy({
+                    where: {
+                        idBlog: data.idBlog
+                    }
+                })
+
+                db.commentBlog.destroy({
+                    where: {
+                        idBlog: data.idBlog
+                    }
+                })
+
+
+
+
+                //thong bao
+                let user = await db.User.findOne({
+                    include: [
+                        {
+                            model: db.blogs,
+                            where: {
+                                id: data.idBlog
+                            }
+                        }
+                    ],
+                    nest: true,
+                    raw: false
+                })
+
+                // console.log(user);
+                let date = new Date().getTime()
+
+                if (!user) {
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'Không tìm thấy tác giả này',
+                    })
+                    return
+                }
+
+                await db.notifycations.create({
+                    id: uuidv4(),
+                    title: `Bài viết của bạn đã bị xóa`,
+                    content: data.note,
+                    timeCreate: date,
+                    typeNotify: 'blog',
+                    idUser: user.id,
+                    redirect_to: '/blogs/blog-user'
+                })
+
+                handleEmit(`new-notify-${user.id}`, {
+                    title: 'Bài viết của bạn đã bị xóa',
+                    content: `${data.note}`
+                })
+
+                //send email
+                if (user?.typeAccount === 'web') {
+                    let content = contentSuccessBill()
+                    sendEmail(user.email, 'Bài viết của bạn đã bị xóa', content)
+                }
+                blog.destroy()
+                resolve({
+                    errCode: 0,
+                })
+
+
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const getListReportBlogAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.page) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data
+                })
+            }
+            else {
+
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
+
+                let listReportBlog = await db.reportBlogs.findAll({
+                    where: {
+                        status: 'true'
+                    },
+                    include: [
+                        {
+                            model: db.blogs,
+                            attributes: ['id'],
+                            where: {
+                                id: {
+                                    [Op.ne]: 'false'
+                                }
+                            }
+                        },
+                        {
+                            model: db.User,
+                            attributes: ['id', 'firstName']
+                        }
+                    ],
+                    limit: 10,
+                    offset: (+data.page - 1) * 10,
+                    raw: false,
+                    nest: true
+                })
+
+
+                let count = await db.reportBlogs.count({
+                    where: {
+                        status: 'true'
+                    }
+                })
+
+                resolve({
+                    errCode: 0,
+                    data: listReportBlog,
+                    count
+                })
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const skipReportBlogAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idReportBlog) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data
+                })
+            }
+            else {
+
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
+
+                await db.reportBlogs.update({ status: "false" }, {
+                    where: {
+                        id: data.idReportBlog
+                    }
+                });
+
+                resolve({
+                    errCode: 0,
+                })
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+
 //winform
 const getListBillNoConfirm = () => {
     return new Promise(async (resolve, reject) => {
@@ -2643,19 +3374,19 @@ const confirmBillAdmin = (data) => {
 
 let contentUpdateStatusBill = () => {
     return `
-    <h3>Vào website để xem chi tiết đơn hàng</h3>
+    <h3>Vào website để xem chi tiết</h3>
     `
 }
 
 let contentSuccessBill = () => {
     return `
-    <h3>Vào website để xem chi tiết đơn hàng</h3>
+    <h3>Vào website để xem chi</h3>
     `
 }
 
 let contentFailBill = () => {
     return `
-    <h3>Vào website để xem chi tiết đơn hàng</h3>
+    <h3>Vào website để xem chi tiết</h3>
     `
 }
 
@@ -2893,6 +3624,14 @@ module.exports = {
     editEventPromotion,
     getListBillByTypeAdmin,
     updateStatusBillAdminWeb,
+    getListVideoAdminByPage,
+    deleteShortVideoAdmin,
+    getListReportAdmin,
+    skipReportVideoAdmin,
+    getListBlogAdminByPage,
+    deleteBlogAdminById,
+    getListReportBlogAdmin,
+    skipReportBlogAdmin,
     //winform
     getListBillNoConfirm,
     getDetailBillAdmin,

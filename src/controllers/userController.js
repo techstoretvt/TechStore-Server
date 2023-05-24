@@ -1331,6 +1331,37 @@ const sendEmailFromContact = async (req, res) => {
     }
 }
 
+const createNewReportVideo = async (req, res) => {
+    try {
+        let data = await userService.createNewReportVideo(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const createNewReportBlog = async (req, res) => {
+    try {
+        let data = await userService.createNewReportBlog(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -1416,5 +1447,7 @@ module.exports = {
     getListNotifyAll,
     getListNotifyByType,
     seenNotifyOfUser,
-    sendEmailFromContact
+    sendEmailFromContact,
+    createNewReportVideo,
+    createNewReportBlog
 }

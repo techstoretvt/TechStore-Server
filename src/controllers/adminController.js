@@ -559,6 +559,133 @@ const updateStatusBillAdminWeb = async (req, res) => {
     }
 }
 
+const getListVideoAdminByPage = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.getListVideoAdminByPage(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const deleteShortVideoAdmin = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.deleteShortVideoAdmin(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const getListReportAdmin = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.getListReportAdmin(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const skipReportVideoAdmin = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.skipReportVideoAdmin(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const getListBlogAdminByPage = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.getListBlogAdminByPage(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const deleteBlogAdminById = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.deleteBlogAdminById(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const getListReportBlogAdmin = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.getListReportBlogAdmin(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const skipReportBlogAdmin = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.skipReportBlogAdmin(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
 
 //winform
 const getListBillNoConfirm = async (req, res) => {
@@ -715,6 +842,14 @@ module.exports = {
     editEventPromotion,
     getListBillByTypeAdmin,
     updateStatusBillAdminWeb,
+    getListVideoAdminByPage,
+    deleteShortVideoAdmin,
+    getListReportAdmin,
+    skipReportVideoAdmin,
+    getListBlogAdminByPage,
+    deleteBlogAdminById,
+    getListReportBlogAdmin,
+    skipReportBlogAdmin,
     //winform
     getListBillNoConfirm,
     getDetailBillAdmin,
