@@ -20,6 +20,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   blogs.init({
+    title: DataTypes.STRING,
     contentHTML: DataTypes.TEXT,
     contentMarkdown: DataTypes.TEXT,
     idUser: DataTypes.STRING,

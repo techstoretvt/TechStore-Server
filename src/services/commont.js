@@ -76,8 +76,9 @@ const routes = {
     getProductById: '/api/v1/get-product-by-id',
     getListBlogHome: '/api/v1/get-list-blog-home',
     getEventPromotionById: '/api/v1/get-event-promotion-by-id',
-    upLoadImageCoverPromotion: '/api/v1/upload-image-cover-promotion',
+
     getListEventPromotionHome: '/api/v1/get-list-event-promotion-home',
+    getContentEventPromotionById: '/api/v1/get-content-event-promotin-by-id',
 
 
 
@@ -122,6 +123,7 @@ const routes = {
     deleteBlogAdminById: '/api/v1/delete-blog-admin-by-id',
     getListReportBlogAdmin: '/api/v1/get-list-report-blog-admin',
     skipReportBlogAdmin: '/api/v1/skip-report-blog-admin',
+    upLoadImageCoverPromotion: '/api/v1/upload-image-cover-promotion',
     //winform
     getListBillNoConfirm: '/api/v1/get-list-bill-no-confirm',
     getDetailBillAdmin: '/api/v1/get-detail-bill-admin',

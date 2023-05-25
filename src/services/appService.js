@@ -2,6 +2,7 @@ import db from '../models'
 const { Op } = require("sequelize");
 require('dotenv').config();
 import FuzzySearch from 'fuzzy-search';
+import Fuse from 'fuse.js'
 import { v4 as uuidv4 } from 'uuid';
 import commont from '../services/commont'
 
@@ -1026,15 +1027,28 @@ const searchProduct = (data) => {
                     nest: true
                 })
 
-                const searcher = new FuzzySearch(listProducts, ['nameProductEn', 'trademark.nameTrademarkEn', 'typeProduct.nameTypeProductEn'], {
-                    caseSensitive: false,
-                    sort: true
-                });
+                // const searcher = new FuzzySearch(listProducts, ['nameProductEn', 'trademark.nameTrademarkEn', 'typeProduct.nameTypeProductEn'], {
+                //     caseSensitive: false,
+                //     sort: true
+                // });
+
+                const options = {
+                    keys: [
+                        'nameProductEn', 'trademark.nameTrademarkEn', 'typeProduct.nameTypeProductEn'
+                    ]
+                };
+
+                const fuse = new Fuse(listProducts, options);
+
+
+
                 let key = data.keyword?.normalize('NFD')
                     .replace(/[\u0300-\u036f]/g, '')
                     .replace(/đ/g, 'd').replace(/Đ/g, 'D');
 
-                const result = searcher.search(key);
+                // const result = searcher.search(key);
+                const result = fuse.search(key)
+                // console.log('res', result);
 
                 let start = (+data.page - 1) * data.maxProduct
                 let end = start + data.maxProduct
@@ -1112,8 +1126,12 @@ const getListBlog = (data) => {
                         timePost: {
                             [Op.lt]: date
                         },
-                        editImage: 'false',
-                        editVideo: 'false'
+                        editImage: {
+                            [Op.ne]: 'true'
+                        },
+                        editVideo: {
+                            [Op.ne]: 'true'
+                        }
                     },
                     offset: (+data.page - 1) * data.maxCount,
                     limit: data.maxCount,
@@ -2189,6 +2207,9 @@ const getEventPromotionById = (data) => {
                             [Op.gt]: date
                         }
                     },
+                    attributes: {
+                        exclude: ['firstContent', 'lastContent']
+                    },
                     include: [
                         {
                             model: db.productEvents,
@@ -2308,6 +2329,55 @@ const getListEventPromotionHome = (data) => {
 }
 
 
+const getContentEventPromotionById = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idEventPromotion) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data
+                })
+            }
+            else {
+                let date = new Date().getTime()
+                let eventPromotion = await db.eventPromotions.findOne({
+                    where: {
+                        id: data.idEventPromotion,
+                        timeStart: {
+                            [Op.lt]: date
+                        },
+                        timeEnd: {
+                            [Op.gt]: date
+                        }
+                    },
+                    attributes: ['firstContent', 'lastContent'],
+                })
+
+                if (eventPromotion) {
+
+                    resolve({
+                        errCode: 0,
+                        data: eventPromotion,
+                    })
+                }
+                else {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Sự kiện chưa bắt đầu hoặc đã kết thúc!',
+                    })
+                }
+
+
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+
 
 module.exports = {
     getProductPromotionHome,
@@ -2332,6 +2402,7 @@ module.exports = {
     getProductById,
     getListBlogHome,
     getEventPromotionById,
-    getListEventPromotionHome
+    getListEventPromotionHome,
+    getContentEventPromotionById
 
 }

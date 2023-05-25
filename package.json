@@ -27,6 +27,7 @@
     "email-verifier": "^0.4.1",
     "express": "^4.17.1",
     "express-jwt": "^8.4.1",
+    "fuse.js": "^6.6.2",
     "fuzzy-search": "^3.2.1",
     "google-auth-library": "^8.7.0",
     "googleapis": "^111.0.0",

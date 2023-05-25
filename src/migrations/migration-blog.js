@@ -11,6 +11,9 @@ module.exports = {
       },
 
 
+      title: {
+        type: Sequelize.STRING
+      },
       contentHTML: {
         type: Sequelize.TEXT
       },
@@ -45,9 +48,11 @@ module.exports = {
         type: Sequelize.STRING
       },
       editImage: {
+        defaultValue: 'false',
         type: Sequelize.STRING
       },
       editVideo: {
+        defaultValue: 'false',
         type: Sequelize.STRING
       },
       amountLike: {

@@ -2007,9 +2007,9 @@ const getListEventPromotion = () => {
                     }
                 },
                 order: [['stt', 'DESC']],
-                // attributes: {
-                //     exclude: ['firstContent', 'lastContent']
-                // }
+                attributes: {
+                    exclude: ['firstContent', 'lastContent']
+                }
             })
 
 

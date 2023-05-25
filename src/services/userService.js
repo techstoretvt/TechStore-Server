@@ -3558,7 +3558,7 @@ const createNewBlog = (data) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.contentHtml || !data.contentMarkdown
-            || !data.typeVideo || !data.bgColor || !data.editVideo || !data.editImage
+            || !data.typeVideo || !data.bgColor || !data.editVideo || !data.editImage || !data.title
          ) {
             resolve({
                errCode: 1,
@@ -3583,6 +3583,7 @@ const createNewBlog = (data) => {
 
                await db.blogs.create({
                   id: idBlog,
+                  title: data.title,
                   contentHTML: data.contentHtml,
                   contentMarkdown: data.contentMarkdown,
                   idUser,
@@ -3819,7 +3820,7 @@ const updateBlog = (data) => {
       try {
          if (!data.accessToken || !data.idBlog || !data.contentHtml || !data.contentMarkdown
             || data.isVideo === undefined || !data.typeVideo || !data.bgColor
-            || !data.editVideo || !data.editImage
+            || !data.editVideo || !data.editImage || !data.title
          ) {
             resolve({
                errCode: 1,
@@ -3854,6 +3855,7 @@ const updateBlog = (data) => {
                   })
                }
                else {
+                  blog.title = data.title
                   blog.contentHTML = data.contentHtml
                   blog.contentMarkdown = data.contentMarkdown
                   blog.backgroundColor = data.bgColor
