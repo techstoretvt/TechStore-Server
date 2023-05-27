@@ -687,6 +687,152 @@ const skipReportBlogAdmin = async (req, res) => {
     }
 }
 
+const getStatisticalAdmin = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.getStatisticalAdmin(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const StatisticalEvaluateAdmin = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.StatisticalEvaluateAdmin(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const getStatisticalSale = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.getStatisticalSale(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const getListKeyWordAdmin = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.getListKeyWordAdmin(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const editKeyWordSearchAdmin = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.editKeyWordSearchAdmin(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const deleteKeyWordAdmin = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.deleteKeyWordAdmin(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const getListUserTypeAdmin = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.getListUserTypeAdmin(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const deleteEventPromotionAdmin = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.deleteEventPromotionAdmin(req.body)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+const getCountBillOfMonth = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.getCountBillOfMonth(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+
+
 //winform
 const getListBillNoConfirm = async (req, res) => {
     try {
@@ -850,6 +996,19 @@ module.exports = {
     deleteBlogAdminById,
     getListReportBlogAdmin,
     skipReportBlogAdmin,
+    getStatisticalAdmin,
+    StatisticalEvaluateAdmin,
+    getStatisticalSale,
+    getListKeyWordAdmin,
+    editKeyWordSearchAdmin,
+    deleteKeyWordAdmin,
+    getListUserTypeAdmin,
+    deleteEventPromotionAdmin,
+    getCountBillOfMonth,
+
+
+
+
     //winform
     getListBillNoConfirm,
     getDetailBillAdmin,

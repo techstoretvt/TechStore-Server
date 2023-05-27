@@ -44,6 +44,13 @@ const initAdminRoute = (app) => {
     router.get(routes.getListReportAdmin, adminController.getListReportAdmin)
     router.get(routes.getListBlogAdminByPage, adminController.getListBlogAdminByPage)
     router.get(routes.getListReportBlogAdmin, adminController.getListReportBlogAdmin)
+    router.get(routes.getStatisticalAdmin, adminController.getStatisticalAdmin)
+    router.get(routes.StatisticalEvaluateAdmin, adminController.StatisticalEvaluateAdmin)
+    router.get(routes.getStatisticalSale, adminController.getStatisticalSale)
+    router.get(routes.getListKeyWordAdmin, adminController.getListKeyWordAdmin)
+    router.get(routes.getListUserTypeAdmin, adminController.getListUserTypeAdmin)
+    router.get(routes.getCountBillOfMonth, adminController.getCountBillOfMonth)
+
     //winform
     router.get(routes.getListBillNoConfirm, adminController.getListBillNoConfirm)
     router.get(routes.getDetailBillAdmin, adminController.getDetailBillAdmin)
@@ -85,6 +92,7 @@ const initAdminRoute = (app) => {
     router.put(routes.updateStatusBillAdminWeb, adminController.updateStatusBillAdminWeb)
     router.put(routes.skipReportVideoAdmin, adminController.skipReportVideoAdmin)
     router.put(routes.skipReportBlogAdmin, adminController.skipReportBlogAdmin)
+    router.put(routes.editKeyWordSearchAdmin, adminController.editKeyWordSearchAdmin)
 
 
     router.delete(routes.deleteTypeProduct, adminController.deleteTypeProduct)
@@ -92,6 +100,8 @@ const initAdminRoute = (app) => {
     router.delete(routes.deleteErrorProduct, adminController.deleteErrorProduct);
     router.delete(routes.deleteShortVideoAdmin, adminController.deleteShortVideoAdmin)
     router.delete(routes.deleteBlogAdminById, adminController.deleteBlogAdminById)
+    router.delete(routes.deleteKeyWordAdmin, adminController.deleteKeyWordAdmin)
+    router.delete(routes.deleteEventPromotionAdmin, adminController.deleteEventPromotionAdmin)
 
 
 

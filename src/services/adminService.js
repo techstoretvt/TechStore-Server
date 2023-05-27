@@ -722,11 +722,12 @@ const getListProductByPage = (data) => {
                 if ((!data.idTypeProduct || data.idTypeProduct === 'all') && !data?.nameProduct) {
                     where = null
                 }
-                else if (data?.idTypeProduct !== 'all' && data?.nameProduct) {
+                else if (data?.idTypeProduct && data?.idTypeProduct !== 'all' && data?.nameProduct) {
+                    let name = data?.nameProduct?.toLowerCase().trim()
                     where = {
                         idTypeProduct: data.idTypeProduct,
                         nameProduct: {
-                            [Op.substring]: data?.nameProduct
+                            [Op.substring]: name
                         }
                     }
                 }
@@ -736,9 +737,11 @@ const getListProductByPage = (data) => {
                     }
                 }
                 else if ((!data.idTypeProduct || data.idTypeProduct === 'all') && data?.nameProduct) {
+                    let name = data?.nameProduct?.toLowerCase().trim()
+                    console.log('name: ', name);
                     where = {
                         nameProduct: {
-                            [Op.substring]: data?.nameProduct
+                            [Op.substring]: name
                         }
                     }
                 }
@@ -765,6 +768,9 @@ const getListProductByPage = (data) => {
                             model: db.classifyProduct,
                             as: 'classifyProduct-product'
                         },
+                        {
+                            model: db.promotionProduct
+                        }
                     ],
                     order: [
                         ['stt', 'DESC'],
@@ -3094,6 +3100,595 @@ const skipReportBlogAdmin = (data) => {
     })
 }
 
+const getStatisticalAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data
+                })
+            }
+            else {
+
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
+
+                //countproduct
+                let countProduct = await db.product.count()
+
+                //sum price bill
+                let revenue = await db.bill.sum('totals', {
+                    where: {
+                        idStatusBill: 3
+                    }
+                })
+
+                //count bill
+                let countBill = await db.bill.count({
+                    where: {
+                        idStatusBill: 3
+                    }
+                })
+
+                //avg evaluate
+                let countEvaluate = await db.evaluateProduct.count()
+                let sumEvaluate = await db.evaluateProduct.sum('starNumber')
+
+                //count user
+                let countUser = await db.User.count({
+                    where: {
+                        idTypeUser: "3"
+                    }
+                })
+
+                //count Video
+                let countVideo = await db.shortVideos.count()
+
+                //count blog
+                let countBlog = await db.blogs.count()
+
+                resolve({
+                    errCode: 0,
+                    data: {
+                        countProduct,
+                        revenue,
+                        countBill,
+                        avgStart: (sumEvaluate / countEvaluate).toFixed(1),
+                        countUser,
+                        countVideo,
+                        countBlog
+                    }
+                })
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const StatisticalEvaluateAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data
+                })
+            }
+            else {
+
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
+
+                let include = null
+                if (data.idProduct) {
+                    console.log('vao1', data.idProduct);
+                    let product = await db.product.findOne({
+                        where: {
+                            id: data.idProduct
+                        }
+                    })
+                    if (product)
+                        include = [
+                            {
+                                model: db.product,
+                                where: {
+                                    id: data.idProduct.trim()
+                                }
+                            }
+                        ]
+                }
+
+                if (data.idTypeProduct) {
+                    console.log('vao2');
+                    include = [
+                        {
+                            model: db.product,
+                            where: {
+                                idTypeProduct: data.idTypeProduct
+                            }
+                        }
+                    ]
+                }
+
+                if (data.idTrademark) {
+                    console.log('vao3');
+                    include = [
+                        {
+                            model: db.product,
+                            where: {
+                                idTrademark: data.idTrademark
+                            }
+                        }
+                    ]
+                }
+
+
+                let count = await db.evaluateProduct.count({
+                    include: include
+                })
+
+                let count1 = await db.evaluateProduct.count({
+                    where: {
+                        starNumber: 1
+                    },
+                    include: include
+                })
+
+                let count2 = await db.evaluateProduct.count({
+                    where: {
+                        starNumber: 2
+                    },
+                    include: include
+                })
+
+                let count3 = await db.evaluateProduct.count({
+                    where: {
+                        starNumber: 3
+                    },
+                    include: include
+                })
+
+                let count4 = await db.evaluateProduct.count({
+                    where: {
+                        starNumber: 4
+                    },
+                    include: include
+                })
+
+                let count5 = await db.evaluateProduct.count({
+                    where: {
+                        starNumber: 5
+                    },
+                    include: include
+                })
+
+                // console.log('count', count);
+                // console.log('count1', count1);
+                // console.log('count2', count2);
+                // console.log('count3', count3);
+                // console.log('count4', count4);
+                // console.log('count5', count5);
+
+                if (count === 0) {
+                    resolve({
+                        errCode: 3,
+                        errMessage: 'Not found product'
+                    })
+                    return
+                }
+
+
+                resolve({
+                    errCode: 0,
+                    data: {
+                        count1: count1 / count * 100,
+                        count2: count2 / count * 100,
+                        count3: count3 / count * 100,
+                        count4: count4 / count * 100,
+                        count5: count5 / count * 100,
+                    }
+                })
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const getStatisticalSale = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data
+                })
+            }
+            else {
+
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
+
+                let whereTypeProduct = null
+                if (data.idTypeProduct) {
+                    whereTypeProduct = {
+                        idTypeProduct: data.idTypeProduct
+                    }
+                }
+
+                let detailbills = await db.detailBill.findAll({
+                    include: [
+                        {
+                            model: db.bill,
+                            where: {
+                                idStatusBill: 3
+                            }
+                        },
+                        {
+                            model: db.product,
+                            where: whereTypeProduct
+                        }
+                    ],
+                    raw: false,
+                    nest: true
+                })
+
+                let arr = []
+                for (let i = 0; i < 12; i++) {
+                    let rand = 0
+                    arr.push(rand)
+                }
+
+                detailbills?.forEach(item => {
+                    let month = new Date(item.updatedAt).getMonth()
+                    let year = new Date(item.updatedAt).getFullYear()
+
+                    if (year === +data.year) {
+                        arr[month] = arr[month] + (item.amount + 5)
+                    }
+                })
+
+                // console.log('arr', arr);
+
+
+
+                resolve({
+                    errCode: 0,
+                    data: {
+                        arr
+                    }
+                })
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const getListKeyWordAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data
+                })
+            }
+            else {
+
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
+
+                let where = null
+                if (data.nameKeyword) {
+                    where = {
+                        keyword: {
+                            [Op.substring]: data.nameKeyword
+                        }
+                    }
+                }
+
+                let listKeyWord = await db.keywordSearchs.findAll({
+                    limit: 20,
+                    where: where
+                })
+
+
+                resolve({
+                    errCode: 0,
+                    data: listKeyWord
+                })
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const editKeyWordSearchAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idKeyWord || !data.nameKeyword) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data
+                })
+            }
+            else {
+
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
+
+                await db.keywordSearchs.update({ keyword: data.nameKeyword }, {
+                    where: {
+                        id: data.idKeyWord
+                    }
+                })
+
+
+                resolve({
+                    errCode: 0,
+                })
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const deleteKeyWordAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idKeyWord) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data
+                })
+            }
+            else {
+
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
+
+                await db.keywordSearchs.destroy({
+                    where: {
+                        id: data.idKeyWord
+                    }
+                })
+
+
+                resolve({
+                    errCode: 0,
+                })
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const getListUserTypeAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data
+                })
+            }
+            else {
+
+                let decoded = decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                if (!decoded) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chua co dang nhap!',
+                    })
+                    return
+                }
+
+                let user = await db.User.findOne({
+                    where: {
+                        id: decoded.id,
+                        idTypeUser: '1'
+                    }
+                })
+
+                if (!user) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'khong co quyen truy cap!',
+                    })
+                    return
+                }
+
+                let where = {
+                    idTypeUser: '2'
+                }
+                if (data.nameUser) {
+                    where = {
+                        firstName: {
+                            [Op.substring]: data.nameUser
+                        },
+                        idTypeUser: '2'
+                    }
+                }
+
+                let listUser = await db.User.findAll({
+                    where: where,
+                    limit: 30
+                })
+
+
+                resolve({
+                    errCode: 0,
+                    data: listUser
+                })
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const deleteEventPromotionAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idEvent) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data
+                })
+            }
+            else {
+
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
+
+                let event = await db.eventPromotions.findOne({
+                    where: {
+                        id: data.idEvent
+                    },
+                    raw: false
+                })
+                if (event) {
+                    await cloudinary.v2.uploader.destroy(`${event.idCover}`)
+                    await event.destroy()
+                }
+
+
+                resolve({
+                    errCode: 0,
+                })
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const getCountBillOfMonth = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.year) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data
+                })
+            }
+            else {
+
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
+
+                let listBill = await db.bill.findAll({
+                    where: {
+                        idStatusBill: 3
+                    }
+                })
+
+                let arr = []
+                for (let i = 0; i < 12; i++) {
+                    arr.push(0)
+                }
+
+                console.log(listBill.length);
+
+
+                listBill.forEach(item => {
+                    let month = new Date(item.updatedAt).getMonth()
+                    let year = new Date(item.updatedAt).getFullYear()
+
+                    if (year === +data.year) {
+                        arr[month] = arr[month] + 1
+                    }
+
+                })
+
+
+
+
+
+
+                resolve({
+                    errCode: 0,
+                    data: arr
+                })
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 
 //winform
 const getListBillNoConfirm = () => {
@@ -3632,6 +4227,18 @@ module.exports = {
     deleteBlogAdminById,
     getListReportBlogAdmin,
     skipReportBlogAdmin,
+    getStatisticalAdmin,
+    StatisticalEvaluateAdmin,
+    getStatisticalSale,
+    getListKeyWordAdmin,
+    editKeyWordSearchAdmin,
+    deleteKeyWordAdmin,
+    getListUserTypeAdmin,
+    deleteEventPromotionAdmin,
+    getCountBillOfMonth,
+
+
+
     //winform
     getListBillNoConfirm,
     getDetailBillAdmin,

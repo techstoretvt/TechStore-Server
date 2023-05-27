@@ -124,6 +124,16 @@ const routes = {
     getListReportBlogAdmin: '/api/v1/get-list-report-blog-admin',
     skipReportBlogAdmin: '/api/v1/skip-report-blog-admin',
     upLoadImageCoverPromotion: '/api/v1/upload-image-cover-promotion',
+    getStatisticalAdmin: '/api/v1/get-statistical-admin',
+    StatisticalEvaluateAdmin: '/api/v1/statistical-evaluate-admin',
+    getStatisticalSale: '/api/v1/get-statistical-sale',
+    getListKeyWordAdmin: '/api/v1/get-list-key-word',
+    editKeyWordSearchAdmin: '/api/v1/edit-keyword-search-admin',
+    deleteKeyWordAdmin: '/api/v1/delete-keyword-admin',
+    getListUserTypeAdmin: '/api/v1/get-list-user-type-admin',
+    deleteEventPromotionAdmin: '/api/v1/delete-event-promotion-admin',
+    getCountBillOfMonth: '/api/v1/get-count-bill-of-month',
+
     //winform
     getListBillNoConfirm: '/api/v1/get-list-bill-no-confirm',
     getDetailBillAdmin: '/api/v1/get-detail-bill-admin',

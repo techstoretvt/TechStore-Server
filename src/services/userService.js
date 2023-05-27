@@ -274,7 +274,7 @@ const contentSendEmail = (idUser, keyVerify, firstName) => {
 const CreateToken = (user) => {
    const { id, idGoogle, firstName, idTypeUser } = user;
    const accessToken = jwt.sign({ id, idGoogle, firstName, idTypeUser }, process.env.ACCESS_TOKEN_SECRET, {
-      expiresIn: '30m'
+      expiresIn: '120m'
    });
    const refreshToken = jwt.sign({ id, idGoogle, firstName, idTypeUser }, process.env.REFESH_TOKEN_SECRET, {
       expiresIn: '7d'
