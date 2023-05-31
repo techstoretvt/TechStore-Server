@@ -73,7 +73,8 @@ let GG_Drive = {
             },
             media: {
                mimeType: 'video/*',
-               body: fs.createReadStream(path.join(__dirname, `../public/videoTam/${name}`))
+               // body: fs.createReadStream(path.join(__dirname, `../public/videoTam/${name}`))
+               body: `/videoTam/${name}`
             }
          })
          const fileId = createFile.data.id;
