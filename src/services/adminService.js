@@ -2000,15 +2000,27 @@ const createEventPromotion = (data) => {
 
                 const formattedDate = `${day}/${month}/${year}`;
 
-                await db.notifycations.create({
-                    id: uuidv4(),
-                    title: data.nameEvent,
-                    content: `Sự kiến mới sắp ra mắt từ ${formattedDate}`,
-                    timeCreate: date2,
-                    typeNotify: 'promotion',
-                    idUser: user.id,
-                    redirect_to: `/promotion/${idEventPromotion}`
+                let listUser = await db.User.findAll({
+                    where: {
+                        idTypeUser: '3',
+                        statusUser: {
+                            [Op.ne]: 'false'
+                        }
+                    }
                 })
+                listUser?.forEach(item => {
+                    db.notifycations.create({
+                        id: uuidv4(),
+                        title: data.nameEvent,
+                        content: `Sự kiến mới sắp ra mắt từ ${formattedDate}`,
+                        timeCreate: date2,
+                        typeNotify: 'promotion',
+                        idUser: item.id,
+                        redirect_to: `/promotion/${idEventPromotion}`
+                    })
+                })
+
+
 
                 handleEmit('new-notify-all', { title: data.nameEvent, content: `Sự kiến mới sắp ra mắt từ ${formattedDate}` })
 

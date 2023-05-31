@@ -875,7 +875,7 @@ const searchProduct = (data) => {
                 }
 
                 let whereStatus = () => {
-                    if (!data.status) return {}
+                    if (!data.status) return null
                     return {
                         isSell: data.status === 'sell' ? 'true' : 'false'
                     }
@@ -902,7 +902,7 @@ const searchProduct = (data) => {
 
                 let date = new Date().getTime()
                 let wherePromotion = () => {
-                    if (!data.promotion || data.promotion !== 'true') return {}
+                    if (!data.promotion || data.promotion !== 'true') return null
                     return {
                         [Op.and]: [
                             {
@@ -938,8 +938,8 @@ const searchProduct = (data) => {
                 if (data.promotion && data.promotion === 'true' && !data.keyword) {
                     let listProducts = await db.product.findAll({
                         where: whereStatus(),
-                        offset: (+data.page - 1) * data.maxProduct,
-                        limit: data.maxProduct,
+                        offset: (+data.page - 1) * +data.maxProduct,
+                        limit: +data.maxProduct,
                         include: [
                             {
                                 model: db.trademark,
@@ -974,9 +974,43 @@ const searchProduct = (data) => {
                         nest: true
                     })
 
+                    let count = await db.product.findAll({
+                        where: whereStatus(),
+                        include: [
+                            {
+                                model: db.trademark,
+                                where: whereTrademark()
+                            },
+                            {
+                                model: db.typeProduct,
+                                where: whereTypeProduct()
+                            },
+                            // {
+                            //     model: db.imageProduct, as: 'imageProduct-product'
+                            // },
+                            {
+                                model: db.classifyProduct, as: 'classifyProduct-product',
+                                where: wherePrice(),
+                            },
+                            {
+                                model: db.promotionProduct,
+                                where: wherePromotion()
+                            },
+                            {
+                                model: db.evaluateProduct,
+                                where: whereRating()
+                            }
+                        ],
+                        raw: false,
+                        nest: true
+                    })
+
+                    // console.log(listProducts.length);
+                    // console.log('length', count.length);
+
                     resolve({
                         errCode: 0,
-                        countProduct: listProducts.length,
+                        countProduct: count.length,
                         data: listProducts,
                     })
                     return
@@ -1026,11 +1060,7 @@ const searchProduct = (data) => {
                     raw: false,
                     nest: true
                 })
-
-                // const searcher = new FuzzySearch(listProducts, ['nameProductEn', 'trademark.nameTrademarkEn', 'typeProduct.nameTypeProductEn'], {
-                //     caseSensitive: false,
-                //     sort: true
-                // });
+                console.log('res1', listProducts);
 
                 const options = {
                     keys: [
@@ -1046,7 +1076,6 @@ const searchProduct = (data) => {
                     .replace(/[\u0300-\u036f]/g, '')
                     .replace(/đ/g, 'd').replace(/Đ/g, 'D');
 
-                // const result = searcher.search(key);
                 const result = fuse.search(key)
                 // console.log('res', result);
 
