@@ -133,6 +133,7 @@ const routes = {
     getListUserTypeAdmin: '/api/v1/get-list-user-type-admin',
     deleteEventPromotionAdmin: '/api/v1/delete-event-promotion-admin',
     getCountBillOfMonth: '/api/v1/get-count-bill-of-month',
+    getMoneyOfMonth: '/api/v1/get-money-of-month',
 
     //winform
     getListBillNoConfirm: '/api/v1/get-list-bill-no-confirm',

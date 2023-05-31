@@ -625,9 +625,15 @@ const createNewProduct = (data) => {
                     id: uuidv4()
                 })
 
+                let date = new Date()
+                let month = date.getMonth() + 1
+                let year = date.getFullYear()
 
                 if (data.listClassify?.length > 0) {
+                    let money = 0
+
                     data.listClassify.forEach(async (item, index) => {
+                        money = money + (item.amount * (item.priceClassify * 0.95))
                         let classifyProduct = await db.classifyProduct.create({
                             idProduct: product.dataValues.id,
                             amount: item.amount,
@@ -638,6 +644,30 @@ const createNewProduct = (data) => {
                             id: uuidv4()
                         })
                     })
+
+                    let moneyBill = await db.moneyBills.findOne({
+                        where: {
+                            month,
+                            year,
+                            type: 'nhap'
+                        },
+                        raw: false
+                    })
+
+                    if (moneyBill) {
+                        moneyBill.money = moneyBill.money + money
+                        await moneyBill.save()
+                    }
+                    else {
+                        await db.moneyBills.create({
+                            id: uuidv4(),
+                            year,
+                            month,
+                            type: 'nhap',
+                            money
+                        })
+                    }
+
                 }
                 else {
                     let classifyProduct = await db.classifyProduct.create({
@@ -647,6 +677,29 @@ const createNewProduct = (data) => {
                         STTImg: -1,
                         id: uuidv4()
                     })
+
+                    let moneyBill = await db.moneyBills.findOne({
+                        where: {
+                            month,
+                            year,
+                            type: 'nhap'
+                        },
+                        raw: false
+                    })
+
+                    if (moneyBill) {
+                        moneyBill.money = moneyBill.money + ((+product.priceProduct * 0.95) * +data.sl)
+                        await moneyBill.save()
+                    }
+                    else {
+                        await db.moneyBills.create({
+                            id: uuidv4(),
+                            year,
+                            month,
+                            type: 'nhap',
+                            money: (+product.priceProduct * 0.95) * +data.sl
+                        })
+                    }
                 }
 
                 resolve({
@@ -3689,6 +3742,68 @@ const getCountBillOfMonth = (data) => {
     })
 }
 
+const getMoneyOfMonth = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.year) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data
+                })
+            }
+            else {
+
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
+
+                let listMoney = await db.moneyBills.findAll({
+                    where: {
+                        year: +data.year
+                    }
+                })
+
+                let arr1 = []
+                let arr2 = []
+                for (let i = 0; i < 12; i++) {
+                    arr1.push(0)
+                    arr2.push(0)
+                }
+
+
+
+                listMoney.forEach(item => {
+
+                    if (item.type === 'nhap') {
+                        arr1[item.month - 1] = arr1[item.month - 1] + (item.money / 1000000)
+                    }
+                    else {
+                        arr2[item.month - 1] = arr2[item.month - 1] + (item.money / 1000000)
+                    }
+
+                })
+
+                resolve({
+                    errCode: 0,
+                    data: {
+                        arr1,
+                        arr2
+                    }
+                })
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
 
 //winform
 const getListBillNoConfirm = () => {
@@ -4236,6 +4351,7 @@ module.exports = {
     getListUserTypeAdmin,
     deleteEventPromotionAdmin,
     getCountBillOfMonth,
+    getMoneyOfMonth,
 
 
 

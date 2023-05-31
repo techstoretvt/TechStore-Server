@@ -1027,11 +1027,13 @@ const addCartOrMoveCart = (data) => {
 
                   let [cart, create] = await db.cart.findOrCreate({
                      where: {
+
                         idUser: idUser,
                         idProduct: data.idProduct,
                         idClassifyProduct: data.idClassifyProduct
                      },
                      defaults: {
+                        id: uuidv4(),
                         amount: +data.amount
                      },
                      raw: false
@@ -1083,6 +1085,8 @@ const addNewAddressUser = (data) => {
             }
             else {
                let idUser = decode.id;
+               //kiem tra sdt
+
 
                let [addressUser, create] = await db.addressUser.findOrCreate({
                   where: {
@@ -1988,6 +1992,35 @@ const createNewBill = (data) => {
                      isChoose: 'true'
                   }
                })
+
+               let date2 = new Date()
+               let month = date2.getMonth() + 1
+               let year = date2.getFullYear()
+
+               let moneyBill = await db.moneyBills.findOne({
+                  where: {
+                     month,
+                     year,
+                     type: 'ban'
+                  },
+                  raw: false
+               })
+
+               if (moneyBill) {
+                  moneyBill.money = moneyBill.money + +data.Totals
+                  await moneyBill.save()
+               }
+               else {
+                  await db.moneyBills.create({
+                     id: uuidv4(),
+                     year,
+                     month,
+                     type: 'ban',
+                     money: +data.Totals
+                  })
+               }
+
+               handleEmit('refreshAmountProduct', {})
 
                resolve({
                   errCode: 0,
@@ -2935,6 +2968,12 @@ const buyProductByCardSucess = (data) => {
                      })
 
                      let arrayDetailBill = cart.map(item => {
+                        db.classifyProduct.increment({ amount: -item.amount }, {
+                           where: {
+                              idProduct: item.idProduct
+                           }
+                        })
+
                         return {
                            id: uuidv4(),
                            idBill: bill.id,
@@ -2953,6 +2992,35 @@ const buyProductByCardSucess = (data) => {
                            isChoose: 'true'
                         }
                      })
+
+                     let date2 = new Date()
+                     let month = date2.getMonth() + 1
+                     let year = date2.getFullYear()
+
+                     let moneyBill = await db.moneyBills.findOne({
+                        where: {
+                           month,
+                           year,
+                           type: 'ban'
+                        },
+                        raw: false
+                     })
+
+                     if (moneyBill) {
+                        moneyBill.money = moneyBill.money + +data.totalsReq
+                        await moneyBill.save()
+                     }
+                     else {
+                        await db.moneyBills.create({
+                           id: uuidv4(),
+                           year,
+                           month,
+                           type: 'ban',
+                           money: +data.totalsReq
+                        })
+                     }
+
+                     handleEmit('refreshAmountProduct', {})
 
                      resolve({
                         errCode: 0,

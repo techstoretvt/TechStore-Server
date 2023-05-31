@@ -20,7 +20,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: `${process.env.LINK_FONTEND}`,
+        origin: [process.env.LINK_FONTEND, process.env.LINK_ADMIN],
         methods: ["GET", "POST"]
     }
 });
