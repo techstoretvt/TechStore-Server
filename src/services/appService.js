@@ -2139,7 +2139,7 @@ const getProductById = (data) => {
                             idProduct: data.idProduct
                         }
                     }) || 0
-                    let countEvaluate = await db.evaluateProduct.count('starNumber', {
+                    let countEvaluate = await db.evaluateProduct.count({
                         where: {
                             idProduct: data.idProduct
                         }
@@ -2148,7 +2148,7 @@ const getProductById = (data) => {
                     resolve({
                         errCode: 0,
                         data: product,
-                        countEvaluate: totalEvaluate,
+                        countEvaluate: countEvaluate,
                         persentElevate: totalEvaluate / countEvaluate
                     })
                     return

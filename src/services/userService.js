@@ -5940,6 +5940,227 @@ const getListVideoByIdUser = (data) => {
 
             let countLike = await db.shortVideos.sum('countLike')
 
+            if (data.idUser) {
+               if (data.nav === 'video') {
+                  let listVideo = await db.shortVideos.findAll({
+                     where: {
+                        idUser,
+                        scope: 'public'
+                     },
+
+                     attributes: ['id', 'idDriveVideo', 'urlImage', 'content', 'scope',
+                        'countLike', 'countComment', 'stt', 'loadImage', 'loadVideo'
+                     ],
+                     include: [
+                        {
+                           model: db.hashTagVideos,
+                           attributes: ['id'],
+                           include: [
+                              {
+                                 model: db.product,
+                                 attributes: ['id', 'nameProduct']
+                              }
+                           ]
+                        },
+                        {
+                           model: db.User,
+                           attributes: ['id', 'firstName', 'lastName', 'idTypeUser', 'typeAccount',
+                              'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub', 'avatarUpdate',
+                              'statusUser'
+                           ],
+                           where: {
+                              statusUser: {
+                                 [Op.ne]: 'false'
+                              }
+                           }
+                        }
+                     ],
+                     raw: false,
+                     nest: true,
+                     offset: (data.page * 1 - 1) * 50,
+                     limit: 50,
+                     order: [['stt', data.ft === 'old' ? 'ASC' : 'DESC']]
+                  })
+
+
+
+                  resolve({
+                     errCode: 0,
+                     data: listVideo,
+                     countPage: count,
+                     countLike
+                  })
+               }
+
+               else if (data.nav === 'save') {
+
+                  let count = await db.shortVideos.count({
+
+                     include: [
+                        {
+                           model: db.User,
+                           attributes: ['id', 'firstName', 'lastName', 'idTypeUser', 'typeAccount',
+                              'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub', 'avatarUpdate',
+                              'statusUser'
+                           ],
+                           where: {
+                              statusUser: {
+                                 [Op.ne]: 'false'
+                              }
+                           }
+                        },
+                        {
+                           model: db.collectionShortVideos,
+                           where: {
+                              idUser
+                           },
+                           attributes: ['id']
+                        }
+                     ],
+                     raw: false,
+                     nest: true,
+                  })
+
+                  let listVideo = await db.shortVideos.findAll({
+                     where: {
+                        scope: 'public'
+                     },
+
+                     attributes: ['id', 'idDriveVideo', 'urlImage', 'content', 'scope',
+                        'countLike', 'countComment', 'stt', 'loadImage', 'loadVideo'
+                     ],
+                     include: [
+                        {
+                           model: db.hashTagVideos,
+                           attributes: ['id'],
+                           include: [
+                              {
+                                 model: db.product,
+                                 attributes: ['id', 'nameProduct']
+                              }
+                           ]
+                        },
+                        {
+                           model: db.User,
+                           attributes: ['id', 'firstName', 'lastName', 'idTypeUser', 'typeAccount',
+                              'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub', 'avatarUpdate',
+                              'statusUser'
+                           ],
+                           where: {
+                              statusUser: {
+                                 [Op.ne]: 'false'
+                              }
+                           }
+                        },
+                        {
+                           model: db.collectionShortVideos,
+                           where: {
+                              idUser
+                           },
+                           attributes: ['id']
+                        }
+                     ],
+                     raw: false,
+                     nest: true,
+                     offset: (data.page * 1 - 1) * 50,
+                     limit: 50,
+                     order: [['stt', data.ft === 'old' ? 'ASC' : 'DESC']]
+                  })
+
+                  resolve({
+                     errCode: 0,
+                     data: listVideo,
+                     countPage: count,
+                     countLike
+                  })
+               }
+               else if (data.nav === 'like') {
+                  let count = await db.shortVideos.count({
+
+                     include: [
+                        {
+                           model: db.User,
+                           attributes: ['id', 'firstName', 'lastName', 'idTypeUser', 'typeAccount',
+                              'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub', 'avatarUpdate',
+                              'statusUser'
+                           ],
+                           where: {
+                              statusUser: {
+                                 [Op.ne]: 'false'
+                              }
+                           }
+                        },
+                        {
+                           model: db.likeShortVideos,
+                           where: {
+                              idUser
+                           },
+                           // attributes: ['id']
+                        }
+                     ],
+                     raw: false,
+                     nest: true,
+                  })
+                  let listVideo = await db.shortVideos.findAll({
+                     where: {
+                        scope: 'public'
+                     },
+
+                     attributes: ['id', 'idDriveVideo', 'urlImage', 'content', 'scope',
+                        'countLike', 'countComment', 'stt', 'loadImage', 'loadVideo'
+                     ],
+                     include: [
+                        {
+                           model: db.hashTagVideos,
+                           attributes: ['id'],
+                           include: [
+                              {
+                                 model: db.product,
+                                 attributes: ['id', 'nameProduct']
+                              }
+                           ]
+                        },
+                        {
+                           model: db.User,
+                           attributes: ['id', 'firstName', 'lastName', 'idTypeUser', 'typeAccount',
+                              'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub', 'avatarUpdate',
+                              'statusUser'
+                           ],
+                           where: {
+                              statusUser: {
+                                 [Op.ne]: 'false'
+                              }
+                           }
+                        },
+                        {
+                           model: db.likeShortVideos,
+                           where: {
+                              idUser
+                           },
+                           attributes: ['id']
+                        }
+                     ],
+                     raw: false,
+                     nest: true,
+                     offset: (data.page * 1 - 1) * 50,
+                     limit: 50,
+                     order: [['stt', data.ft === 'old' ? 'ASC' : 'DESC']]
+                  })
+
+
+
+
+                  resolve({
+                     errCode: 0,
+                     data: listVideo,
+                     countPage: count,
+                     countLike
+                  })
+               }
+
+               return
+            }
+
             if (data.nav === 'video') {
                let listVideo = await db.shortVideos.findAll({
                   where: {
