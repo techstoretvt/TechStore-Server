@@ -2339,7 +2339,7 @@ const getListEventPromotionHome = (data) => {
                     }
                 },
                 attributes: ['id', 'cover'],
-                order: [['stt', 'asc']]
+                order: [['stt', 'DESC']]
 
             })
 
