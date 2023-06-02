@@ -924,6 +924,44 @@ const editProductById = (data) => {
                     })
                 }
                 else {
+                    //update tien nhap hang
+
+                    let date = new Date(product.createdAt)
+                    let month = date.getMonth() + 1
+                    let year = date.getFullYear()
+
+                    let moneyBill = await db.moneyBills.findOne({
+                        where: {
+                            year,
+                            month,
+                            type: 'nhap'
+                        },
+                        raw: false
+                    })
+
+                    if (moneyBill) {
+                        let listClassifyOld = await db.classifyProduct.findAll({
+                            where: {
+                                idProduct: data.idProduct
+                            }
+                        })
+
+                        listClassifyOld.forEach(item => {
+                            if (item.nameClassifyProduct === 'default') {
+                                moneyBill.money = moneyBill.money - ((+product.priceProduct * 0.95) * item.amount)
+                            }
+                            else {
+                                moneyBill.money = moneyBill.money - ((+item.priceClassify * 0.95) * item.amount)
+                            }
+                        })
+
+                        // await moneyBill.save()
+                    }
+
+
+
+
+
                     product.nameProduct = data.nameProduct.toLowerCase();
                     product.nameProductEn = data.nameProduct.toLowerCase().normalize('NFD')
                         .replace(/[\u0300-\u036f]/g, '')
@@ -937,6 +975,8 @@ const editProductById = (data) => {
                     await product.save();
 
                     if (data.listClassify.length === 0) {
+
+
                         await db.classifyProduct.destroy({
                             where: {
                                 idProduct: data.idProduct
@@ -951,6 +991,10 @@ const editProductById = (data) => {
                             id: uuidv4()
                         })
 
+                        moneyBill.money = moneyBill.money + ((+data.priceProduct * 0.95) * +data.sl)
+                        await moneyBill.save()
+
+
                     }
                     else {
                         await db.classifyProduct.destroy({
@@ -960,6 +1004,7 @@ const editProductById = (data) => {
                         })
 
                         let arrClassify = data.listClassify.map((item, index) => {
+                            moneyBill.money = moneyBill.money + ((+item.priceClassify * 0.95) * +item.amount)
                             return {
                                 idProduct: data.idProduct,
                                 amount: +item.amount,
@@ -970,6 +1015,7 @@ const editProductById = (data) => {
                             }
                         })
                         await db.classifyProduct.bulkCreate(arrClassify, { individualHooks: true })
+                        await moneyBill.save()
                     }
 
                     await db.cart.destroy({
