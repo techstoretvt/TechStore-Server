@@ -2209,7 +2209,8 @@ const getListBillByTypeAdmin = (data) => {
                                 idStatusBill: {
                                     [Op.between]: [2.99, 3]
                                 }
-                            }
+                            },
+                            order: [['updatedAt', 'DESC']]
                         })
                         resolve({
                             errCode: 0,
@@ -2221,7 +2222,8 @@ const getListBillByTypeAdmin = (data) => {
                     let listBill = await db.bill.findAll({
                         where: {
                             idStatusBill: +data.type
-                        }
+                        },
+                        order: [['updatedAt', 'DESC']]
                     })
                     resolve({
                         errCode: 0,
@@ -2234,7 +2236,8 @@ const getListBillByTypeAdmin = (data) => {
                             idStatusBill: {
                                 [Op.between]: [2, 2.98]
                             }
-                        }
+                        },
+                        order: [['updatedAt', 'DESC']]
                     })
                     resolve({
                         errCode: 0,
@@ -3266,6 +3269,62 @@ const getStatisticalAdmin = (data) => {
                 //count blog
                 let countBlog = await db.blogs.count()
 
+
+                //count bill to day
+                const currentDate = new Date();
+                currentDate.setHours(0, 0, 0, 0);
+                const startOfDayTimestamp = currentDate.getTime();
+                let countBillToday = await db.bill.count({
+                    where: {
+                        idStatusBill: {
+                            [Op.gte]: 1
+                        }
+                    },
+                    include: [
+                        {
+                            model: db.statusBills,
+                            where: {
+                                idStatusBill: 1,
+                                timeStatus: {
+                                    [Op.gt]: startOfDayTimestamp
+                                }
+                            }
+                        }
+                    ],
+                    raw: false,
+                    nest: true
+                })
+
+                //sum price bill today
+                let listBillToday = await db.bill.findAll({
+                    where: {
+                        idStatusBill: {
+                            [Op.gte]: 1
+                        }
+                    },
+                    include: [
+                        {
+                            model: db.statusBills,
+                            where: {
+                                idStatusBill: 1,
+                                timeStatus: {
+                                    [Op.gt]: startOfDayTimestamp
+                                }
+                            }
+                        }
+                    ],
+                    raw: false,
+                    nest: true
+                })
+
+                let revenueToday = 0
+                listBillToday.forEach(item => {
+                    revenueToday += item.totals
+                })
+
+
+
+
                 resolve({
                     errCode: 0,
                     data: {
@@ -3275,7 +3334,9 @@ const getStatisticalAdmin = (data) => {
                         avgStart: (sumEvaluate / countEvaluate).toFixed(1),
                         countUser,
                         countVideo,
-                        countBlog
+                        countBlog,
+                        countBillToday,
+                        revenueToday: revenueToday / countBillToday
                     }
                 })
             }
@@ -3534,7 +3595,8 @@ const getListKeyWordAdmin = (data) => {
 
                 let listKeyWord = await db.keywordSearchs.findAll({
                     limit: 20,
-                    where: where
+                    where: where,
+                    order: [['amount', 'DESC']]
                 })
 
 
@@ -3852,6 +3914,79 @@ const getMoneyOfMonth = (data) => {
                     data: {
                         arr1,
                         arr2
+                    }
+                })
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const getDetailBillByIdAdmin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idBill) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data
+                })
+            }
+            else {
+
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
+
+
+                let listProduct = await db.detailBill.findAll({
+                    where: {
+                        idBill: data.idBill
+                    },
+                    include: [
+                        {
+                            model: db.classifyProduct
+                        },
+                        {
+                            model: db.product,
+                            include: [
+                                {
+                                    model: db.imageProduct, as: 'imageProduct-product'
+                                }
+                            ]
+                        }
+                    ],
+                    raw: false,
+                    nest: true
+                })
+
+                let adderssBill = await db.addressUser.findOne({
+                    include: [
+                        {
+                            model: db.bill,
+                            where: {
+                                id: data.idBill
+                            }
+                        }
+                    ],
+                    raw: false,
+                    nest: true
+                })
+
+
+
+                resolve({
+                    errCode: 0,
+                    data: {
+                        listProduct,
+                        adderssBill
                     }
                 })
             }
@@ -4410,6 +4545,7 @@ module.exports = {
     deleteEventPromotionAdmin,
     getCountBillOfMonth,
     getMoneyOfMonth,
+    getDetailBillByIdAdmin,
 
 
 

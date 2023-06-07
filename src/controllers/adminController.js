@@ -847,6 +847,22 @@ const getMoneyOfMonth = async (req, res) => {
     }
 }
 
+const getDetailBillByIdAdmin = async (req, res) => {
+    try {
+        //call service data
+        let data = await adminService.getDetailBillByIdAdmin(req.query)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        console.log('Get all code error: ', e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
 
 
 //winform
@@ -1022,6 +1038,7 @@ module.exports = {
     deleteEventPromotionAdmin,
     getCountBillOfMonth,
     getMoneyOfMonth,
+    getDetailBillByIdAdmin,
 
 
 
