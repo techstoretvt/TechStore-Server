@@ -1165,7 +1165,7 @@ const getListBlog = (data) => {
                     offset: (+data.page - 1) * data.maxCount,
                     limit: data.maxCount,
                     attributes: {
-                        exclude: ['createdAt', 'updatedAt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
+                        exclude: ['createdAt', 'updatedAt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown', 'contentHTML']
                     },
                     include: [
                         {
