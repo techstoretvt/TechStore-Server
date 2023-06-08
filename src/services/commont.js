@@ -135,6 +135,7 @@ const routes = {
     getCountBillOfMonth: '/api/v1/get-count-bill-of-month',
     getMoneyOfMonth: '/api/v1/get-money-of-month',
     getDetailBillByIdAdmin: '/api/v1/get-detail-bill-by-id-admin',
+    getInventoryByTypeProduct: '/api/v1/get-inventory-by-type-product',
 
     //winform
     getListBillNoConfirm: '/api/v1/get-list-bill-no-confirm',

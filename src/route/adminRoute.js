@@ -52,6 +52,7 @@ const initAdminRoute = (app) => {
     router.get(routes.getCountBillOfMonth, adminController.getCountBillOfMonth)
     router.get(routes.getMoneyOfMonth, adminController.getMoneyOfMonth)
     router.get(routes.getDetailBillByIdAdmin, adminController.getDetailBillByIdAdmin)
+    router.get(routes.getInventoryByTypeProduct, adminController.getInventoryByTypeProduct)
 
     //winform
     router.get(routes.getListBillNoConfirm, adminController.getListBillNoConfirm)

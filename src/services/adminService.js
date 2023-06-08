@@ -2201,11 +2201,14 @@ const getListBillByTypeAdmin = (data) => {
                 })
             }
             else {
-
+                console.log('idbill', data.idBill || '-');
                 if (+data.type === 1 || +data.type === 3 || +data.type === 4) {
                     if (+data.type === 3) {
                         let listBill = await db.bill.findAll({
                             where: {
+                                id: {
+                                    [Op.substring]: data.idBill || '-'
+                                },
                                 idStatusBill: {
                                     [Op.between]: [2.99, 3]
                                 }
@@ -2221,6 +2224,9 @@ const getListBillByTypeAdmin = (data) => {
                     }
                     let listBill = await db.bill.findAll({
                         where: {
+                            id: {
+                                [Op.substring]: data.idBill || '-'
+                            },
                             idStatusBill: +data.type
                         },
                         order: [['updatedAt', 'DESC']]
@@ -2233,6 +2239,9 @@ const getListBillByTypeAdmin = (data) => {
                 else if (+data.type === 2) {
                     let listBill = await db.bill.findAll({
                         where: {
+                            id: {
+                                [Op.substring]: data.idBill || '-'
+                            },
                             idStatusBill: {
                                 [Op.between]: [2, 2.98]
                             }
@@ -3335,8 +3344,8 @@ const getStatisticalAdmin = (data) => {
                         countUser,
                         countVideo,
                         countBlog,
-                        countBillToday,
-                        revenueToday: revenueToday / countBillToday
+                        countBillToday: countBillToday,
+                        revenueToday: countBillToday === 0 ? 0 : revenueToday / countBillToday
                     }
                 })
             }
@@ -3458,23 +3467,23 @@ const StatisticalEvaluateAdmin = (data) => {
                 // console.log('count4', count4);
                 // console.log('count5', count5);
 
-                if (count === 0) {
-                    resolve({
-                        errCode: 3,
-                        errMessage: 'Not found product'
-                    })
-                    return
-                }
+                // if (count === 0) {
+                //     resolve({
+                //         errCode: 0,
+                //         errMessage: 'Not found product'
+                //     })
+                //     return
+                // }
 
 
                 resolve({
                     errCode: 0,
                     data: {
-                        count1: count1 / count * 100,
-                        count2: count2 / count * 100,
-                        count3: count3 / count * 100,
-                        count4: count4 / count * 100,
-                        count5: count5 / count * 100,
+                        count1: count !== 0 ? count1 / count * 100 : 0,
+                        count2: count !== 0 ? count2 / count * 100 : 0,
+                        count3: count !== 0 ? count3 / count * 100 : 0,
+                        count4: count !== 0 ? count4 / count * 100 : 0,
+                        count5: count !== 0 ? count5 / count * 100 : 0,
                     }
                 })
             }
@@ -3987,6 +3996,61 @@ const getDetailBillByIdAdmin = (data) => {
                     data: {
                         listProduct,
                         adderssBill
+                    }
+                })
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const getInventoryByTypeProduct = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.accessToken || !data.idTypeProduct) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data
+                })
+            }
+            else {
+
+                let isLogin = await checkLoginAdmin(data.accessToken)
+                if (!isLogin) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chưa có đăng nhập!',
+                    })
+                    return
+                }
+
+                let listproduct = await db.product.findAll({
+                    where: {
+                        idTypeProduct: {
+                            [Op.substring]: data.idTypeProduct
+                        }
+                    }
+                })
+
+                let arrId = listproduct.map(item => item.id)
+
+                let sum = await db.classifyProduct.sum('amount', {
+                    where: {
+                        idProduct: {
+                            [Op.in]: arrId
+                        }
+                    }
+                })
+
+
+
+                resolve({
+                    errCode: 0,
+                    data: {
+                        sum: sum || 0
                     }
                 })
             }
@@ -4546,7 +4610,7 @@ module.exports = {
     getCountBillOfMonth,
     getMoneyOfMonth,
     getDetailBillByIdAdmin,
-
+    getInventoryByTypeProduct,
 
 
     //winform
