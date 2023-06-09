@@ -2971,7 +2971,8 @@ const buyProductByCardSucess = (data) => {
                      let arrayDetailBill = cart.map(item => {
                         db.classifyProduct.increment({ amount: -item.amount }, {
                            where: {
-                              idProduct: item.idProduct
+                              idProduct: item.idProduct,
+                              id: item.idClassifyProduct
                            }
                         })
 
