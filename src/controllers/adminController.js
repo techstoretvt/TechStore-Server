@@ -1,6 +1,6 @@
 import adminService from '../services/adminService'
 
-const addTypeProduct = async (req, res) => {
+const addTypeProduct = async (req, res, next) => {
     try {
         //call service data
         // let data = await adminService.addTypeProduct(req.body)
@@ -12,15 +12,11 @@ const addTypeProduct = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getAllTypeProduct = async (req, res) => {
+const getAllTypeProduct = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getAllTypeProduct()
@@ -28,15 +24,11 @@ const getAllTypeProduct = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const deleteTypeProduct = async (req, res) => {
+const deleteTypeProduct = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.deleteTypeProduct(req.body)
@@ -44,15 +36,11 @@ const deleteTypeProduct = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const updateTypeProductById = async (req, res) => {
+const updateTypeProductById = async (req, res, next) => {
     try {
         //call service data
         // let data = await adminService.updateTypeProductById(req.query)
@@ -64,15 +52,11 @@ const updateTypeProductById = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const addTrademark = async (req, res) => {
+const addTrademark = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.addTrademark(req.body)
@@ -80,15 +64,11 @@ const addTrademark = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getAllTrademark = async (req, res) => {
+const getAllTrademark = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getAllTrademark(req.query)
@@ -96,15 +76,11 @@ const getAllTrademark = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const deleteTrademarkById = async (req, res) => {
+const deleteTrademarkById = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.deleteTrademarkById(req.body)
@@ -112,14 +88,10 @@ const deleteTrademarkById = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
-const updateTrademarkById = async (req, res) => {
+const updateTrademarkById = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.updateTrademarkById(req.body)
@@ -127,15 +99,11 @@ const updateTrademarkById = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const createNewProduct = async (req, res) => {
+const createNewProduct = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.createNewProduct(req.body)
@@ -143,15 +111,11 @@ const createNewProduct = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const cloudinaryUpload = async (req, res) => {
+const cloudinaryUpload = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.cloudinaryUpload({
@@ -162,15 +126,11 @@ const cloudinaryUpload = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getListProductByPage = async (req, res) => {
+const getListProductByPage = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getListProductByPage(req.query)
@@ -178,15 +138,11 @@ const getListProductByPage = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const blockProduct = async (req, res) => {
+const blockProduct = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.blockProduct(req.body)
@@ -194,15 +150,11 @@ const blockProduct = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const editProductById = async (req, res) => {
+const editProductById = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.editProductById(req.body)
@@ -210,15 +162,11 @@ const editProductById = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const editImageProduct = async (req, res) => {
+const editImageProduct = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.editImageProduct({
@@ -229,15 +177,11 @@ const editImageProduct = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const swapImageProduct = async (req, res) => {
+const swapImageProduct = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.swapImageProduct(req.body)
@@ -245,15 +189,11 @@ const swapImageProduct = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getProductBySwapAndPage = async (req, res) => {
+const getProductBySwapAndPage = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getProductBySwapAndPage(req.query)
@@ -261,15 +201,11 @@ const getProductBySwapAndPage = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const addPromotionByIdProduct = async (req, res) => {
+const addPromotionByIdProduct = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.addPromotionByIdProduct(req.body)
@@ -277,15 +213,11 @@ const addPromotionByIdProduct = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const testApi = async (req, res) => {
+const testApi = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.testApi()
@@ -293,15 +225,11 @@ const testApi = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const deleteErrorProduct = async (req, res) => {
+const deleteErrorProduct = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.deleteErrorProduct(req.body)
@@ -309,15 +237,11 @@ const deleteErrorProduct = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const confirmBillById = async (req, res) => {
+const confirmBillById = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.confirmBillById(req.body)
@@ -325,15 +249,11 @@ const confirmBillById = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const cancelBillById = async (req, res) => {
+const cancelBillById = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.cancelBillById(req.body)
@@ -341,15 +261,11 @@ const cancelBillById = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const createNewKeyWord = async (req, res) => {
+const createNewKeyWord = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.createNewKeyWord(req.body)
@@ -357,15 +273,11 @@ const createNewKeyWord = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const createNotify_noimage = async (req, res) => {
+const createNotify_noimage = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.createNotify_noimage(req.body)
@@ -373,15 +285,11 @@ const createNotify_noimage = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const createNotify_image = async (req, res) => {
+const createNotify_image = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.createNotify_image({
@@ -392,15 +300,11 @@ const createNotify_image = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const CheckLoginAdminAccessToken = async (req, res) => {
+const CheckLoginAdminAccessToken = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.CheckLoginAdminAccessToken(req.body)
@@ -408,15 +312,11 @@ const CheckLoginAdminAccessToken = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const createNewUserAdmin = async (req, res) => {
+const createNewUserAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.createNewUserAdmin(req.body)
@@ -424,15 +324,11 @@ const createNewUserAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getListUserAdmin = async (req, res) => {
+const getListUserAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getListUserAdmin(req.query)
@@ -440,15 +336,11 @@ const getListUserAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const lockUserAdmin = async (req, res) => {
+const lockUserAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.lockUserAdmin(req.body)
@@ -456,14 +348,10 @@ const lockUserAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
-const createEventPromotion = async (req, res) => {
+const createEventPromotion = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.createEventPromotion(req.body)
@@ -471,15 +359,11 @@ const createEventPromotion = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const upLoadImageCoverPromotion = async (req, res) => {
+const upLoadImageCoverPromotion = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.upLoadImageCoverPromotion({ file: req.file, query: req.query })
@@ -487,15 +371,11 @@ const upLoadImageCoverPromotion = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getListEventPromotion = async (req, res) => {
+const getListEventPromotion = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getListEventPromotion()
@@ -503,15 +383,11 @@ const getListEventPromotion = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const editEventPromotion = async (req, res) => {
+const editEventPromotion = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.editEventPromotion(req.body)
@@ -519,15 +395,11 @@ const editEventPromotion = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getListBillByTypeAdmin = async (req, res) => {
+const getListBillByTypeAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getListBillByTypeAdmin(req.query)
@@ -535,15 +407,11 @@ const getListBillByTypeAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const updateStatusBillAdminWeb = async (req, res) => {
+const updateStatusBillAdminWeb = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.updateStatusBillAdminWeb(req.body)
@@ -551,15 +419,11 @@ const updateStatusBillAdminWeb = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getListVideoAdminByPage = async (req, res) => {
+const getListVideoAdminByPage = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getListVideoAdminByPage(req.query)
@@ -567,15 +431,11 @@ const getListVideoAdminByPage = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const deleteShortVideoAdmin = async (req, res) => {
+const deleteShortVideoAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.deleteShortVideoAdmin(req.body)
@@ -583,15 +443,11 @@ const deleteShortVideoAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getListReportAdmin = async (req, res) => {
+const getListReportAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getListReportAdmin(req.query)
@@ -599,15 +455,11 @@ const getListReportAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const skipReportVideoAdmin = async (req, res) => {
+const skipReportVideoAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.skipReportVideoAdmin(req.body)
@@ -615,15 +467,11 @@ const skipReportVideoAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getListBlogAdminByPage = async (req, res) => {
+const getListBlogAdminByPage = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getListBlogAdminByPage(req.query)
@@ -631,15 +479,11 @@ const getListBlogAdminByPage = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const deleteBlogAdminById = async (req, res) => {
+const deleteBlogAdminById = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.deleteBlogAdminById(req.body)
@@ -647,15 +491,11 @@ const deleteBlogAdminById = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getListReportBlogAdmin = async (req, res) => {
+const getListReportBlogAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getListReportBlogAdmin(req.query)
@@ -663,15 +503,11 @@ const getListReportBlogAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const skipReportBlogAdmin = async (req, res) => {
+const skipReportBlogAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.skipReportBlogAdmin(req.body)
@@ -679,15 +515,11 @@ const skipReportBlogAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getStatisticalAdmin = async (req, res) => {
+const getStatisticalAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getStatisticalAdmin(req.query)
@@ -695,15 +527,11 @@ const getStatisticalAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const StatisticalEvaluateAdmin = async (req, res) => {
+const StatisticalEvaluateAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.StatisticalEvaluateAdmin(req.query)
@@ -711,15 +539,11 @@ const StatisticalEvaluateAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getStatisticalSale = async (req, res) => {
+const getStatisticalSale = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getStatisticalSale(req.query)
@@ -727,15 +551,11 @@ const getStatisticalSale = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getListKeyWordAdmin = async (req, res) => {
+const getListKeyWordAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getListKeyWordAdmin(req.query)
@@ -743,15 +563,11 @@ const getListKeyWordAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const editKeyWordSearchAdmin = async (req, res) => {
+const editKeyWordSearchAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.editKeyWordSearchAdmin(req.body)
@@ -759,15 +575,11 @@ const editKeyWordSearchAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const deleteKeyWordAdmin = async (req, res) => {
+const deleteKeyWordAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.deleteKeyWordAdmin(req.body)
@@ -775,15 +587,11 @@ const deleteKeyWordAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getListUserTypeAdmin = async (req, res) => {
+const getListUserTypeAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getListUserTypeAdmin(req.query)
@@ -791,15 +599,11 @@ const getListUserTypeAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const deleteEventPromotionAdmin = async (req, res) => {
+const deleteEventPromotionAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.deleteEventPromotionAdmin(req.body)
@@ -807,15 +611,11 @@ const deleteEventPromotionAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getCountBillOfMonth = async (req, res) => {
+const getCountBillOfMonth = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getCountBillOfMonth(req.query)
@@ -823,15 +623,11 @@ const getCountBillOfMonth = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getMoneyOfMonth = async (req, res) => {
+const getMoneyOfMonth = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getMoneyOfMonth(req.query)
@@ -839,15 +635,11 @@ const getMoneyOfMonth = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getDetailBillByIdAdmin = async (req, res) => {
+const getDetailBillByIdAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getDetailBillByIdAdmin(req.query)
@@ -855,15 +647,11 @@ const getDetailBillByIdAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getInventoryByTypeProduct = async (req, res) => {
+const getInventoryByTypeProduct = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getInventoryByTypeProduct(req.query)
@@ -871,11 +659,7 @@ const getInventoryByTypeProduct = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
@@ -883,7 +667,7 @@ const getInventoryByTypeProduct = async (req, res) => {
 
 
 //winform
-const getListBillNoConfirm = async (req, res) => {
+const getListBillNoConfirm = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getListBillNoConfirm()
@@ -891,12 +675,11 @@ const getListBillNoConfirm = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json([])
+        next(createError.InternalServerError())
     }
 }
 
-const getDetailBillAdmin = async (req, res) => {
+const getDetailBillAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getDetailBillAdmin(req.query)
@@ -904,12 +687,11 @@ const getDetailBillAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json([])
+        next(createError.InternalServerError())
     }
 }
 
-const getListImageProductAdmin = async (req, res) => {
+const getListImageProductAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getListImageProductAdmin(req.query)
@@ -917,12 +699,11 @@ const getListImageProductAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json([])
+        next(createError.InternalServerError())
     }
 }
 
-const getInfoProductAdmin = async (req, res) => {
+const getInfoProductAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getInfoProductAdmin(req.query)
@@ -930,12 +711,11 @@ const getInfoProductAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json([])
+        next(createError.InternalServerError())
     }
 }
 
-const getClassifyProductAdmin = async (req, res) => {
+const getClassifyProductAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getClassifyProductAdmin(req.query)
@@ -943,12 +723,11 @@ const getClassifyProductAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json([])
+        next(createError.InternalServerError())
     }
 }
 
-const getAddressBillAdmin = async (req, res) => {
+const getAddressBillAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getAddressBillAdmin(req.query)
@@ -956,12 +735,11 @@ const getAddressBillAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json([])
+        next(createError.InternalServerError())
     }
 }
 
-const confirmBillAdmin = async (req, res) => {
+const confirmBillAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.confirmBillAdmin(req.query)
@@ -969,12 +747,11 @@ const confirmBillAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json(false)
+        next(createError.InternalServerError())
     }
 }
 
-const updateStatusBillAdmin = async (req, res) => {
+const updateStatusBillAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.updateStatusBillAdmin(req.query)
@@ -982,12 +759,11 @@ const updateStatusBillAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json(false)
+        next(createError.InternalServerError())
     }
 }
 
-const getListStatusBillAdmin = async (req, res) => {
+const getListStatusBillAdmin = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.getListStatusBillAdmin(req.query)
@@ -995,8 +771,7 @@ const getListStatusBillAdmin = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json([])
+        next(createError.InternalServerError())
     }
 }
 

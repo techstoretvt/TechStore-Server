@@ -1,21 +1,17 @@
 import appService from '../services/appService'
 
-const checkStartServer = async (req, res) => {
+const checkStartServer = async (req, res, next) => {
     try {
         return res.status(200).json({
             errCode: 0
         })
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getProductPromotionHome = async (req, res) => {
+const getProductPromotionHome = async (req, res, next) => {
     try {
         //call service data
         let data = await appService.getProductPromotionHome()
@@ -23,15 +19,11 @@ const getProductPromotionHome = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getTopSellProduct = async (req, res) => {
+const getTopSellProduct = async (req, res, next) => {
     try {
         //call service data
         let data = await appService.getTopSellProduct()
@@ -39,15 +31,11 @@ const getTopSellProduct = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getNewCollectionProduct = async (req, res) => {
+const getNewCollectionProduct = async (req, res, next) => {
     try {
         //call service data
         let data = await appService.getNewCollectionProduct(req.query)
@@ -55,15 +43,11 @@ const getNewCollectionProduct = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getProductFlycam = async (req, res) => {
+const getProductFlycam = async (req, res, next) => {
     try {
         //call service data
         let data = await appService.getProductFlycam(req.query)
@@ -71,15 +55,11 @@ const getProductFlycam = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getListProductMayLike = async (req, res) => {
+const getListProductMayLike = async (req, res, next) => {
     try {
         //call service data
         let data = await appService.getListProductMayLike(req.query)
@@ -87,15 +67,11 @@ const getListProductMayLike = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getEvaluateByIdProduct = async (req, res) => {
+const getEvaluateByIdProduct = async (req, res, next) => {
     try {
         //call service data
         let data = await appService.getEvaluateByIdProduct(req.query)
@@ -103,15 +79,11 @@ const getEvaluateByIdProduct = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const searchProduct = async (req, res) => {
+const searchProduct = async (req, res, next) => {
     try {
         //call service data
         let data = await appService.searchProduct(req.query)
@@ -119,15 +91,11 @@ const searchProduct = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 //test
-const GetListProduct = async (req, res) => {
+const GetListProduct = async (req, res, next) => {
     try {
         //call service data
         let data = await appService.GetListProduct(req.query)
@@ -135,15 +103,11 @@ const GetListProduct = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const createProduct = async (req, res) => {
+const createProduct = async (req, res, next) => {
     try {
         //call service data
         let data = await appService.createProduct()
@@ -151,16 +115,12 @@ const createProduct = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 //end test
 
-const getListBlog = async (req, res) => {
+const getListBlog = async (req, res, next) => {
     try {
         //call service data
         let data = await appService.getListBlog(req.query)
@@ -168,15 +128,11 @@ const getListBlog = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getListHashTag = async (req, res) => {
+const getListHashTag = async (req, res, next) => {
     try {
         //call service data
         let data = await appService.getListHashTag()
@@ -184,202 +140,146 @@ const getListHashTag = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
 
-const getBlogShareProduct = async (req, res) => {
+const getBlogShareProduct = async (req, res, next) => {
     try {
         let data = await appService.getBlogShareProduct(req.query)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getBlogShareDefault = async (req, res) => {
+const getBlogShareDefault = async (req, res, next) => {
     try {
         let data = await appService.getBlogShareDefault(req.query)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getBlogById = async (req, res) => {
+const getBlogById = async (req, res, next) => {
     try {
         let data = await appService.getBlogById(req.query)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getCommentBlogByIdBlog = async (req, res) => {
+const getCommentBlogByIdBlog = async (req, res, next) => {
     try {
         let data = await appService.getCommentBlogByIdBlog(req.query)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const increaseViewBlogById = async (req, res) => {
+const increaseViewBlogById = async (req, res, next) => {
     try {
         let data = await appService.increaseViewBlogById(req.body)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getListShortVideo = async (req, res) => {
+const getListShortVideo = async (req, res, next) => {
     try {
         let data = await appService.getListShortVideo(req.query)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getListCommentShortVideoById = async (req, res) => {
+const getListCommentShortVideoById = async (req, res, next) => {
     try {
         let data = await appService.getListCommentShortVideoById(req.query)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getListProductHashTagByIdVideo = async (req, res) => {
+const getListProductHashTagByIdVideo = async (req, res, next) => {
     try {
         let data = await appService.getListProductHashTagByIdVideo(req.query)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getProductById = async (req, res) => {
+const getProductById = async (req, res, next) => {
     try {
         let data = await appService.getProductById(req.query)
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getListBlogHome = async (req, res) => {
+const getListBlogHome = async (req, res, next) => {
     try {
         let data = await appService.getListBlogHome()
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getEventPromotionById = async (req, res) => {
+const getEventPromotionById = async (req, res, next) => {
     try {
         let data = await appService.getEventPromotionById(req.query)
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getListEventPromotionHome = async (req, res) => {
+const getListEventPromotionHome = async (req, res, next) => {
     try {
         let data = await appService.getListEventPromotionHome()
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 
-const getContentEventPromotionById = async (req, res) => {
+const getContentEventPromotionById = async (req, res, next) => {
     try {
         let data = await appService.getContentEventPromotionById(req.query)
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(createError.InternalServerError())
     }
 }
 

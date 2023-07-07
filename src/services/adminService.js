@@ -18,53 +18,53 @@ const { google } = require('googleapis');
 // });
 
 //timer notifycations
-setInterval(async () => {
-    let date = new Date().getTime()
-    console.log('kiem tra thong bao: ', date);
-    let notifys = await db.timerNotifys.findAll({
-        where: {
-            status: "false",
-            timer: {
-                [Op.lt]: date
-            }
-        }
-    })
-    if (notifys.length > 0) {
-        let users = await db.User.findAll({
-            where: {
-                statusUser: {
-                    [Op.ne]: 'false'
-                }
-            }
-        })
-        users = users.filter(user => {
-            return user.statusUser === 'true' || (user.statusUser * 1) < date
-        })
-        notifys.forEach(async item => {
-            let arr = users.map(user => {
-                return {
-                    id: uuidv4(),
-                    title: item.title,
-                    content: item.content,
-                    redirect_to: item.redirect_to,
-                    idUser: user.id,
-                    typeNotify: item.typeNotify,
-                    timeCreate: date,
-                    urlImage: item.urlImage ?? ''
-                }
-            })
-            await db.notifycations.bulkCreate(arr, { individualHooks: true })
-            handleEmit('new-notify-all', { title: item.title, content: item.content })
-        })
-        await db.timerNotifys.update({ status: 'true' }, {
-            where: {
-                status: 'false'
-            }
-        })
-    }
+// setInterval(async () => {
+//     let date = new Date().getTime()
+//     console.log('kiem tra thong bao: ', date);
+//     let notifys = await db.timerNotifys.findAll({
+//         where: {
+//             status: "false",
+//             timer: {
+//                 [Op.lt]: date
+//             }
+//         }
+//     })
+//     if (notifys.length > 0) {
+//         let users = await db.User.findAll({
+//             where: {
+//                 statusUser: {
+//                     [Op.ne]: 'false'
+//                 }
+//             }
+//         })
+//         users = users.filter(user => {
+//             return user.statusUser === 'true' || (user.statusUser * 1) < date
+//         })
+//         notifys.forEach(async item => {
+//             let arr = users.map(user => {
+//                 return {
+//                     id: uuidv4(),
+//                     title: item.title,
+//                     content: item.content,
+//                     redirect_to: item.redirect_to,
+//                     idUser: user.id,
+//                     typeNotify: item.typeNotify,
+//                     timeCreate: date,
+//                     urlImage: item.urlImage ?? ''
+//                 }
+//             })
+//             await db.notifycations.bulkCreate(arr, { individualHooks: true })
+//             handleEmit('new-notify-all', { title: item.title, content: item.content })
+//         })
+//         await db.timerNotifys.update({ status: 'true' }, {
+//             where: {
+//                 status: 'false'
+//             }
+//         })
+//     }
 
 
-}, 60000)
+// }, 60000)
 
 
 const CLIENT_ID = process.env.CLIENT_ID;

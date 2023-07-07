@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 import { v4 as uuidv4 } from 'uuid';
 import Verifier from 'email-verifier'
 const { Op } = require("sequelize");
+import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../helpers/JWT_service'
 
 const paypal = require('paypal-rest-sdk');
 import commont from '../services/commont'
@@ -12,6 +13,7 @@ const { google } = require('googleapis');
 const fs = require('fs');
 const path = require('path');
 import { handleEmit } from '../index'
+const createError = require("http-errors");
 var cloudinary = require('cloudinary');
 // await cloudinary.v2.uploader.destroy('vznd4hds4kudr0zbvfop')
 
@@ -108,7 +110,7 @@ let verifier_email = new Verifier(process.env.API_KEY_VERIFY_EMAIL, {
    validateSMTP: true,
 });
 
-const CreateUser = (data) => {
+const CreateUser = (data, header) => {
    return new Promise(async (resolve, reject) => {
       try {
 
@@ -183,6 +185,8 @@ const CreateUser = (data) => {
 
                      //create token
                      let tokens = CreateToken(user);
+                     const accessToken = await signAccessToken(user.id);
+                     const refreshToken = await signRefreshToken(user.id, header['user-agent'])
 
                      //send email
                      let title = 'Xác nhận tạo tài khoản TechStoreTvT';
@@ -194,8 +198,8 @@ const CreateUser = (data) => {
                         errCode: 0,
                         errMessage: 'Tài khoản chưa được xác nhận',
                         data: {
-                           accessToken: tokens.accessToken,
-                           refreshToken: tokens.refreshToken,
+                           accessToken: accessToken,
+                           refreshToken: refreshToken,
                            keyVerify
                         }
                      })
@@ -205,6 +209,8 @@ const CreateUser = (data) => {
                else {
                   //create token
                   let tokens = CreateToken(user);
+                  const accessToken = await signAccessToken(user.id);
+                  const refreshToken = await signRefreshToken(user.id, header['user-agent'])
 
                   //send email
                   let title = 'Xác nhận tạo tài khoản TechStoreTvT';
@@ -216,8 +222,8 @@ const CreateUser = (data) => {
                      errCode: 0,
                      errMessage: 'Đã tạo tài khoản',
                      data: {
-                        accessToken: tokens.accessToken,
-                        refreshToken: tokens.refreshToken,
+                        accessToken: accessToken,
+                        refreshToken: refreshToken,
                         keyVerify
                      }
                   })
@@ -328,7 +334,7 @@ const verifyCreateUser = (data) => {
    })
 }
 
-const userLogin = (data) => {
+const userLogin = (data, header) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.email || !data.pass) {
@@ -361,10 +367,15 @@ const userLogin = (data) => {
                }
                else if (user.statusUser === 'true') {
                   let tokens = CreateToken(user);
+                  const accessToken = await signAccessToken(user.id);
+                  const refreshToken = await signRefreshToken(user.id, header['user-agent'])
                   resolve({
                      errCode: 0,
                      errMessage: 'Đăng nhập thành công!',
-                     data: tokens
+                     data: {
+                        accessToken,
+                        refreshToken
+                     }
                   })
                }
                else {
@@ -372,10 +383,15 @@ const userLogin = (data) => {
                   let timeCurrent = new Date().getTime();
                   if (timeBlock < timeCurrent) {
                      let tokens = CreateToken(user);
+                     const accessToken = await signAccessToken(user.id);
+                     const refreshToken = await signRefreshToken(user.id, header['user-agent'])
                      resolve({
                         errCode: 0,
                         errMessage: 'Đăng nhập thành công!',
-                        data: tokens
+                        data: {
+                           accessToken,
+                           refreshToken
+                        }
                      })
                   }
                   else {
@@ -400,7 +416,7 @@ const userLogin = (data) => {
    })
 }
 
-const refreshToken = (data) => {
+const refreshToken = (data, header) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.refreshToken) {
@@ -411,14 +427,22 @@ const refreshToken = (data) => {
          }
          else {
             //decode refreshToken
-            let decoded = commont.decodeToken(data.refreshToken, process.env.REFESH_TOKEN_SECRET);
+            let decoded = await verifyRefreshToken(data.refreshToken, header['user-agent'])
+
 
             if (decoded !== null) {
+
+
                let tokens = CreateToken(decoded);
+               const accessToken = await signAccessToken(decoded.id)
+               const refreshToken = await signRefreshToken(decoded.id, header['user-agent'])
                resolve({
                   errCode: 0,
                   errMessage: 'Tạo token thành công!',
-                  data: tokens
+                  data: {
+                     accessToken,
+                     refreshToken
+                  }
                });
             }
             else {
@@ -435,56 +459,36 @@ const refreshToken = (data) => {
    })
 }
 
-const getUserLogin = (data) => {
+const getUserLogin = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
-         if (!data.accessToken) {
-            resolve({
-               errCode: 1,
-               errMessage: 'Missing required parameter!'
-            })
-         }
-         else {
-            //decode accessToken
-            let decoded = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET);
+         // throw createError.InternalServerError();
+         let user = await db.User.findOne({
+            where: {
+               id: payload.id
+            },
+            attributes: {
+               exclude: ['pass', 'keyVerify', 'createdAt', 'updatedAt']
+            }
+         })
 
-            if (decoded !== null) {
-
-               let user = await db.User.findOne({
-                  where: {
-                     id: decoded.id
-                  },
-                  attributes: {
-                     exclude: ['pass', 'keyVerify', 'createdAt', 'updatedAt']
-                  }
-               })
-
-               if (user) {
-                  let date = new Date().getTime();
-                  if (user.statusUser !== 'wait' && user.statusUser !== 'false') {
-                     if (user.statusUser === 'true') {
-                        resolve({
-                           errCode: 0,
-                           errMessage: 'Get user succeed!',
-                           data: user
-                        });
-                     }
-                     else {
-                        if (+user.statusUser < date) {
-                           resolve({
-                              errCode: 0,
-                              errMessage: 'Get user succeed!',
-                              data: user
-                           });
-                        }
-                        else {
-                           resolve({
-                              errCode: 3,
-                              errMessage: 'Not found user!',
-                           });
-                        }
-                     }
-
+         if (user) {
+            let date = new Date().getTime();
+            if (user.statusUser !== 'wait' && user.statusUser !== 'false') {
+               if (user.statusUser === 'true') {
+                  resolve({
+                     errCode: 0,
+                     errMessage: 'Get user succeed!',
+                     data: user
+                  });
+               }
+               else {
+                  if (+user.statusUser < date) {
+                     resolve({
+                        errCode: 0,
+                        errMessage: 'Get user succeed!',
+                        data: user
+                     });
                   }
                   else {
                      resolve({
@@ -492,22 +496,24 @@ const getUserLogin = (data) => {
                         errMessage: 'Not found user!',
                      });
                   }
+               }
 
-               }
-               else {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Not found user!',
-                  });
-               }
             }
             else {
                resolve({
-                  errCode: 2,
-                  errMessage: 'AccessToken đã hết hạn hoặc không thể giải mã!'
+                  errCode: 3,
+                  errMessage: 'User was blocked!',
                });
             }
+
          }
+         else {
+            resolve({
+               errCode: 3,
+               errMessage: 'Not found user!',
+            });
+         }
+
       }
       catch (e) {
          reject(e);
@@ -599,7 +605,7 @@ const getUserLoginRefreshToken = (data) => {
 }
 
 
-const loginGoogle = (data) => {
+const loginGoogle = (data, header) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.firstName || !data.lastName || !data.idGoogle || !data.avatar) {
@@ -638,12 +644,14 @@ const loginGoogle = (data) => {
                }
                //create token
                let tokens = CreateToken(user);
+               const accessToken = await signAccessToken(user.id);
+               const refreshToken = await signRefreshToken(user.id, header['user-agent'])
                resolve({
                   errCode: 0,
                   errMessage: 'Đăng nhập thành công!',
                   data: {
-                     accessToken: tokens.accessToken,
-                     refreshToken: tokens.refreshToken
+                     accessToken: accessToken,
+                     refreshToken: refreshToken
                   }
                })
             }
@@ -674,12 +682,14 @@ const loginGoogle = (data) => {
                   }
                   //create token
                   let tokens = CreateToken(user);
+                  const accessToken = await signAccessToken(user.id);
+                  const refreshToken = await signRefreshToken(user.id, header['user-agent'])
                   resolve({
                      errCode: 0,
                      errMessage: 'Đăng nhập thành công!',
                      data: {
-                        accessToken: tokens.accessToken,
-                        refreshToken: tokens.refreshToken
+                        accessToken: accessToken,
+                        refreshToken: refreshToken
                      }
                   })
                }
@@ -693,7 +703,7 @@ const loginGoogle = (data) => {
    })
 }
 
-const loginFacebook = (data) => {
+const loginFacebook = (data, header) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.firstName || !data.lastName || !data.idFacebook || !data.avatarFacebook) {
@@ -730,12 +740,14 @@ const loginFacebook = (data) => {
 
                //create token
                let tokens = CreateToken(user);
+               const accessToken = await signAccessToken(user.id);
+               const refreshToken = await signRefreshToken(user.id, header['user-agent'])
                resolve({
                   errCode: 0,
                   errMessage: 'Đăng nhập thành công!',
                   data: {
-                     accessToken: tokens.accessToken,
-                     refreshToken: tokens.refreshToken
+                     accessToken: accessToken,
+                     refreshToken: refreshToken
                   }
                })
             }
@@ -771,12 +783,14 @@ const loginFacebook = (data) => {
                   }
                   //create token
                   let tokens = CreateToken(user);
+                  const accessToken = await signAccessToken(user.id);
+                  const refreshToken = await signRefreshToken(user.id, header['user-agent'])
                   resolve({
                      errCode: 0,
                      errMessage: 'Đăng nhập thành công!',
                      data: {
-                        accessToken: tokens.accessToken,
-                        refreshToken: tokens.refreshToken
+                        accessToken: accessToken,
+                        refreshToken: refreshToken
                      }
                   })
                }
@@ -790,7 +804,7 @@ const loginFacebook = (data) => {
    })
 }
 
-const loginGithub = (data) => {
+const loginGithub = (data, header) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.firstName || !data.idGithub || !data.avatarGithub) {
@@ -827,12 +841,14 @@ const loginGithub = (data) => {
 
                //create token
                let tokens = CreateToken(user);
+               const accessToken = await signAccessToken(user.id);
+               const refreshToken = await signRefreshToken(user.id, header['user-agent'])
                resolve({
                   errCode: 0,
                   errMessage: 'Đăng nhập thành công!',
                   data: {
-                     accessToken: tokens.accessToken,
-                     refreshToken: tokens.refreshToken
+                     accessToken: accessToken,
+                     refreshToken: refreshToken
                   }
                })
             }
@@ -868,12 +884,14 @@ const loginGithub = (data) => {
                      await user.save()
                   }
                   let tokens = CreateToken(user);
+                  const accessToken = await signAccessToken(user.id);
+                  const refreshToken = await signRefreshToken(user.id, header['user-agent'])
                   resolve({
                      errCode: 0,
                      errMessage: 'Đăng nhập thành công!',
                      data: {
-                        accessToken: tokens.accessToken,
-                        refreshToken: tokens.refreshToken
+                        accessToken: accessToken,
+                        refreshToken: refreshToken
                      }
                   })
                }
@@ -887,9 +905,10 @@ const loginGithub = (data) => {
    })
 }
 
-const addProductToCart = (data) => {
+const addProductToCart = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
+         console.log('api add cart');
          if (!data.idProduct || !data.amount || !data.idClassifyProduct || !data.accessToken) {
             resolve({
                errCode: 1,
@@ -897,79 +916,69 @@ const addProductToCart = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id;
+
+            //check exits product and classify
+            let product = await db.product.findOne({
+               where: { id: data.idProduct }
+            })
+            let classifyProduct = await db.classifyProduct.findOne({
+               where: {
+                  id: data.idClassifyProduct,
+                  idProduct: data.idProduct
+               }
+            })
+            if (!product || !classifyProduct) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 3,
+                  errMessage: 'Lỗi không tìm thấy sản phẩm hoặc phân loại, vui lòng thử lại sau!'
                })
             }
             else {
-               let idUser = decode.id;
-
-               //check exits product and classify
-               let product = await db.product.findOne({
-                  where: { id: data.idProduct }
-               })
-               let classifyProduct = await db.classifyProduct.findOne({
-                  where: {
-                     id: data.idClassifyProduct,
-                     idProduct: data.idProduct
-                  }
-               })
-               if (!product || !classifyProduct) {
+               if (product.isSell === 'false') {
                   resolve({
-                     errCode: 3,
-                     errMessage: 'Lỗi không tìm thấy sản phẩm hoặc phân loại, vui lòng thử lại sau!'
+                     errCode: 4,
+                     errMessage: 'Sản phẩm đã ngừng bán!'
+                  })
+                  return;
+               }
+               if (+data.amount > classifyProduct.amount) {
+                  resolve({
+                     errCode: 5,
+                     errMessage: 'Hàng trong kho không còn đủ!'
+                  })
+                  return;
+               }
+
+
+               let [cart, create] = await db.cart.findOrCreate({
+                  where: {
+                     idUser: idUser,
+                     idProduct: data.idProduct,
+                     idClassifyProduct: data.idClassifyProduct,
+                  },
+                  defaults: {
+                     amount: +data.amount,
+                     isChoose: 'false',
+                     id: uuidv4()
+                  },
+                  raw: false
+
+               })
+               if (!create) {
+                  cart.amount = (cart.amount + (data.amount * 1)) <= classifyProduct.amount ?
+                     (cart.amount + (data.amount * 1)) : classifyProduct.amount
+                  await cart.save();
+                  resolve({
+                     errCode: 0,
+                     errMessage: 'Đã thêm vào giỏ hàng'
                   })
                }
                else {
-                  if (product.isSell === 'false') {
-                     resolve({
-                        errCode: 4,
-                        errMessage: 'Sản phẩm đã ngừng bán!'
-                     })
-                     return;
-                  }
-                  if (+data.amount > classifyProduct.amount) {
-                     resolve({
-                        errCode: 5,
-                        errMessage: 'Hàng trong kho không còn đủ!'
-                     })
-                     return;
-                  }
-
-
-                  let [cart, create] = await db.cart.findOrCreate({
-                     where: {
-                        idUser: idUser,
-                        idProduct: data.idProduct,
-                        idClassifyProduct: data.idClassifyProduct,
-                     },
-                     defaults: {
-                        amount: +data.amount,
-                        isChoose: 'false',
-                        id: uuidv4()
-                     },
-                     raw: false
-
+                  resolve({
+                     errCode: 0,
+                     errMessage: 'Đã thêm vào giỏ hàng'
                   })
-                  if (!create) {
-                     cart.amount = (cart.amount + (data.amount * 1)) <= classifyProduct.amount ?
-                        (cart.amount + (data.amount * 1)) : classifyProduct.amount
-                     await cart.save();
-                     resolve({
-                        errCode: 0,
-                        errMessage: 'Đã thêm vào giỏ hàng'
-                     })
-                  }
-                  else {
-                     resolve({
-                        errCode: 0,
-                        errMessage: 'Đã thêm vào giỏ hàng'
-                     })
-                  }
                }
             }
          }
@@ -980,7 +989,7 @@ const addProductToCart = (data) => {
    })
 }
 
-const addCartOrMoveCart = (data) => {
+const addCartOrMoveCart = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.idProduct || !data.amount || !data.idClassifyProduct || !data.accessToken) {
@@ -990,72 +999,62 @@ const addCartOrMoveCart = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id;
+
+            //check exits product and classify
+            let product = await db.product.findOne({
+               where: { id: data.idProduct }
+            })
+            let classifyProduct = await db.classifyProduct.findOne({
+               where: {
+                  id: data.idClassifyProduct,
+                  idProduct: data.idProduct
+               }
+            })
+            if (!product || !classifyProduct) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 3,
+                  errMessage: 'Lỗi không tìm thấy sản phẩm hoặc phân loại, vui lòng thử lại sau!'
                })
             }
             else {
-               let idUser = decode.id;
-
-               //check exits product and classify
-               let product = await db.product.findOne({
-                  where: { id: data.idProduct }
-               })
-               let classifyProduct = await db.classifyProduct.findOne({
-                  where: {
-                     id: data.idClassifyProduct,
-                     idProduct: data.idProduct
-                  }
-               })
-               if (!product || !classifyProduct) {
+               if (product.isSell === 'false') {
                   resolve({
-                     errCode: 3,
-                     errMessage: 'Lỗi không tìm thấy sản phẩm hoặc phân loại, vui lòng thử lại sau!'
+                     errCode: 4,
+                     errMessage: 'Sản phẩm đã ngừng bán!'
+                  })
+                  return;
+               }
+
+               let [cart, create] = await db.cart.findOrCreate({
+                  where: {
+
+                     idUser: idUser,
+                     idProduct: data.idProduct,
+                     idClassifyProduct: data.idClassifyProduct
+                  },
+                  defaults: {
+                     id: uuidv4(),
+                     amount: +data.amount
+                  },
+                  raw: false
+
+               })
+               if (!create) {
+                  let sl = classifyProduct.amount
+                  cart.amount = (cart.amount + +data.amount) <= sl ? (cart.amount + +data.amount) : sl
+                  await cart.save()
+
+                  resolve({
+                     errCode: 0,
+                     errMessage: 'Sản phẩm đã có trong giỏ hàng'
                   })
                }
                else {
-                  if (product.isSell === 'false') {
-                     resolve({
-                        errCode: 4,
-                        errMessage: 'Sản phẩm đã ngừng bán!'
-                     })
-                     return;
-                  }
-
-                  let [cart, create] = await db.cart.findOrCreate({
-                     where: {
-
-                        idUser: idUser,
-                        idProduct: data.idProduct,
-                        idClassifyProduct: data.idClassifyProduct
-                     },
-                     defaults: {
-                        id: uuidv4(),
-                        amount: +data.amount
-                     },
-                     raw: false
-
+                  resolve({
+                     errCode: 0,
+                     errMessage: 'Đã thêm vào giỏ hàng'
                   })
-                  if (!create) {
-                     let sl = classifyProduct.amount
-                     cart.amount = (cart.amount + +data.amount) <= sl ? (cart.amount + +data.amount) : sl
-                     await cart.save()
-
-                     resolve({
-                        errCode: 0,
-                        errMessage: 'Sản phẩm đã có trong giỏ hàng'
-                     })
-                  }
-                  else {
-                     resolve({
-                        errCode: 0,
-                        errMessage: 'Đã thêm vào giỏ hàng'
-                     })
-                  }
                }
             }
          }
@@ -1066,7 +1065,7 @@ const addCartOrMoveCart = (data) => {
    })
 }
 
-const addNewAddressUser = (data) => {
+const addNewAddressUser = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (data.country === '-1' || data.district === "-1" || !data.nameAddress || !data.nameUser || !data.sdtUser || !data.addressText || !data.accessToken) {
@@ -1076,86 +1075,48 @@ const addNewAddressUser = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-            }
-            else {
-               let idUser = decode.id;
-               //kiem tra sdt
+            let idUser = payload.id;
+            //kiem tra sdt
 
 
-               let [addressUser, create] = await db.addressUser.findOrCreate({
+            let [addressUser, create] = await db.addressUser.findOrCreate({
+               where: {
+                  idUser,
+                  nameAddress: data.nameAddress.toLowerCase(),
+               },
+               defaults: {
+                  isDefault: 'false',
+                  fullname: data.nameUser,
+                  sdt: data.sdtUser,
+                  country: data.country,
+                  district: data.district,
+                  addressText: data.addressText,
+                  id: uuidv4(),
+                  status: 'true'
+               },
+               raw: false
+            })
+
+            if (!create) {
+               let checkStatusAdress = await db.addressUser.findOne({
                   where: {
                      idUser,
                      nameAddress: data.nameAddress.toLowerCase(),
-                  },
-                  defaults: {
-                     isDefault: 'false',
-                     fullname: data.nameUser,
-                     sdt: data.sdtUser,
-                     country: data.country,
-                     district: data.district,
-                     addressText: data.addressText,
-                     id: uuidv4(),
-                     status: 'true'
-                  },
-                  raw: false
+                  }
                })
 
-               if (!create) {
-                  let checkStatusAdress = await db.addressUser.findOne({
-                     where: {
-                        idUser,
-                        nameAddress: data.nameAddress.toLowerCase(),
-                     }
+               if (checkStatusAdress.status === 'true') {
+                  resolve({
+                     errCode: 3,
+                     errMessage: 'Tên địa chỉ này đã tồn tại!',
                   })
-
-                  if (checkStatusAdress.status === 'true') {
-                     resolve({
-                        errCode: 3,
-                        errMessage: 'Tên địa chỉ này đã tồn tại!',
-                     })
-                  }
-                  else {
-                     let updateAddress = await db.addressUser.findOne({
-                        where: {
-                           idUser,
-                           isDefault: 'true',
-                           status: 'true'
-                        },
-                        raw: false
-                     })
-                     if (updateAddress) {
-                        updateAddress.isDefault = 'false'
-                        await updateAddress.save()
-                     }
-
-                     addressUser.status = 'true'
-                     addressUser.isDefault = 'true'
-                     addressUser.fullname = data.nameUser
-                     addressUser.sdt = data.sdtUser
-                     addressUser.country = data.country
-                     addressUser.district = data.district
-                     addressUser.addressText = data.addressText
-
-                     await addressUser.save();
-
-                     resolve({
-                        errCode: 0,
-                        errMessage: 'Thêm địa chỉ thành công.',
-                     })
-                  }
                }
                else {
                   let updateAddress = await db.addressUser.findOne({
                      where: {
                         idUser,
                         isDefault: 'true',
+                        status: 'true'
                      },
                      raw: false
                   })
@@ -1164,15 +1125,42 @@ const addNewAddressUser = (data) => {
                      await updateAddress.save()
                   }
 
+                  addressUser.status = 'true'
                   addressUser.isDefault = 'true'
+                  addressUser.fullname = data.nameUser
+                  addressUser.sdt = data.sdtUser
+                  addressUser.country = data.country
+                  addressUser.district = data.district
+                  addressUser.addressText = data.addressText
+
                   await addressUser.save();
 
                   resolve({
                      errCode: 0,
                      errMessage: 'Thêm địa chỉ thành công.',
                   })
-
                }
+            }
+            else {
+               let updateAddress = await db.addressUser.findOne({
+                  where: {
+                     idUser,
+                     isDefault: 'true',
+                  },
+                  raw: false
+               })
+               if (updateAddress) {
+                  updateAddress.isDefault = 'false'
+                  await updateAddress.save()
+               }
+
+               addressUser.isDefault = 'true'
+               await addressUser.save();
+
+               resolve({
+                  errCode: 0,
+                  errMessage: 'Thêm địa chỉ thành công.',
+               })
 
             }
          }
@@ -1183,7 +1171,7 @@ const addNewAddressUser = (data) => {
    })
 }
 
-const getAddressUser = (data) => {
+const getAddressUser = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken) {
@@ -1193,183 +1181,151 @@ const getAddressUser = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id;
+
+            let addressUser = await db.addressUser.findAll({
+               where: {
+                  idUser,
+                  status: 'true'
+               },
+               order: [['id', 'ASC']]
+            })
+
+            if (addressUser) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 0,
+                  data: addressUser
                })
             }
             else {
-               let idUser = decode.id;
+               resolve({
+                  errCode: 3,
+                  errMessage: 'Not found!',
+               })
+            }
+         }
 
-               let addressUser = await db.addressUser.findAll({
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
+
+const setDefaultAddress = (data, payload) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         if (!data.accessToken || !data.id) {
+            resolve({
+               errCode: 1,
+               errMessage: 'Missing required parameter!',
+               data
+            })
+         }
+         else {
+            let idUser = payload.id;
+
+            let address = await db.addressUser.findOne({
+               where: {
+                  idUser,
+                  isDefault: 'true'
+               },
+               raw: false
+            })
+            if (address) {
+               address.isDefault = 'false'
+               await address.save()
+            }
+
+            let addressUser = await db.addressUser.findOne({
+               where: {
+                  id: data.id
+               },
+               raw: false
+            })
+
+            if (addressUser) {
+               addressUser.isDefault = 'true'
+               addressUser.save()
+
+               resolve({
+                  errCode: 0,
+                  errMessage: 'success',
+               })
+            }
+            else {
+               resolve({
+                  errCode: 3,
+                  errMessage: 'Không tìm thấy địa chỉ này!',
+                  decode
+               })
+            }
+         }
+
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
+
+const deleteAddressUser = (data, payload) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         if (!data.accessToken || !data.id) {
+            resolve({
+               errCode: 1,
+               errMessage: 'Missing required parameter!',
+               data
+            })
+         }
+         else {
+            let idUser = payload.id;
+
+            let address = await db.addressUser.findOne({
+               where: {
+                  idUser,
+                  id: data.id
+               },
+               raw: false
+            })
+            if (address) {
+               address.isDefault = 'false'
+               address.status = 'false'
+               await address.save()
+
+               let addressDefault = await db.addressUser.findOne({
                   where: {
                      idUser,
+                     isDefault: 'true',
                      status: 'true'
-                  },
-                  order: [['id', 'ASC']]
+                  }
                })
-
-               if (addressUser) {
-                  resolve({
-                     errCode: 0,
-                     data: addressUser
-                  })
-               }
-               else {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Not found!',
-                  })
-               }
-
-            }
-         }
-
-      }
-      catch (e) {
-         reject(e);
-      }
-   })
-}
-
-const setDefaultAddress = (data) => {
-   return new Promise(async (resolve, reject) => {
-      try {
-         if (!data.accessToken || !data.id) {
-            resolve({
-               errCode: 1,
-               errMessage: 'Missing required parameter!',
-               data
-            })
-         }
-         else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-            }
-            else {
-               let idUser = decode.id;
-
-               let address = await db.addressUser.findOne({
-                  where: {
-                     idUser,
-                     isDefault: 'true'
-                  },
-                  raw: false
-               })
-               if (address) {
-                  address.isDefault = 'false'
-                  await address.save()
-               }
-
-               let addressUser = await db.addressUser.findOne({
-                  where: {
-                     id: data.id
-                  },
-                  raw: false
-               })
-
-               if (addressUser) {
-                  addressUser.isDefault = 'true'
-                  addressUser.save()
-
-                  resolve({
-                     errCode: 0,
-                     errMessage: 'success',
-                  })
-               }
-               else {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Không tìm thấy địa chỉ này!',
-                     decode
-                  })
-               }
-
-            }
-         }
-
-      }
-      catch (e) {
-         reject(e);
-      }
-   })
-}
-
-const deleteAddressUser = (data) => {
-   return new Promise(async (resolve, reject) => {
-      try {
-         if (!data.accessToken || !data.id) {
-            resolve({
-               errCode: 1,
-               errMessage: 'Missing required parameter!',
-               data
-            })
-         }
-         else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-            }
-            else {
-               let idUser = decode.id;
-
-               let address = await db.addressUser.findOne({
-                  where: {
-                     idUser,
-                     id: data.id
-                  },
-                  raw: false
-               })
-               if (address) {
-                  address.isDefault = 'false'
-                  address.status = 'false'
-                  await address.save()
-
-                  let addressDefault = await db.addressUser.findOne({
+               if (!addressDefault) {
+                  let addressDefault2 = await db.addressUser.findOne({
                      where: {
                         idUser,
-                        isDefault: 'true',
+                        isDefault: 'false',
                         status: 'true'
-                     }
+                     },
+                     raw: false
                   })
-                  if (!addressDefault) {
-                     let addressDefault2 = await db.addressUser.findOne({
-                        where: {
-                           idUser,
-                           isDefault: 'false',
-                           status: 'true'
-                        },
-                        raw: false
-                     })
 
-                     if (addressDefault2) {
-                        addressDefault2.isDefault = 'true'
-                        await addressDefault2.save();
-                     }
+                  if (addressDefault2) {
+                     addressDefault2.isDefault = 'true'
+                     await addressDefault2.save();
                   }
+               }
 
-                  resolve({
-                     errCode: 0,
-                  })
-               }
-               else {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Không tìm thấy địa chỉ này!',
-                  })
-               }
+               resolve({
+                  errCode: 0,
+               })
+            }
+            else {
+               resolve({
+                  errCode: 3,
+                  errMessage: 'Không tìm thấy địa chỉ này!',
+               })
             }
          }
 
@@ -1380,7 +1336,7 @@ const deleteAddressUser = (data) => {
    })
 }
 
-const editAddressUser = (data) => {
+const editAddressUser = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.id || data.country === '-1' || data.district === '-1' || !data.nameUser ||
@@ -1392,66 +1348,55 @@ const editAddressUser = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-            }
-            else {
-               let idUser = decode.id;
+            let idUser = payload.id;
 
-               let check = await db.addressUser.findOne({
+            let check = await db.addressUser.findOne({
+               where: {
+                  idUser,
+                  nameAddress: data.nameAddress,
+                  id: {
+                     [Op.ne]: data.id
+                  },
+                  status: 'true'
+               }
+            })
+
+            if (!check) {
+
+               let address = await db.addressUser.findOne({
                   where: {
                      idUser,
-                     nameAddress: data.nameAddress,
-                     id: {
-                        [Op.ne]: data.id
-                     },
-                     status: 'true'
-                  }
+                     id: data.id
+                  },
+                  raw: false
                })
 
-               if (!check) {
+               if (address) {
+                  address.nameAddress = data.nameAddress
+                  address.fullname = data.nameUser
+                  address.sdt = data.sdtUser
+                  address.country = data.country
+                  address.district = data.district
+                  address.addressText = data.addressText
 
-                  let address = await db.addressUser.findOne({
-                     where: {
-                        idUser,
-                        id: data.id
-                     },
-                     raw: false
+                  await address.save()
+
+                  resolve({
+                     errCode: 0,
                   })
-
-                  if (address) {
-                     address.nameAddress = data.nameAddress
-                     address.fullname = data.nameUser
-                     address.sdt = data.sdtUser
-                     address.country = data.country
-                     address.district = data.district
-                     address.addressText = data.addressText
-
-                     await address.save()
-
-                     resolve({
-                        errCode: 0,
-                     })
-                  }
-                  else {
-                     resolve({
-                        errCode: 3,
-                        errMessage: 'Không tìm thấy địa chỉ này',
-                     })
-                  }
                }
                else {
                   resolve({
-                     errCode: 4,
-                     errMessage: 'Tên địa chỉ này đã tồn tại!',
+                     errCode: 3,
+                     errMessage: 'Không tìm thấy địa chỉ này',
                   })
                }
-
+            }
+            else {
+               resolve({
+                  errCode: 4,
+                  errMessage: 'Tên địa chỉ này đã tồn tại!',
+               })
             }
          }
 
@@ -1462,7 +1407,7 @@ const editAddressUser = (data) => {
    })
 }
 
-const getListCartUser = (data) => {
+const getListCartUser = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken) {
@@ -1473,62 +1418,51 @@ const getListCartUser = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-            }
-            else {
-               let idUser = decode.id;
+            let idUser = payload.id;
 
-               let carts = await db.cart.findAll({
-                  where: {
-                     idUser
+            let carts = await db.cart.findAll({
+               where: {
+                  idUser
+               },
+               include: [
+                  {
+                     model: db.classifyProduct,
                   },
-                  include: [
-                     {
-                        model: db.classifyProduct,
-                     },
-                     {
-                        model: db.product,
-                        include: [
-                           {
-                              model: db.imageProduct, as: 'imageProduct-product',
-                              attributes: {
-                                 exclude: ['createdAt', 'updatedAt', 'id']
-                              }
+                  {
+                     model: db.product,
+                     include: [
+                        {
+                           model: db.imageProduct, as: 'imageProduct-product',
+                           attributes: {
+                              exclude: ['createdAt', 'updatedAt', 'id']
+                           }
+                        },
+                        {
+                           model: db.promotionProduct,
+                           attributes: {
+                              exclude: ['createdAt', 'updatedAt', 'id']
                            },
-                           {
-                              model: db.promotionProduct,
-                              attributes: {
-                                 exclude: ['createdAt', 'updatedAt', 'id']
-                              },
-                           },
-                           {
-                              model: db.classifyProduct, as: 'classifyProduct-product',
-                              attributes: {
-                                 exclude: ['createdAt', 'updatedAt']
-                              }
-                           },
-                        ],
-                        raw: false,
-                        nest: true
-                     },
-                  ],
-                  order: [['stt', 'DESC']],
-                  raw: false,
-                  nest: true
-               })
+                        },
+                        {
+                           model: db.classifyProduct, as: 'classifyProduct-product',
+                           attributes: {
+                              exclude: ['createdAt', 'updatedAt']
+                           }
+                        },
+                     ],
+                     raw: false,
+                     nest: true
+                  },
+               ],
+               order: [['stt', 'DESC']],
+               raw: false,
+               nest: true
+            })
 
-               resolve({
-                  errCode: 0,
-                  data: carts
-               })
-
-            }
+            resolve({
+               errCode: 0,
+               data: carts
+            })
          }
 
       }
@@ -1538,7 +1472,7 @@ const getListCartUser = (data) => {
    })
 }
 
-const editAmountCartUser = (data) => {
+const editAmountCartUser = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.id || !data.typeEdit) {
@@ -1549,111 +1483,101 @@ const editAmountCartUser = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-            }
-            else {
-               let idUser = decode.id;
+            let idUser = payload.id;
 
-               let cart = await db.cart.findOne({
+            let cart = await db.cart.findOne({
+               where: {
+                  idUser,
+                  id: data.id
+               },
+               raw: false
+            })
+
+            if (cart) {
+               let cartTemp = await db.cart.findOne({
                   where: {
                      idUser,
                      id: data.id
-                  },
-                  raw: false
+                  }
                })
 
-               if (cart) {
-                  let cartTemp = await db.cart.findOne({
+               if (data.typeEdit === 'prev') {
+                  if (cartTemp.amount !== 1) {
+                     cart.amount = cart.amount - 1
+                     await cart.save();
+                  }
+                  resolve({
+                     errCode: 0,
+                  })
+               }
+               else if (data.typeEdit === 'next') {
+                  let classifyProduct = await db.classifyProduct.findOne({
                      where: {
-                        idUser,
-                        id: data.id
+                        id: cartTemp.idClassifyProduct
                      }
                   })
 
-                  if (data.typeEdit === 'prev') {
-                     if (cartTemp.amount !== 1) {
-                        cart.amount = cart.amount - 1
-                        await cart.save();
-                     }
+                  let sl = classifyProduct.amount
+
+                  if (cartTemp.amount < sl) {
+                     cart.amount = cart.amount + 1
+                     await cart.save();
                      resolve({
                         errCode: 0,
                      })
                   }
-                  else if (data.typeEdit === 'next') {
-                     let classifyProduct = await db.classifyProduct.findOne({
-                        where: {
-                           id: cartTemp.idClassifyProduct
-                        }
+                  else {
+                     resolve({
+                        errCode: 4,
+                        errMessage: 'Xin lỗi, số lượng sản phẩm trong kho không còn đủ!'
                      })
+                     return;
+                  }
 
-                     let sl = classifyProduct.amount
+               }
+               else if (data.typeEdit === 'value') {
+                  let classifyProduct = await db.classifyProduct.findOne({
+                     where: {
+                        id: cartTemp.idClassifyProduct
+                     }
+                  })
 
-                     if (cartTemp.amount < sl) {
-                        cart.amount = cart.amount + 1
-                        await cart.save();
+                  let sl = classifyProduct.amount
+                  if (Number.isInteger(+data.value)) {
+                     if (+data.value < 1) {
+                        cart.amount = 1
+                        await cart.save()
                         resolve({
                            errCode: 0,
                         })
                      }
-                     else {
+                     else if (+data.value > sl) {
+                        cart.amount = sl
+                        await cart.save()
                         resolve({
                            errCode: 4,
-                           errMessage: 'Xin lỗi, số lượng sản phẩm trong kho không còn đủ!'
+                           errMessage: `Rất tiếc số lượng trong kho chỉ còn ${sl} sản phẩm!`
                         })
-                        return;
-                     }
-
-                  }
-                  else if (data.typeEdit === 'value') {
-                     let classifyProduct = await db.classifyProduct.findOne({
-                        where: {
-                           id: cartTemp.idClassifyProduct
-                        }
-                     })
-
-                     let sl = classifyProduct.amount
-                     if (Number.isInteger(+data.value)) {
-                        if (+data.value < 1) {
-                           cart.amount = 1
-                           await cart.save()
-                           resolve({
-                              errCode: 0,
-                           })
-                        }
-                        else if (+data.value > sl) {
-                           cart.amount = sl
-                           await cart.save()
-                           resolve({
-                              errCode: 4,
-                              errMessage: `Rất tiếc số lượng trong kho chỉ còn ${sl} sản phẩm!`
-                           })
-                        }
-                        else {
-                           cart.amount = +data.value
-                           await cart.save()
-                           resolve({
-                              errCode: 0,
-                           })
-                        }
                      }
                      else {
-                        cart.amount = 1
+                        cart.amount = +data.value
                         await cart.save()
+                        resolve({
+                           errCode: 0,
+                        })
                      }
                   }
+                  else {
+                     cart.amount = 1
+                     await cart.save()
+                  }
                }
-               else {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Không tìm thấy sản phẩm trong giỏ hàng!',
-                  })
-               }
+            }
+            else {
+               resolve({
+                  errCode: 3,
+                  errMessage: 'Không tìm thấy sản phẩm trong giỏ hàng!',
+               })
             }
          }
 
@@ -1664,7 +1588,7 @@ const editAmountCartUser = (data) => {
    })
 }
 
-const chooseProductInCart = (data) => {
+const chooseProductInCart = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.id) {
@@ -1675,39 +1599,28 @@ const chooseProductInCart = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id;
+
+            let cart = await db.cart.findOne({
+               where: {
+                  idUser,
+                  id: data.id
+               },
+               raw: false
+            })
+            if (!cart) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 3,
+                  errMessage: 'Không tìm thấy sản phẩm này trong giỏ hàng!',
                })
             }
             else {
-               let idUser = decode.id;
+               cart.isChoose = cart.isChoose === 'true' ? 'false' : 'true'
+               await cart.save()
 
-               let cart = await db.cart.findOne({
-                  where: {
-                     idUser,
-                     id: data.id
-                  },
-                  raw: false
+               resolve({
+                  errCode: 0,
                })
-               if (!cart) {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Không tìm thấy sản phẩm này trong giỏ hàng!',
-                  })
-               }
-               else {
-                  cart.isChoose = cart.isChoose === 'true' ? 'false' : 'true'
-                  await cart.save()
-
-                  resolve({
-                     errCode: 0,
-                  })
-               }
-
             }
          }
 
@@ -1718,7 +1631,7 @@ const chooseProductInCart = (data) => {
    })
 }
 
-const deleteProductInCart = (data) => {
+const deleteProductInCart = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.id) {
@@ -1729,38 +1642,27 @@ const deleteProductInCart = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id;
+
+            let cart = await db.cart.findOne({
+               where: {
+                  idUser,
+                  id: data.id
+               },
+               raw: false
+            })
+            if (!cart) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 3,
+                  errMessage: 'Không tìm thấy sản phẩm này trong giỏ hàng!',
                })
             }
             else {
-               let idUser = decode.id;
+               await cart.destroy()
 
-               let cart = await db.cart.findOne({
-                  where: {
-                     idUser,
-                     id: data.id
-                  },
-                  raw: false
+               resolve({
+                  errCode: 0,
                })
-               if (!cart) {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Không tìm thấy sản phẩm này trong giỏ hàng!',
-                  })
-               }
-               else {
-                  await cart.destroy()
-
-                  resolve({
-                     errCode: 0,
-                  })
-               }
-
             }
          }
 
@@ -1771,7 +1673,7 @@ const deleteProductInCart = (data) => {
    })
 }
 
-const updateClassifyProductInCart = (data) => {
+const updateClassifyProductInCart = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idCart || !data.idClassify) {
@@ -1782,48 +1684,38 @@ const updateClassifyProductInCart = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id;
+
+            let classifyProduct = await db.classifyProduct.findOne({
+               where: {
+                  id: data.idClassify
+               }
+            })
+
+            if (classifyProduct) {
+               let cart = await db.cart.findOne({
+                  where: {
+                     idUser,
+                     id: data.idCart
+                  },
+                  raw: false
+               })
+
+               if (cart) {
+                  cart.idClassifyProduct = classifyProduct.id
+                  cart.amount = 1
+                  await cart.save()
+               }
+
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 0,
                })
             }
             else {
-               let idUser = decode.id;
-
-               let classifyProduct = await db.classifyProduct.findOne({
-                  where: {
-                     id: data.idClassify
-                  }
+               resolve({
+                  errCode: 3,
+                  errMessage: 'Không tìm thấy loại sản phẩm!',
                })
-
-               if (classifyProduct) {
-                  let cart = await db.cart.findOne({
-                     where: {
-                        idUser,
-                        id: data.idCart
-                     },
-                     raw: false
-                  })
-
-                  if (cart) {
-                     cart.idClassifyProduct = classifyProduct.id
-                     cart.amount = 1
-                     await cart.save()
-                  }
-
-                  resolve({
-                     errCode: 0,
-                  })
-               }
-               else {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Không tìm thấy loại sản phẩm!',
-                  })
-               }
             }
          }
 
@@ -1834,7 +1726,7 @@ const updateClassifyProductInCart = (data) => {
    })
 }
 
-const createNewBill = (data) => {
+const createNewBill = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.Totals) {
@@ -1845,190 +1737,179 @@ const createNewBill = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-            }
-            else {
-               let idUser = decode.id;
+            let idUser = payload.id;
 
-               let addressUser = await db.addressUser.findOne({
-                  where: {
-                     idUser,
-                     isDefault: 'true'
-                  }
-               })
-
-               let cart = await db.cart.findAll({
-                  where: {
-                     idUser,
-                     isChoose: 'true'
-                  },
-                  raw: true
-               })
-
-               if (!addressUser) {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Vui lòng chọn địa chỉ nhận hàng!',
-                  })
-                  return;
-               }
-
-               if (cart.length === 0) {
-                  resolve({
-                     errCode: 4,
-                     errMessage: 'Vui lòng chọn sản phẩm bạn muốn mua!',
-                  })
-                  return;
-               }
-
-               //check sell product
-               let listIdProduct = cart.map(item => (
-                  item.idProduct
-               ))
-
-               let productUnSell = await db.product.findOne({
-                  where: {
-                     id: {
-                        [Op.in]: listIdProduct
-                     },
-                     isSell: 'false'
-                  }
-               })
-
-               if (productUnSell) {
-                  resolve({
-                     errCode: 5,
-                     errMessage: `Sản phẩm "${productUnSell.nameProduct}" đã không còn bán nửa.`
-                  })
-                  return
-               }
-
-               //check amount
-               let listIdClassify = cart.map(item => (
-                  item.idClassifyProduct
-               ))
-               let listClassify = await db.classifyProduct.findAll({
-                  where: {
-                     id: {
-                        [Op.in]: listIdClassify
-                     }
-                  }
-               })
-               let checkAmountClassify = true
-               for (let i = 0; i < cart.length; i++)
-                  for (let j = 0; j < listClassify.length; j++) {
-                     if (listClassify[j].id === cart[i].idClassifyProduct) {
-                        if (listClassify[j].amount < cart[i].amount) {
-                           checkAmountClassify = false
-                           break;
-                        }
-                     }
-                  }
-
-               if (!checkAmountClassify) {
-                  resolve({
-                     errCode: 6,
-                     errMessage: `Vui lòng chọn số lượng phù hợp hoặc thay đổi phân loại sản phẩm!`
-                  })
-                  return
-               }
-
-               //handle buy product
-               let date = new Date().getTime()
-
-               let bill = await db.bill.create({
-                  id: uuidv4(),
+            let addressUser = await db.addressUser.findOne({
+               where: {
                   idUser,
-                  timeBill: date.toString(),
-                  idStatusBill: 1,
-                  idAddressUser: addressUser.id,
-                  note: data.note || '',
-                  totals: +data.Totals,
-                  payment: 'hand'
-               })
+                  isDefault: 'true'
+               }
+            })
 
-               await db.statusBills.create({
+            let cart = await db.cart.findAll({
+               where: {
+                  idUser,
+                  isChoose: 'true'
+               },
+               raw: true
+            })
+
+            if (!addressUser) {
+               resolve({
+                  errCode: 3,
+                  errMessage: 'Vui lòng chọn địa chỉ nhận hàng!',
+               })
+               return;
+            }
+
+            if (cart.length === 0) {
+               resolve({
+                  errCode: 4,
+                  errMessage: 'Vui lòng chọn sản phẩm bạn muốn mua!',
+               })
+               return;
+            }
+
+            //check sell product
+            let listIdProduct = cart.map(item => (
+               item.idProduct
+            ))
+
+            let productUnSell = await db.product.findOne({
+               where: {
+                  id: {
+                     [Op.in]: listIdProduct
+                  },
+                  isSell: 'false'
+               }
+            })
+
+            if (productUnSell) {
+               resolve({
+                  errCode: 5,
+                  errMessage: `Sản phẩm "${productUnSell.nameProduct}" đã không còn bán nửa.`
+               })
+               return
+            }
+
+            //check amount
+            let listIdClassify = cart.map(item => (
+               item.idClassifyProduct
+            ))
+            let listClassify = await db.classifyProduct.findAll({
+               where: {
+                  id: {
+                     [Op.in]: listIdClassify
+                  }
+               }
+            })
+            let checkAmountClassify = true
+            for (let i = 0; i < cart.length; i++)
+               for (let j = 0; j < listClassify.length; j++) {
+                  if (listClassify[j].id === cart[i].idClassifyProduct) {
+                     if (listClassify[j].amount < cart[i].amount) {
+                        checkAmountClassify = false
+                        break;
+                     }
+                  }
+               }
+
+            if (!checkAmountClassify) {
+               resolve({
+                  errCode: 6,
+                  errMessage: `Vui lòng chọn số lượng phù hợp hoặc thay đổi phân loại sản phẩm!`
+               })
+               return
+            }
+
+            //handle buy product
+            let date = new Date().getTime()
+
+            let bill = await db.bill.create({
+               id: uuidv4(),
+               idUser,
+               timeBill: date.toString(),
+               idStatusBill: 1,
+               idAddressUser: addressUser.id,
+               note: data.note || '',
+               totals: +data.Totals,
+               payment: 'hand'
+            })
+
+            await db.statusBills.create({
+               id: uuidv4(),
+               idBill: bill.id,
+               nameStatus: 'Đặt hàng',
+               idStatusBill: bill.idStatusBill,
+               timeStatus: date
+            })
+
+            let arrayDetailBill = cart.map(item => {
+               return {
                   id: uuidv4(),
                   idBill: bill.id,
-                  nameStatus: 'Đặt hàng',
-                  idStatusBill: bill.idStatusBill,
-                  timeStatus: date
-               })
+                  idProduct: item.idProduct,
+                  amount: item.amount,
+                  isReviews: 'false',
+                  idClassifyProduct: item.idClassifyProduct,
+               }
+            })
 
-               let arrayDetailBill = cart.map(item => {
-                  return {
-                     id: uuidv4(),
-                     idBill: bill.id,
-                     idProduct: item.idProduct,
-                     amount: item.amount,
-                     isReviews: 'false',
-                     idClassifyProduct: item.idClassifyProduct,
-                  }
-               })
+            await db.detailBill.bulkCreate(arrayDetailBill, { individualHooks: true })
 
-               await db.detailBill.bulkCreate(arrayDetailBill, { individualHooks: true })
-
-               cart.forEach(async item => {
-                  let classify = await db.classifyProduct.findOne({
-                     where: {
-                        id: item.idClassifyProduct
-                     },
-                     raw: false
-                  })
-                  if (classify) {
-                     classify.amount = classify.amount - item.amount
-                     await classify.save()
-                  }
-               })
-
-               await db.cart.destroy({
+            cart.forEach(async item => {
+               let classify = await db.classifyProduct.findOne({
                   where: {
-                     idUser,
-                     isChoose: 'true'
-                  }
-               })
-
-               let date2 = new Date()
-               let month = date2.getMonth() + 1
-               let year = date2.getFullYear()
-
-               let moneyBill = await db.moneyBills.findOne({
-                  where: {
-                     month,
-                     year,
-                     type: 'ban'
+                     id: item.idClassifyProduct
                   },
                   raw: false
                })
-
-               if (moneyBill) {
-                  moneyBill.money = moneyBill.money + +data.Totals
-                  await moneyBill.save()
+               if (classify) {
+                  classify.amount = classify.amount - item.amount
+                  await classify.save()
                }
-               else {
-                  await db.moneyBills.create({
-                     id: uuidv4(),
-                     year,
-                     month,
-                     type: 'ban',
-                     money: +data.Totals
-                  })
+            })
+
+            await db.cart.destroy({
+               where: {
+                  idUser,
+                  isChoose: 'true'
                }
+            })
 
-               handleEmit('refreshAmountProduct', {})
+            let date2 = new Date()
+            let month = date2.getMonth() + 1
+            let year = date2.getFullYear()
 
-               resolve({
-                  errCode: 0,
-                  idBill: bill.id
-               })
+            let moneyBill = await db.moneyBills.findOne({
+               where: {
+                  month,
+                  year,
+                  type: 'ban'
+               },
+               raw: false
+            })
 
+            if (moneyBill) {
+               moneyBill.money = moneyBill.money + +data.Totals
+               await moneyBill.save()
             }
+            else {
+               await db.moneyBills.create({
+                  id: uuidv4(),
+                  year,
+                  month,
+                  type: 'ban',
+                  money: +data.Totals
+               })
+            }
+
+            handleEmit('refreshAmountProduct', {})
+
+            resolve({
+               errCode: 0,
+               idBill: bill.id
+            })
          }
 
       }
@@ -2038,7 +1919,7 @@ const createNewBill = (data) => {
    })
 }
 
-const chooseAllProductInCart = (data) => {
+const chooseAllProductInCart = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken) {
@@ -2049,33 +1930,22 @@ const chooseAllProductInCart = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-            }
-            else {
-               let idUser = decode.id;
+            let idUser = payload.id;
 
-               await db.cart.update(
-                  {
-                     isChoose: data.type ? 'true' : 'false'
-                  },
-                  {
-                     where: {
-                        idUser
-                     }
+            await db.cart.update(
+               {
+                  isChoose: data.type ? 'true' : 'false'
+               },
+               {
+                  where: {
+                     idUser
                   }
-               )
+               }
+            )
 
-               resolve({
-                  errCode: 0,
-               })
-
-            }
+            resolve({
+               errCode: 0,
+            })
          }
 
       }
@@ -2085,7 +1955,7 @@ const chooseAllProductInCart = (data) => {
    })
 }
 
-const getListBillByType = (data) => {
+const getListBillByType = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.type) {
@@ -2096,188 +1966,175 @@ const getListBillByType = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-            }
-            else {
+            let idUser = payload.id;
+            let countType1 = await db.bill.count({
+               where: {
+                  idUser,
+                  idStatusBill: '1',
+               },
+            })
+            let countType2 = await db.bill.count({
+               where: {
+                  idUser,
+                  idStatusBill: '2',
+               },
+            })
 
-               let idUser = decode.id;
-               let countType1 = await db.bill.count({
+            if (+data.type === 1 || +data.type === 3 || +data.type === 4) {
+               let listBills = await db.bill.findAll({
                   where: {
                      idUser,
-                     idStatusBill: '1',
+                     idStatusBill: +data.type
                   },
-               })
-               let countType2 = await db.bill.count({
-                  where: {
-                     idUser,
-                     idStatusBill: '2',
-                  },
-               })
-
-               if (+data.type === 1 || +data.type === 3 || +data.type === 4) {
-                  let listBills = await db.bill.findAll({
-                     where: {
-                        idUser,
-                        idStatusBill: +data.type
-                     },
-                     limit: 5,
-                     offset: data.offset,
-                     include: [
-                        {
-                           model: db.detailBill,
-                           include: [
-                              {
-                                 model: db.product,
-                                 include: [
-                                    {
-                                       model: db.imageProduct, as: 'imageProduct-product',
-                                    },
-                                    { model: db.promotionProduct },
-                                 ],
-                              },
-                              {
-                                 model: db.classifyProduct,
-                              },
-                           ],
-                        }
-                     ],
-                     order: [
-                        ['updatedAt', 'DESC']
-                     ],
-                     raw: false,
-                     nest: true
-
-                  })
-                  let count = await db.bill.count({
-                     where: {
-                        idUser,
-                        idStatusBill: +data.type,
-                     }
-                  })
-                  resolve({
-                     errCode: 0,
-                     data: listBills,
-                     count,
-                     countType1,
-                     countType2,
-                  })
-               }
-               else if (+data.type >= 2 && +data.type < 3) {
-                  let listBills = await db.bill.findAll({
-                     where: {
-                        idUser,
-                        [Op.and]: [
+                  limit: 5,
+                  offset: data.offset,
+                  include: [
+                     {
+                        model: db.detailBill,
+                        include: [
                            {
-                              idStatusBill: {
-                                 [Op.gte]: 2
-                              }
+                              model: db.product,
+                              include: [
+                                 {
+                                    model: db.imageProduct, as: 'imageProduct-product',
+                                 },
+                                 { model: db.promotionProduct },
+                              ],
                            },
                            {
-                              idStatusBill: {
-                                 [Op.lt]: 3
-                              }
+                              model: db.classifyProduct,
                            },
                         ],
-
-
-                     },
-                     limit: 5,
-                     offset: data.offset,
-                     include: [
-                        {
-                           model: db.detailBill,
-                           include: [
-                              {
-                                 model: db.product,
-                                 include: [
-                                    {
-                                       model: db.imageProduct, as: 'imageProduct-product',
-                                    },
-                                    { model: db.promotionProduct },
-                                 ],
-                              },
-                              {
-                                 model: db.classifyProduct,
-                              },
-                           ],
-                        }
-                     ],
-                     order: [
-                        ['updatedAt', 'DESC']
-                     ],
-                     raw: false,
-                     nest: true
-
-                  })
-                  let count = await db.bill.count({
-                     where: {
-                        idUser,
-                        idStatusBill: data.type,
                      }
-                  })
-                  resolve({
-                     errCode: 0,
-                     data: listBills,
-                     count,
-                     countType1,
-                     countType2,
-                  })
-               }
+                  ],
+                  order: [
+                     ['updatedAt', 'DESC']
+                  ],
+                  raw: false,
+                  nest: true
 
-               else {
-                  let listBills = await db.bill.findAll({
-                     where: {
-                        idUser,
-                     },
-                     limit: 5,
-                     offset: data.offset,
-                     include: [
+               })
+               let count = await db.bill.count({
+                  where: {
+                     idUser,
+                     idStatusBill: +data.type,
+                  }
+               })
+               resolve({
+                  errCode: 0,
+                  data: listBills,
+                  count,
+                  countType1,
+                  countType2,
+               })
+            }
+            else if (+data.type >= 2 && +data.type < 3) {
+               let listBills = await db.bill.findAll({
+                  where: {
+                     idUser,
+                     [Op.and]: [
                         {
-                           model: db.detailBill,
-                           include: [
-                              {
-                                 model: db.product,
-                                 include: [
-                                    { model: db.imageProduct, as: 'imageProduct-product' },
-                                    { model: db.promotionProduct },
-                                 ],
-                              },
-                              {
-                                 model: db.classifyProduct,
-                              },
-
-                           ],
-                        }
+                           idStatusBill: {
+                              [Op.gte]: 2
+                           }
+                        },
+                        {
+                           idStatusBill: {
+                              [Op.lt]: 3
+                           }
+                        },
                      ],
-                     order: [
-                        ['updatedAt', 'DESC']
-                     ],
-                     raw: false,
-                     nest: true
 
-                  })
 
-                  let count = await db.bill.count({
-                     where: {
-                        idUser
+                  },
+                  limit: 5,
+                  offset: data.offset,
+                  include: [
+                     {
+                        model: db.detailBill,
+                        include: [
+                           {
+                              model: db.product,
+                              include: [
+                                 {
+                                    model: db.imageProduct, as: 'imageProduct-product',
+                                 },
+                                 { model: db.promotionProduct },
+                              ],
+                           },
+                           {
+                              model: db.classifyProduct,
+                           },
+                        ],
                      }
-                  })
-                  resolve({
-                     errCode: 0,
-                     data: listBills,
-                     count,
-                     countType1,
-                     countType2,
-                  })
-               }
+                  ],
+                  order: [
+                     ['updatedAt', 'DESC']
+                  ],
+                  raw: false,
+                  nest: true
 
+               })
+               let count = await db.bill.count({
+                  where: {
+                     idUser,
+                     idStatusBill: data.type,
+                  }
+               })
+               resolve({
+                  errCode: 0,
+                  data: listBills,
+                  count,
+                  countType1,
+                  countType2,
+               })
+            }
 
+            else {
+               let listBills = await db.bill.findAll({
+                  where: {
+                     idUser,
+                  },
+                  limit: 5,
+                  offset: data.offset,
+                  include: [
+                     {
+                        model: db.detailBill,
+                        include: [
+                           {
+                              model: db.product,
+                              include: [
+                                 { model: db.imageProduct, as: 'imageProduct-product' },
+                                 { model: db.promotionProduct },
+                              ],
+                           },
+                           {
+                              model: db.classifyProduct,
+                           },
+
+                        ],
+                     }
+                  ],
+                  order: [
+                     ['updatedAt', 'DESC']
+                  ],
+                  raw: false,
+                  nest: true
+
+               })
+
+               let count = await db.bill.count({
+                  where: {
+                     idUser
+                  }
+               })
+               resolve({
+                  errCode: 0,
+                  data: listBills,
+                  count,
+                  countType1,
+                  countType2,
+               })
             }
          }
 
@@ -2288,7 +2145,7 @@ const getListBillByType = (data) => {
    })
 }
 
-const userCancelBill = (data) => {
+const userCancelBill = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.id || !data.note) {
@@ -2299,79 +2156,69 @@ const userCancelBill = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id;
+
+            let bill = await db.bill.findOne({
+               where: {
+                  id: data.id
+               },
+               include: [
+                  {
+                     model: db.User,
+                     where: {
+                        id: idUser
+                     }
+                  }
+               ],
+               raw: false,
+               nest: true
+            })
+
+            if (!bill) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                  errCode: 3,
+                  errMessage: 'Không tìm thấy hóa đơn!',
                   decode
                })
             }
             else {
-               let idUser = decode.id;
+               bill.idStatusBill = 4
+               bill.noteCancel = data.note
+               bill.timeBill = new Date().getTime().toString()
+               await bill.save();
 
-               let bill = await db.bill.findOne({
-                  where: {
-                     id: data.id
-                  },
-                  include: [
-                     {
-                        model: db.User,
-                        where: {
-                           id: idUser
-                        }
-                     }
-                  ],
-                  raw: false,
-                  nest: true
+               await db.statusBills.create({
+                  id: uuidv4(),
+                  idBill: bill.id,
+                  nameStatus: 'Đã hủy',
+                  idStatusBill: 4,
+                  timeStatus: new Date().getTime()
                })
 
-               if (!bill) {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Không tìm thấy hóa đơn!',
-                     decode
-                  })
-               }
-               else {
-                  bill.idStatusBill = 4
-                  bill.noteCancel = data.note
-                  bill.timeBill = new Date().getTime().toString()
-                  await bill.save();
+               //increase amount product
+               let detailBills = await db.detailBill.findAll({
+                  where: {
+                     idBill: bill.id
+                  }
+               })
 
-                  await db.statusBills.create({
-                     id: uuidv4(),
-                     idBill: bill.id,
-                     nameStatus: 'Đã hủy',
-                     idStatusBill: 4,
-                     timeStatus: new Date().getTime()
-                  })
-
-                  //increase amount product
-                  let detailBills = await db.detailBill.findAll({
+               detailBills.forEach(async item => {
+                  let classify = await db.classifyProduct.findOne({
                      where: {
-                        idBill: bill.id
-                     }
+                        id: item.idClassifyProduct
+                     },
+                     raw: false
                   })
-
-                  detailBills.forEach(async item => {
-                     let classify = await db.classifyProduct.findOne({
-                        where: {
-                           id: item.idClassifyProduct
-                        },
-                        raw: false
-                     })
-                     if (classify) {
-                        classify.amount = classify.amount + item.amount
-                        await classify.save()
-                     }
-                  })
+                  if (classify) {
+                     classify.amount = classify.amount + item.amount
+                     await classify.save()
+                  }
+               })
 
 
-                  resolve({
-                     errCode: 0,
-                  })
-               }
+               resolve({
+                  errCode: 0,
+               })
             }
          }
 
@@ -2382,7 +2229,7 @@ const userCancelBill = (data) => {
    })
 }
 
-const userRepurchaseBill = (data) => {
+const userRepurchaseBill = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.id) {
@@ -2393,64 +2240,54 @@ const userRepurchaseBill = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id;
+
+            let bill = await db.bill.findOne({
+               where: {
+                  id: data.id
+               },
+               include: [
+                  {
+                     model: db.User,
+                     where: {
+                        id: idUser
+                     }
+                  }
+               ],
+               raw: false,
+               nest: true
+            })
+
+            if (!bill) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                  errCode: 3,
+                  errMessage: 'Không tìm thấy hóa đơn!',
                   decode
                })
             }
             else {
-               let idUser = decode.id;
-
-               let bill = await db.bill.findOne({
+               let detailBill = await db.detailBill.findAll({
                   where: {
-                     id: data.id
+                     idBill: bill.id
                   },
-                  include: [
-                     {
-                        model: db.User,
-                        where: {
-                           id: idUser
-                        }
-                     }
-                  ],
-                  raw: false,
-                  nest: true
                })
 
-               if (!bill) {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Không tìm thấy hóa đơn!',
-                     decode
-                  })
-               }
-               else {
-                  let detailBill = await db.detailBill.findAll({
-                     where: {
-                        idBill: bill.id
-                     },
-                  })
+               let array = detailBill.map(item => {
+                  return {
+                     id: uuidv4(),
+                     idUser,
+                     idProduct: item.idProduct,
+                     amount: item.amount,
+                     idClassifyProduct: item.idClassifyProduct,
+                     isChoose: 'false'
+                  }
+               });
 
-                  let array = detailBill.map(item => {
-                     return {
-                        id: uuidv4(),
-                        idUser,
-                        idProduct: item.idProduct,
-                        amount: item.amount,
-                        idClassifyProduct: item.idClassifyProduct,
-                        isChoose: 'false'
-                     }
-                  });
+               await db.cart.bulkCreate(array, { individualHooks: true })
 
-                  await db.cart.bulkCreate(array, { individualHooks: true })
-
-                  resolve({
-                     errCode: 0,
-                  })
-               }
+               resolve({
+                  errCode: 0,
+               })
             }
          }
 
@@ -2608,7 +2445,7 @@ const checkKeyVerify = (data) => {
    })
 }
 
-const hasReceivedProduct = (data) => {
+const hasReceivedProduct = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.id) {
@@ -2619,69 +2456,58 @@ const hasReceivedProduct = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id;
+            let bill = await db.bill.findOne({
+               where: {
+                  idUser,
+                  id: data.id
+               },
+               raw: false
+            })
+
+            if (!bill) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 3,
+                  errMessage: 'Lỗi không tìm thấy đơn hàng!',
                })
             }
             else {
-               let idUser = decode.id;
-               let bill = await db.bill.findOne({
-                  where: {
-                     idUser,
-                     id: data.id
-                  },
-                  raw: false
+               bill.idStatusBill = 3
+               bill.timeBill = new Date().getTime()
+               await bill.save();
+
+               await db.statusBills.create({
+                  id: uuidv4(),
+                  idBill: bill.id,
+                  nameStatus: 'Hoàn thành',
+                  idStatusBill: 3,
+                  timeStatus: new Date().getTime()
                })
 
-               if (!bill) {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Lỗi không tìm thấy đơn hàng!',
-                  })
-               }
-               else {
-                  bill.idStatusBill = 3
-                  bill.timeBill = new Date().getTime()
-                  await bill.save();
 
-                  await db.statusBills.create({
-                     id: uuidv4(),
-                     idBill: bill.id,
-                     nameStatus: 'Hoàn thành',
-                     idStatusBill: 3,
-                     timeStatus: new Date().getTime()
-                  })
+               let detailBill = await db.detailBill.findAll({
+                  where: {
+                     idBill: bill.id
+                  }
+               })
 
-
-                  let detailBill = await db.detailBill.findAll({
+               detailBill.forEach(async item => {
+                  let product = await db.product.findOne({
                      where: {
-                        idBill: bill.id
-                     }
+                        id: item.idProduct
+                     },
+                     raw: false
                   })
-
-                  detailBill.forEach(async item => {
-                     let product = await db.product.findOne({
-                        where: {
-                           id: item.idProduct
-                        },
-                        raw: false
-                     })
-                     product.sold = product.sold + item.amount
-                     await product.save()
-                  })
+                  product.sold = product.sold + item.amount
+                  await product.save()
+               })
 
 
 
 
-                  resolve({
-                     errCode: 0,
-                  })
-               }
-
+               resolve({
+                  errCode: 0,
+               })
             }
          }
       }
@@ -2691,7 +2517,7 @@ const hasReceivedProduct = (data) => {
    })
 }
 
-const buyProductByCard = (data) => {
+const buyProductByCard = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken) {
@@ -2702,187 +2528,176 @@ const buyProductByCard = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id;
+
+
+            let addressUser = await db.addressUser.findOne({
+               where: {
+                  idUser,
+                  isDefault: 'true'
+               }
+            })
+
+            let cart = await db.cart.findAll({
+               where: {
+                  idUser,
+                  isChoose: 'true'
+               },
+               raw: true
+            })
+
+            if (!addressUser) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 3,
+                  errMessage: 'Vui lòng chọn địa chỉ nhận hàng!',
                })
+               return;
             }
-            else {
-               let idUser = decode.id;
 
-
-               let addressUser = await db.addressUser.findOne({
-                  where: {
-                     idUser,
-                     isDefault: 'true'
-                  }
+            if (cart.length === 0) {
+               resolve({
+                  errCode: 4,
+                  errMessage: 'Vui lòng chọn sản phẩm bạn muốn mua!',
                })
-
-               let cart = await db.cart.findAll({
-                  where: {
-                     idUser,
-                     isChoose: 'true'
-                  },
-                  raw: true
-               })
-
-               if (!addressUser) {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Vui lòng chọn địa chỉ nhận hàng!',
-                  })
-                  return;
-               }
-
-               if (cart.length === 0) {
-                  resolve({
-                     errCode: 4,
-                     errMessage: 'Vui lòng chọn sản phẩm bạn muốn mua!',
-                  })
-                  return;
-               }
-
-               //check isSell product
-               let listIdProduct = cart.map(item => (
-                  item.idProduct
-               ))
-
-               let productUnSell = await db.product.findOne({
-                  where: {
-                     id: {
-                        [Op.in]: listIdProduct
-                     },
-                     isSell: 'false'
-                  }
-               })
-
-               if (productUnSell) {
-                  resolve({
-                     errCode: 5,
-                     errMessage: `Sản phẩm "${productUnSell.nameProduct}" đã không còn bán nửa.`
-                  })
-                  return
-               }
-
-               //check amount
-               let listIdClassify = cart.map(item => (
-                  item.idClassifyProduct
-               ))
-               let listClassify = await db.classifyProduct.findAll({
-                  where: {
-                     id: {
-                        [Op.in]: listIdClassify
-                     }
-                  }
-               })
-               let checkAmountClassify = true
-               for (let i = 0; i < cart.length; i++)
-                  for (let j = 0; j < listClassify.length; j++) {
-                     if (listClassify[j].id === cart[i].idClassifyProduct) {
-                        if (listClassify[j].amount < cart[i].amount) {
-                           checkAmountClassify = false
-                           break;
-                        }
-                     }
-                  }
-
-               if (!checkAmountClassify) {
-                  resolve({
-                     errCode: 6,
-                     errMessage: `Vui lòng chọn số lượng phù hợp hoặc thay đổi phân loại sản phẩm!`
-                  })
-                  return
-               }
-
-
-               //handle buy
-
-               let cart2 = await db.cart.findAll({
-                  where: {
-                     idUser,
-                     isChoose: 'true'
-                  },
-                  include: [
-                     {
-                        model: db.product
-                     },
-                     {
-                        model: db.classifyProduct
-                     }
-                  ],
-                  raw: false,
-                  nest: true
-               })
-
-               let totals = 0;
-
-               let arrayProduct = cart.map((item, index) => {
-
-                  let price;
-                  if (cart2[index].classifyProduct.nameClassifyProduct === 'default')
-                     price = +cart2[index].product.priceProduct
-                  else
-                     price = cart2[index].classifyProduct.priceClassify
-
-
-                  totals = totals + (Math.floor(price / 23000) * +item.amount)
-                  price = Math.floor(price / 23000) + '.00'
-
-
-                  return {
-                     name: cart2[index].product.nameProduct,
-                     sku: cart2[index].classifyProduct.nameClassifyProduct,
-                     price: price,
-                     currency: "USD",
-                     quantity: +item.amount
-                  }
-               })
-
-
-               const create_payment_json = {
-                  "intent": "sale",
-                  "payer": {
-                     "payment_method": "paypal"
-                  },
-                  "redirect_urls": {
-                     "return_url":
-                        `${process.env.LINK_BACKEND}/api/v1/buy-product-by-card/success?price=${totals + '.00'}&accessToken=${data.accessToken}&totalsReq=${data.totalsReq}`,
-                     "cancel_url": `${process.env.LINK_FONTEND}/cart`
-                  },
-                  "transactions": [{
-                     "item_list": {
-                        "items": arrayProduct
-                     },
-                     "amount": {
-                        "currency": "USD",
-                        "total": totals + '.00'
-                     },
-                     "description": "Shop TechStoreTvT siêu tiện siêu rẽ."
-                  }]
-               };
-
-               paypal.payment.create(create_payment_json, function (error, payment) {
-                  if (error) {
-                     throw error;
-                  } else {
-                     for (let i = 0; i < payment.links.length; i++) {
-                        if (payment.links[i].rel === 'approval_url') {
-                           // res.redirect(payment.links[i].href);
-                           resolve({
-                              errCode: 0,
-                              errMessage: 'ok',
-                              link: payment.links[i].href
-                           })
-                        }
-                     }
-
-                  }
-               });
-
+               return;
             }
+
+            //check isSell product
+            let listIdProduct = cart.map(item => (
+               item.idProduct
+            ))
+
+            let productUnSell = await db.product.findOne({
+               where: {
+                  id: {
+                     [Op.in]: listIdProduct
+                  },
+                  isSell: 'false'
+               }
+            })
+
+            if (productUnSell) {
+               resolve({
+                  errCode: 5,
+                  errMessage: `Sản phẩm "${productUnSell.nameProduct}" đã không còn bán nửa.`
+               })
+               return
+            }
+
+            //check amount
+            let listIdClassify = cart.map(item => (
+               item.idClassifyProduct
+            ))
+            let listClassify = await db.classifyProduct.findAll({
+               where: {
+                  id: {
+                     [Op.in]: listIdClassify
+                  }
+               }
+            })
+            let checkAmountClassify = true
+            for (let i = 0; i < cart.length; i++)
+               for (let j = 0; j < listClassify.length; j++) {
+                  if (listClassify[j].id === cart[i].idClassifyProduct) {
+                     if (listClassify[j].amount < cart[i].amount) {
+                        checkAmountClassify = false
+                        break;
+                     }
+                  }
+               }
+
+            if (!checkAmountClassify) {
+               resolve({
+                  errCode: 6,
+                  errMessage: `Vui lòng chọn số lượng phù hợp hoặc thay đổi phân loại sản phẩm!`
+               })
+               return
+            }
+
+
+            //handle buy
+
+            let cart2 = await db.cart.findAll({
+               where: {
+                  idUser,
+                  isChoose: 'true'
+               },
+               include: [
+                  {
+                     model: db.product
+                  },
+                  {
+                     model: db.classifyProduct
+                  }
+               ],
+               raw: false,
+               nest: true
+            })
+
+            let totals = 0;
+
+            let arrayProduct = cart.map((item, index) => {
+
+               let price;
+               if (cart2[index].classifyProduct.nameClassifyProduct === 'default')
+                  price = +cart2[index].product.priceProduct
+               else
+                  price = cart2[index].classifyProduct.priceClassify
+
+
+               totals = totals + (Math.floor(price / 23000) * +item.amount)
+               price = Math.floor(price / 23000) + '.00'
+
+
+               return {
+                  name: cart2[index].product.nameProduct,
+                  sku: cart2[index].classifyProduct.nameClassifyProduct,
+                  price: price,
+                  currency: "USD",
+                  quantity: +item.amount
+               }
+            })
+
+
+            const create_payment_json = {
+               "intent": "sale",
+               "payer": {
+                  "payment_method": "paypal"
+               },
+               "redirect_urls": {
+                  "return_url":
+                     `${process.env.LINK_BACKEND}/api/v1/buy-product-by-card/success?price=${totals + '.00'}&accessToken=${data.accessToken}&totalsReq=${data.totalsReq}`,
+                  "cancel_url": `${process.env.LINK_FONTEND}/cart`
+               },
+               "transactions": [{
+                  "item_list": {
+                     "items": arrayProduct
+                  },
+                  "amount": {
+                     "currency": "USD",
+                     "total": totals + '.00'
+                  },
+                  "description": "Shop TechStoreTvT siêu tiện siêu rẽ."
+               }]
+            };
+
+            paypal.payment.create(create_payment_json, function (error, payment) {
+               if (error) {
+                  throw error;
+               } else {
+                  for (let i = 0; i < payment.links.length; i++) {
+                     if (payment.links[i].rel === 'approval_url') {
+                        // res.redirect(payment.links[i].href);
+                        resolve({
+                           errCode: 0,
+                           errMessage: 'ok',
+                           link: payment.links[i].href
+                        })
+                     }
+                  }
+
+               }
+            });
          }
       }
       catch (e) {
@@ -2971,8 +2786,7 @@ const buyProductByCardSucess = (data) => {
                      let arrayDetailBill = cart.map(item => {
                         db.classifyProduct.increment({ amount: -item.amount }, {
                            where: {
-                              idProduct: item.idProduct,
-                              id: item.idClassifyProduct
+                              idProduct: item.idProduct
                            }
                         })
 
@@ -3038,7 +2852,7 @@ const buyProductByCardSucess = (data) => {
    })
 }
 
-const createNewEvaluateProduct = (data) => {
+const createNewEvaluateProduct = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idDetailBill || !data.star) {
@@ -3049,61 +2863,51 @@ const createNewEvaluateProduct = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id;
+
+            let detailBill = await db.detailBill.findOne({
+               where: {
+                  id: data.idDetailBill,
+               },
+               include: [
+                  {
+                     model: db.bill,
+                     where: {
+                        idUser,
+                        idStatusBill: '3'
+                     }
+                  }
+               ],
+               raw: false,
+               nest: true
+            })
+
+            if (!detailBill || detailBill.isReviews === 'true') {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 3,
+                  errMessage: 'Không tìm thấy hoặc bạn không được phép thực hiện tính năng này!',
                })
             }
             else {
-               let idUser = decode.id;
-
-               let detailBill = await db.detailBill.findOne({
-                  where: {
-                     id: data.idDetailBill,
-                  },
-                  include: [
-                     {
-                        model: db.bill,
-                        where: {
-                           idUser,
-                           idStatusBill: '3'
-                        }
-                     }
-                  ],
-                  raw: false,
-                  nest: true
+               let evaluateProduct = await db.evaluateProduct.create({
+                  id: uuidv4(),
+                  idUser,
+                  idProduct: detailBill.idProduct,
+                  starNumber: data.star,
+                  content: data.content || '',
+                  displayname: '' + data.displayName || 'true',
+                  idDetailBill: data.idDetailBill
                })
 
-               if (!detailBill || detailBill.isReviews === 'true') {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Không tìm thấy hoặc bạn không được phép thực hiện tính năng này!',
-                  })
-               }
-               else {
-                  let evaluateProduct = await db.evaluateProduct.create({
-                     id: uuidv4(),
-                     idUser,
-                     idProduct: detailBill.idProduct,
-                     starNumber: data.star,
-                     content: data.content || '',
-                     displayname: '' + data.displayName || 'true',
-                     idDetailBill: data.idDetailBill
-                  })
+               detailBill.isReviews = 'true'
+               await detailBill.save();
 
-                  detailBill.isReviews = 'true'
-                  await detailBill.save();
-
-                  resolve({
-                     errCode: 0,
-                     data: {
-                        id: evaluateProduct.id
-                     }
-                  })
-               }
+               resolve({
+                  errCode: 0,
+                  data: {
+                     id: evaluateProduct.id
+                  }
+               })
             }
          }
       }
@@ -3210,7 +3014,7 @@ const createNewEvaluateProductFailed = (data) => {
    })
 }
 
-const updataEvaluateProduct = (data) => {
+const updataEvaluateProduct = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idDetailBill || !data.listImage || !data.star
@@ -3222,62 +3026,52 @@ const updataEvaluateProduct = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id;
+
+            let evaluateProduct = await db.evaluateProduct.findOne({
+               where: {
+                  idUser,
+                  idDetailBill: data.idDetailBill
+               },
+               raw: false
+            })
+            if (!evaluateProduct) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 3,
+                  errMessage: 'Không tìm thấy hoặc bạn không được phép thực hiện tính năng này!',
                })
             }
             else {
-               let idUser = decode.id;
+               evaluateProduct.starNumber = data.star
+               evaluateProduct.content = data.text
+               evaluateProduct.displayname = data.displayname
+               await evaluateProduct.save();
 
-               let evaluateProduct = await db.evaluateProduct.findOne({
+               let imageEvaluateProduct = await db.imageEvaluateProduct.findAll({
                   where: {
-                     idUser,
-                     idDetailBill: data.idDetailBill
-                  },
-                  raw: false
+                     idEvaluateProduct: evaluateProduct.id,
+                     imagebase64: {
+                        [Op.notIn]: data.listImage
+                     }
+                  }
                })
-               if (!evaluateProduct) {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Không tìm thấy hoặc bạn không được phép thực hiện tính năng này!',
-                  })
-               }
-               else {
-                  evaluateProduct.starNumber = data.star
-                  evaluateProduct.content = data.text
-                  evaluateProduct.displayname = data.displayname
-                  await evaluateProduct.save();
+               imageEvaluateProduct.forEach(async item => {
+                  await cloudinary.v2.uploader.destroy(`evaluate/${item.idCloudinary}`)
+               })
 
-                  let imageEvaluateProduct = await db.imageEvaluateProduct.findAll({
-                     where: {
-                        idEvaluateProduct: evaluateProduct.id,
-                        imagebase64: {
-                           [Op.notIn]: data.listImage
-                        }
+               await db.imageEvaluateProduct.destroy({
+                  where: {
+                     idEvaluateProduct: evaluateProduct.id,
+                     imagebase64: {
+                        [Op.notIn]: data.listImage
                      }
-                  })
-                  imageEvaluateProduct.forEach(async item => {
-                     await cloudinary.v2.uploader.destroy(`evaluate/${item.idCloudinary}`)
-                  })
+                  }
+               })
 
-                  await db.imageEvaluateProduct.destroy({
-                     where: {
-                        idEvaluateProduct: evaluateProduct.id,
-                        imagebase64: {
-                           [Op.notIn]: data.listImage
-                        }
-                     }
-                  })
-
-                  resolve({
-                     errCode: 0,
-                     id: evaluateProduct.id
-                  })
-               }
+               resolve({
+                  errCode: 0,
+                  id: evaluateProduct.id
+               })
             }
          }
 
@@ -3376,7 +3170,7 @@ const updateVideoEvaluate = (id, filename) => {
    })
 }
 
-const updateProfileUser = (data) => {
+const updateProfileUser = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.firstName) {
@@ -3387,51 +3181,40 @@ const updateProfileUser = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id;
+            let user = await db.User.findOne({
+               where: {
+                  id: idUser
+               },
+               raw: false
+            })
+
+            if (!user) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 3,
+                  errMessage: 'Không tìm thấy tài khoản!',
                })
             }
             else {
-               let idUser = decode.id;
-               let user = await db.User.findOne({
-                  where: {
-                     id: idUser
-                  },
-                  raw: false
+               if (data.firstName.length > 30 || data.lastName.length > 30) {
+                  resolve({
+                     errCode: 4,
+                     errMessage: 'Độ dài của tên vượt quá mức cho phép!'
+                  })
+                  return;
+               }
+
+
+               user.firstName = data.firstName
+               user.lastName = data.lastName
+               user.sdt = data.sdt
+               user.gender = data.gender
+               user.birtday = data.birtday
+               await user.save()
+
+               resolve({
+                  errCode: 0,
                })
-
-               if (!user) {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Không tìm thấy tài khoản!',
-                  })
-               }
-               else {
-                  if (data.firstName.length > 30 || data.lastName.length > 30) {
-                     resolve({
-                        errCode: 4,
-                        errMessage: 'Độ dài của tên vượt quá mức cho phép!'
-                     })
-                     return;
-                  }
-
-
-                  user.firstName = data.firstName
-                  user.lastName = data.lastName
-                  user.sdt = data.sdt
-                  user.gender = data.gender
-                  user.birtday = data.birtday
-                  await user.save()
-
-                  resolve({
-                     errCode: 0,
-                  })
-               }
-
             }
          }
       }
@@ -3441,7 +3224,7 @@ const updateProfileUser = (data) => {
    })
 }
 
-const updateAvatarUser = ({ file, query }) => {
+const updateAvatarUser = ({ file, query, payload }) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!query.accessToken) {
@@ -3451,43 +3234,32 @@ const updateAvatarUser = ({ file, query }) => {
             })
          }
          else {
-            let decode = commont.decodeToken(query.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id;
+            let user = await db.User.findOne({
+               where: {
+                  id: idUser
+               },
+               raw: false
+            })
+
+            if (!user) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 3,
+                  errMessage: 'Không tìm thấy tài khoản!',
                })
             }
             else {
-               let idUser = decode.id;
-               let user = await db.User.findOne({
-                  where: {
-                     id: idUser
-                  },
-                  raw: false
+               if (user.avatarUpdate) {
+                  let idCloudinary = user.avatarUpdate.split("/").pop().split(".")[0];
+                  cloudinary.v2.uploader.destroy(`avatar_user/${idCloudinary}`)
+               }
+
+               user.avatarUpdate = file.path
+               await user.save()
+
+               resolve({
+                  errCode: 0,
                })
-
-               if (!user) {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Không tìm thấy tài khoản!',
-                  })
-               }
-               else {
-                  if (user.avatarUpdate) {
-                     let idCloudinary = user.avatarUpdate.split("/").pop().split(".")[0];
-                     cloudinary.v2.uploader.destroy(`avatar_user/${idCloudinary}`)
-                  }
-
-                  user.avatarUpdate = file.path
-                  await user.save()
-
-                  resolve({
-                     errCode: 0,
-                  })
-               }
-
             }
          }
       }
@@ -3624,7 +3396,7 @@ const confirmCodeChangePass = (data) => {
    })
 }
 
-const createNewBlog = (data) => {
+const createNewBlog = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.contentHtml || !data.contentMarkdown
@@ -3637,49 +3409,39 @@ const createNewBlog = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+            let idUser = payload.id
+
+            let date = new Date().getTime();
+            let idBlog = uuidv4()
+
+            await db.blogs.create({
+               id: idBlog,
+               title: data.title,
+               contentHTML: data.contentHtml,
+               contentMarkdown: data.contentMarkdown,
+               idUser,
+               timeBlog: date.toString(),
+               viewBlog: 0,
+               typeBlog: 'default',
+               timePost: data.timePost || 0,
+               backgroundColor: data.bgColor,
+               editVideo: data.editVideo,
+               editImage: data.editImage
+            })
+
+            if (data.typeVideo === 'iframe' && data.urlVideo) {
+               await db.videoBlogs.create({
+                  id: uuidv4(),
+                  idBlog: idBlog,
+                  video: data.urlVideo,
+                  idDrive: '',
                })
             }
-            else {
-               let idUser = decode.id
 
-               let date = new Date().getTime();
-               let idBlog = uuidv4()
-
-               await db.blogs.create({
-                  id: idBlog,
-                  title: data.title,
-                  contentHTML: data.contentHtml,
-                  contentMarkdown: data.contentMarkdown,
-                  idUser,
-                  timeBlog: date.toString(),
-                  viewBlog: 0,
-                  typeBlog: 'default',
-                  timePost: data.timePost || 0,
-                  backgroundColor: data.bgColor,
-                  editVideo: data.editVideo,
-                  editImage: data.editImage
-               })
-
-               if (data.typeVideo === 'iframe' && data.urlVideo) {
-                  await db.videoBlogs.create({
-                     id: uuidv4(),
-                     idBlog: idBlog,
-                     video: data.urlVideo,
-                     idDrive: '',
-                  })
-               }
-
-               resolve({
-                  errCode: 0,
-                  idBlog
-               })
-            }
+            resolve({
+               errCode: 0,
+               idBlog
+            })
 
          }
       }
@@ -3826,7 +3588,7 @@ const uploadVideoNewBlog = (idBlog, fileName) => {
    })
 }
 
-const getBlogById = (data) => {
+const getBlogEditById = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idBlog) {
@@ -3837,45 +3599,35 @@ const getBlogById = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id
+            let blog = await db.blogs.findOne({
+               where: {
+                  idUser,
+                  id: data.idBlog,
+                  typeBlog: 'default'
+               },
+               include: [
+                  {
+                     model: db.imageBlogs
+                  },
+                  {
+                     model: db.videoBlogs
+                  },
+               ],
+               raw: false
+            })
+
+            if (!blog) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 3,
+                  errMessage: 'Không tìm thấy bài viết nào!',
                })
             }
             else {
-               let idUser = decode.id
-               let blog = await db.blogs.findOne({
-                  where: {
-                     idUser,
-                     id: data.idBlog,
-                     typeBlog: 'default'
-                  },
-                  include: [
-                     {
-                        model: db.imageBlogs
-                     },
-                     {
-                        model: db.videoBlogs
-                     },
-                  ],
-                  raw: false
+               resolve({
+                  errCode: 0,
+                  data: blog
                })
-
-               if (!blog) {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Không tìm thấy bài viết nào!',
-                  })
-               }
-               else {
-                  resolve({
-                     errCode: 0,
-                     data: blog
-                  })
-               }
             }
          }
       }
@@ -3885,7 +3637,7 @@ const getBlogById = (data) => {
    })
 }
 
-const updateBlog = (data) => {
+const updateBlog = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idBlog || !data.contentHtml || !data.contentMarkdown
@@ -3899,42 +3651,46 @@ const updateBlog = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id
+            let blog = await db.blogs.findOne({
+               where: {
+                  idUser,
+                  id: data.idBlog,
+                  typeBlog: 'default'
+               },
+               raw: false
+            })
+
+            if (!blog) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 3,
+                  errMessage: 'Không tìm thấy bài viết nào!',
                })
             }
             else {
-               let idUser = decode.id
-               let blog = await db.blogs.findOne({
+               blog.title = data.title
+               blog.contentHTML = data.contentHtml
+               blog.contentMarkdown = data.contentMarkdown
+               blog.backgroundColor = data.bgColor
+               blog.editVideo = data.editVideo
+               blog.editImage = data.editImage
+               await blog.save();
+
+
+               let imageDelete = await db.imageBlogs.findAll({
                   where: {
-                     idUser,
-                     id: data.idBlog,
-                     typeBlog: 'default'
-                  },
-                  raw: false
+                     idBlog: blog.id,
+                     image: {
+                        [Op.notIn]: data.listImage
+                     }
+                  }
                })
-
-               if (!blog) {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Không tìm thấy bài viết nào!',
+               if (imageDelete) {
+                  imageDelete.forEach(async item => {
+                     cloudinary.v2.uploader.destroy(item.idCloudinary)
                   })
-               }
-               else {
-                  blog.title = data.title
-                  blog.contentHTML = data.contentHtml
-                  blog.contentMarkdown = data.contentMarkdown
-                  blog.backgroundColor = data.bgColor
-                  blog.editVideo = data.editVideo
-                  blog.editImage = data.editImage
-                  await blog.save();
 
-
-                  let imageDelete = await db.imageBlogs.findAll({
+                  await db.imageBlogs.destroy({
                      where: {
                         idBlog: blog.id,
                         image: {
@@ -3942,70 +3698,56 @@ const updateBlog = (data) => {
                         }
                      }
                   })
-                  if (imageDelete) {
-                     imageDelete.forEach(async item => {
-                        cloudinary.v2.uploader.destroy(item.idCloudinary)
-                     })
-
-                     await db.imageBlogs.destroy({
-                        where: {
-                           idBlog: blog.id,
-                           image: {
-                              [Op.notIn]: data.listImage
-                           }
-                        }
-                     })
-                  }
-
-                  if (!data.isVideo) {
-                     let videoDelete = await db.videoBlogs.findOne({
-                        where: {
-                           idBlog: blog.id,
-                        },
-                        raw: false
-                     })
-                     if (videoDelete) {
-                        GG_Drive.deleteFile(videoDelete.idDrive)
-                        await db.videoBlogs.destroy({
-                           where: {
-                              idBlog: blog.id,
-                           }
-                        })
-                     }
-                  }
-                  if (data.typeVideo === 'iframe' && data.urlVideo && data.urlVideo !== '') {
-                     let videoBlog = await db.videoBlogs.findOne({
-                        where: {
-                           idBlog: data.idBlog
-                        },
-                        raw: false
-                     })
-                     if (!videoBlog) {
-                        await db.videoBlogs.create({
-                           id: uuidv4(),
-                           idBlog: data.idBlog,
-                           video: data.urlVideo,
-                           idDrive: ''
-                        })
-                     }
-                     else {
-                        if (videoBlog.video !== data.urlVideo) {
-                           if (videoBlog.idDrive) {
-                              GG_Drive.deleteFile(videoBlog.idDrive)
-                           }
-                           videoBlog.idDrive = ''
-                           videoBlog.video = data.urlVideo
-                           await videoBlog.save()
-
-                        }
-                     }
-                  }
-
-                  resolve({
-                     errCode: 0,
-                     data: blog
-                  })
                }
+
+               if (!data.isVideo) {
+                  let videoDelete = await db.videoBlogs.findOne({
+                     where: {
+                        idBlog: blog.id,
+                     },
+                     raw: false
+                  })
+                  if (videoDelete) {
+                     GG_Drive.deleteFile(videoDelete.idDrive)
+                     await db.videoBlogs.destroy({
+                        where: {
+                           idBlog: blog.id,
+                        }
+                     })
+                  }
+               }
+               if (data.typeVideo === 'iframe' && data.urlVideo && data.urlVideo !== '') {
+                  let videoBlog = await db.videoBlogs.findOne({
+                     where: {
+                        idBlog: data.idBlog
+                     },
+                     raw: false
+                  })
+                  if (!videoBlog) {
+                     await db.videoBlogs.create({
+                        id: uuidv4(),
+                        idBlog: data.idBlog,
+                        video: data.urlVideo,
+                        idDrive: ''
+                     })
+                  }
+                  else {
+                     if (videoBlog.video !== data.urlVideo) {
+                        if (videoBlog.idDrive) {
+                           GG_Drive.deleteFile(videoBlog.idDrive)
+                        }
+                        videoBlog.idDrive = ''
+                        videoBlog.video = data.urlVideo
+                        await videoBlog.save()
+
+                     }
+                  }
+               }
+
+               resolve({
+                  errCode: 0,
+                  data: blog
+               })
             }
          }
       }
@@ -4016,7 +3758,7 @@ const updateBlog = (data) => {
 }
 
 
-const shareProduct = (data) => {
+const shareProduct = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idProduct || !data.content) {
@@ -4027,34 +3769,24 @@ const shareProduct = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-            }
-            else {
-               let idUser = decode.id
-               let blog = await db.blogs.create({
-                  id: uuidv4(),
-                  contentHTML: data.content,
-                  idUser,
-                  viewBlog: 0,
-                  typeBlog: 'product',
-                  timePost: 0,
-               })
+            let idUser = payload.id
+            let blog = await db.blogs.create({
+               id: uuidv4(),
+               contentHTML: data.content,
+               idUser,
+               viewBlog: 0,
+               typeBlog: 'product',
+               timePost: 0,
+            })
 
-               await db.blogShares.create({
-                  id: uuidv4(),
-                  idBlog: blog.id,
-                  idProduct: data.idProduct
-               })
-               resolve({
-                  errCode: 0,
-               })
-            }
+            await db.blogShares.create({
+               id: uuidv4(),
+               idBlog: blog.id,
+               idProduct: data.idProduct
+            })
+            resolve({
+               errCode: 0,
+            })
          }
       }
       catch (e) {
@@ -4063,7 +3795,7 @@ const shareProduct = (data) => {
    })
 }
 
-const shareBlog = (data) => {
+const shareBlog = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idBlog || !data.content) {
@@ -4074,56 +3806,46 @@ const shareBlog = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id
+            let checkBlogExits = await db.blogs.findOne({
+               where: {
+                  id: data.idBlog,
+                  typeBlog: {
+                     [Op.ne]: 'shareBlog'
+                  }
+               },
+               raw: false
+            })
+            if (!checkBlogExits) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 3,
+                  errMessage: 'Bài viết không tồn tại!',
                })
+               return
             }
-            else {
-               let idUser = decode.id
-               let checkBlogExits = await db.blogs.findOne({
-                  where: {
-                     id: data.idBlog,
-                     typeBlog: {
-                        [Op.ne]: 'shareBlog'
-                     }
-                  },
-                  raw: false
-               })
-               if (!checkBlogExits) {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Bài viết không tồn tại!',
-                  })
-                  return
-               }
 
-               let blog = await db.blogs.create({
-                  id: uuidv4(),
-                  contentHTML: data.content,
-                  idUser,
-                  viewBlog: 0,
-                  typeBlog: 'shareBlog',
-                  timePost: 0,
-               })
+            let blog = await db.blogs.create({
+               id: uuidv4(),
+               contentHTML: data.content,
+               idUser,
+               viewBlog: 0,
+               typeBlog: 'shareBlog',
+               timePost: 0,
+            })
 
-               await db.blogShares.create({
-                  id: uuidv4(),
-                  idBlog: blog.id,
-                  idBlogShare: data.idBlog
-               })
+            await db.blogShares.create({
+               id: uuidv4(),
+               idBlog: blog.id,
+               idBlogShare: data.idBlog
+            })
 
-               checkBlogExits.amountShare = checkBlogExits.amountShare + 1
-               await checkBlogExits.save()
+            checkBlogExits.amountShare = checkBlogExits.amountShare + 1
+            await checkBlogExits.save()
 
 
-               resolve({
-                  errCode: 0,
-               })
-            }
+            resolve({
+               errCode: 0,
+            })
          }
       }
       catch (e) {
@@ -4133,7 +3855,7 @@ const shareBlog = (data) => {
 }
 
 
-const toggleLikeBlog = (data) => {
+const toggleLikeBlog = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idBlog) {
@@ -4144,106 +3866,96 @@ const toggleLikeBlog = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id
+            let checkBlogExits = await db.blogs.findOne({
+               where: {
+                  id: data.idBlog,
+               },
+               include: [
+                  {
+                     model: db.imageBlogs
+                  }
+               ],
+               raw: false
+            })
+            if (!checkBlogExits) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 3,
+                  errMessage: 'Bài viết không tồn tại!',
+               })
+               return
+            }
+
+            let [likeBlog, create] = await db.likeBlog.findOrCreate({
+               where: {
+                  idUser,
+                  idBlog: data.idBlog
+               },
+               defaults: {
+                  id: uuidv4(),
+               },
+               raw: false
+            })
+
+            if (create) {
+               checkBlogExits.amountLike = checkBlogExits.amountLike + 1
+               await checkBlogExits.save()
+
+               let user = await db.User.findOne({
+                  where: {
+                     id: idUser
+                  }
+               })
+
+               if (user.id !== checkBlogExits.idUser) {
+                  let date = new Date().getTime()
+                  await db.notifycations.create({
+                     id: uuidv4(),
+                     idUser: checkBlogExits.idUser,
+                     title: `Đã có ${checkBlogExits.amountLike} lượt thích bài viết`,
+                     content: `${user.firstName} ${user.lastName} đã yêu thích bài viết của bạn`,
+                     timeCreate: date,
+                     typeNotify: 'blog',
+                     urlImage: checkBlogExits.imageBlogs[0].image,
+                     redirect_to: `/blogs/detail-blog/${checkBlogExits.id}`
+                  })
+
+                  handleEmit(`new-notify-${checkBlogExits.idUser}`, {
+                     title: `Có người thích bài viết của bạn`,
+                     content: `${user.firstName} ${user.lastName} đã yêu thích bài viết của bạn`
+                  })
+               }
+
+
+               resolve({
+                  errCode: 0,
+                  errMessage: 'Like'
                })
             }
             else {
-               let idUser = decode.id
-               let checkBlogExits = await db.blogs.findOne({
+               checkBlogExits.amountLike = checkBlogExits.amountLike - 1
+               await checkBlogExits.save()
+               await likeBlog.destroy()
+
+               let user = await db.User.findOne({
                   where: {
-                     id: data.idBlog,
-                  },
-                  include: [
-                     {
-                        model: db.imageBlogs
-                     }
-                  ],
-                  raw: false
-               })
-               if (!checkBlogExits) {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Bài viết không tồn tại!',
-                  })
-                  return
-               }
-
-               let [likeBlog, create] = await db.likeBlog.findOrCreate({
-                  where: {
-                     idUser,
-                     idBlog: data.idBlog
-                  },
-                  defaults: {
-                     id: uuidv4(),
-                  },
-                  raw: false
-               })
-
-               if (create) {
-                  checkBlogExits.amountLike = checkBlogExits.amountLike + 1
-                  await checkBlogExits.save()
-
-                  let user = await db.User.findOne({
-                     where: {
-                        id: idUser
-                     }
-                  })
-
-                  if (user.id !== checkBlogExits.idUser) {
-                     let date = new Date().getTime()
-                     await db.notifycations.create({
-                        id: uuidv4(),
-                        idUser: checkBlogExits.idUser,
-                        title: `Đã có ${checkBlogExits.amountLike} lượt thích bài viết`,
-                        content: `${user.firstName} ${user.lastName} đã yêu thích bài viết của bạn`,
-                        timeCreate: date,
-                        typeNotify: 'blog',
-                        urlImage: checkBlogExits.imageBlogs[0].image,
-                        redirect_to: `/blogs/detail-blog/${checkBlogExits.id}`
-                     })
-
-                     handleEmit(`new-notify-${checkBlogExits.idUser}`, {
-                        title: `Có người thích bài viết của bạn`,
-                        content: `${user.firstName} ${user.lastName} đã yêu thích bài viết của bạn`
-                     })
+                     id: idUser
                   }
+               })
 
+               await db.notifycations.destroy({
+                  where: {
+                     idUser: checkBlogExits.idUser,
+                     typeNotify: 'blog',
+                     content: `${user.firstName} ${user.lastName} đã yêu thích bài viết của bạn`,
+                     urlImage: checkBlogExits.imageBlogs[0].image,
+                  },
+               })
 
-                  resolve({
-                     errCode: 0,
-                     errMessage: 'Like'
-                  })
-               }
-               else {
-                  checkBlogExits.amountLike = checkBlogExits.amountLike - 1
-                  await checkBlogExits.save()
-                  await likeBlog.destroy()
-
-                  let user = await db.User.findOne({
-                     where: {
-                        id: idUser
-                     }
-                  })
-
-                  await db.notifycations.destroy({
-                     where: {
-                        idUser: checkBlogExits.idUser,
-                        typeNotify: 'blog',
-                        content: `${user.firstName} ${user.lastName} đã yêu thích bài viết của bạn`,
-                        urlImage: checkBlogExits.imageBlogs[0].image,
-                     },
-                  })
-
-                  resolve({
-                     errCode: 0,
-                     errMessage: 'unLike'
-                  })
-               }
+               resolve({
+                  errCode: 0,
+                  errMessage: 'unLike'
+               })
             }
          }
       }
@@ -4253,7 +3965,7 @@ const toggleLikeBlog = (data) => {
    })
 }
 
-const createNewCommentBlog = (data) => {
+const createNewCommentBlog = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idBlog || !data.content) {
@@ -4264,84 +3976,74 @@ const createNewCommentBlog = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-            }
-            else {
-               let idUser = decode.id
-               let checkBlogExits = await db.blogs.findOne({
-                  where: {
-                     id: data.idBlog,
-                  }
-               })
-               if (!checkBlogExits) {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Bài viết không tồn tại!',
-                  })
-                  return
+            let idUser = payload.id
+            let checkBlogExits = await db.blogs.findOne({
+               where: {
+                  id: data.idBlog,
                }
+            })
+            if (!checkBlogExits) {
+               resolve({
+                  errCode: 3,
+                  errMessage: 'Bài viết không tồn tại!',
+               })
+               return
+            }
 
-               let date = new Date().getTime()
+            let date = new Date().getTime()
 
-               await db.commentBlog.create({
+            await db.commentBlog.create({
+               id: uuidv4(),
+               idUser,
+               content: data.content,
+               idBlog: data.idBlog,
+               timeCommentBlog: date + ''
+            })
+
+            //tang sl comment
+            let blog = await db.blogs.findOne({
+               where: {
+                  id: data.idBlog
+               },
+               include: [
+                  {
+                     model: db.imageBlogs
+                  }
+               ],
+               raw: false
+            })
+            if (blog) {
+               blog.amountComment = blog.amountComment + 1
+               await blog.save()
+            }
+
+            let user = await db.User.findOne({
+               where: {
+                  id: idUser
+               }
+            })
+
+            if (user.id !== blog.idUser) {
+               await db.notifycations.create({
                   id: uuidv4(),
-                  idUser,
-                  content: data.content,
-                  idBlog: data.idBlog,
-                  timeCommentBlog: date + ''
+                  idUser: blog.idUser,
+                  title: `${user.firstName} ${user.lastName} đã bình luận bài viết`,
+                  content: `${data.content}`,
+                  timeCreate: date,
+                  typeNotify: 'blog',
+                  urlImage: blog.imageBlogs[0].image,
+                  redirect_to: `/blogs/detail-blog/${blog.id}`
                })
 
-               //tang sl comment
-               let blog = await db.blogs.findOne({
-                  where: {
-                     id: data.idBlog
-                  },
-                  include: [
-                     {
-                        model: db.imageBlogs
-                     }
-                  ],
-                  raw: false
-               })
-               if (blog) {
-                  blog.amountComment = blog.amountComment + 1
-                  await blog.save()
-               }
-
-               let user = await db.User.findOne({
-                  where: {
-                     id: idUser
-                  }
-               })
-
-               if (user.id !== blog.idUser) {
-                  await db.notifycations.create({
-                     id: uuidv4(),
-                     idUser: blog.idUser,
-                     title: `${user.firstName} ${user.lastName} đã bình luận bài viết`,
-                     content: `${data.content}`,
-                     timeCreate: date,
-                     typeNotify: 'blog',
-                     urlImage: blog.imageBlogs[0].image,
-                     redirect_to: `/blogs/detail-blog/${blog.id}`
-                  })
-
-                  handleEmit(`new-notify-${blog.idUser}`, {
-                     title: `${user.firstName} ${user.lastName} đã bình luận bài viết`,
-                     content: `${data.content}`
-                  })
-               }
-
-               resolve({
-                  errCode: 0,
+               handleEmit(`new-notify-${blog.idUser}`, {
+                  title: `${user.firstName} ${user.lastName} đã bình luận bài viết`,
+                  content: `${data.content}`
                })
             }
+
+            resolve({
+               errCode: 0,
+            })
          }
       }
       catch (e) {
@@ -4350,7 +4052,7 @@ const createNewCommentBlog = (data) => {
    })
 }
 
-const createNewShortVideo = (data) => {
+const createNewShortVideo = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.content || !data.scope) {
@@ -4361,42 +4063,31 @@ const createNewShortVideo = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+            let idUser = payload.id
+            let shortVideo = await db.shortVideos.create({
+               id: uuidv4(),
+               idUser,
+               content: data.content,
+               scope: data.scope,
+               loadImage: 'false',
+               loadVideo: 'false'
+            })
+
+            if (data?.listHashTag?.length > 0) {
+               let arrHashTag = data?.listHashTag?.map(item => {
+                  return {
+                     id: uuidv4(),
+                     idShortVideo: shortVideo.id,
+                     idProduct: item
+                  }
                })
+               db.hashTagVideos.bulkCreate(arrHashTag, { individualHooks: true })
             }
-            else {
-               let idUser = decode.id
-               let shortVideo = await db.shortVideos.create({
-                  id: uuidv4(),
-                  idUser,
-                  content: data.content,
-                  scope: data.scope,
-                  loadImage: 'false',
-                  loadVideo: 'false'
-               })
 
-               if (data?.listHashTag?.length > 0) {
-                  let arrHashTag = data?.listHashTag?.map(item => {
-                     return {
-                        id: uuidv4(),
-                        idShortVideo: shortVideo.id,
-                        idProduct: item
-                     }
-                  })
-                  db.hashTagVideos.bulkCreate(arrHashTag, { individualHooks: true })
-               }
-
-               resolve({
-                  errCode: 0,
-                  idShortVideo: shortVideo.id
-               })
-
-            }
+            resolve({
+               errCode: 0,
+               idShortVideo: shortVideo.id
+            })
          }
       }
       catch (e) {
@@ -4533,7 +4224,7 @@ const uploadVideoForShortVideo = (idShortVideo, url) => {
    })
 }
 
-const getShortVideoById = (data) => {
+const getShortVideoById = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idShortVideo) {
@@ -4544,42 +4235,32 @@ const getShortVideoById = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id
+            let shortVideo = await db.shortVideos.findOne({
+               where: {
+                  id: data.idShortVideo,
+                  idUser
+               },
+               include: [
+                  {
+                     model: db.hashTagVideos,
+                     attributes: ['idProduct']
+                  }
+               ],
+               raw: false,
+               nest: true
+            })
+            if (shortVideo) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 0,
+                  data: shortVideo
                })
             }
             else {
-               let idUser = decode.id
-               let shortVideo = await db.shortVideos.findOne({
-                  where: {
-                     id: data.idShortVideo,
-                     idUser
-                  },
-                  include: [
-                     {
-                        model: db.hashTagVideos,
-                        attributes: ['idProduct']
-                     }
-                  ],
-                  raw: false,
-                  nest: true
+               resolve({
+                  errCode: 3,
+                  errMessage: 'Không tìm thấy video!',
                })
-               if (shortVideo) {
-                  resolve({
-                     errCode: 0,
-                     data: shortVideo
-                  })
-               }
-               else {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Không tìm thấy video!',
-                  })
-               }
             }
          }
       }
@@ -4589,7 +4270,7 @@ const getShortVideoById = (data) => {
    })
 }
 
-const updateShortVideoById = (data) => {
+const updateShortVideoById = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idShortVideo || !data.content || !data.scope) {
@@ -4600,60 +4281,50 @@ const updateShortVideoById = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-            }
-            else {
-               let idUser = decode.id
-               let shortVideo = await db.shortVideos.findOne({
+            let idUser = payload.id
+            let shortVideo = await db.shortVideos.findOne({
+               where: {
+                  id: data.idShortVideo,
+                  idUser
+               },
+               raw: false
+            })
+
+            if (shortVideo) {
+               shortVideo.content = data.content
+               shortVideo.scope = data.scope
+               shortVideo.loadImage = data?.editImage ?? 'true'
+               shortVideo.loadVideo = data?.editVideo ?? 'true'
+               await shortVideo.save();
+
+               await db.hashTagVideos.destroy({
                   where: {
-                     id: data.idShortVideo,
-                     idUser
-                  },
-                  raw: false
+                     idShortVideo: data.idShortVideo
+                  }
                })
 
-               if (shortVideo) {
-                  shortVideo.content = data.content
-                  shortVideo.scope = data.scope
-                  shortVideo.loadImage = data?.editImage ?? 'true'
-                  shortVideo.loadVideo = data?.editVideo ?? 'true'
-                  await shortVideo.save();
-
-                  await db.hashTagVideos.destroy({
-                     where: {
-                        idShortVideo: data.idShortVideo
+               if (data?.listHashTag?.length > 0) {
+                  console.log('list hash tag', data?.listHashTag);
+                  let arrHashTag = data?.listHashTag?.map(item => {
+                     return {
+                        id: uuidv4(),
+                        idShortVideo: data.idShortVideo,
+                        idProduct: item
                      }
                   })
-
-                  if (data?.listHashTag?.length > 0) {
-                     console.log('list hash tag', data?.listHashTag);
-                     let arrHashTag = data?.listHashTag?.map(item => {
-                        return {
-                           id: uuidv4(),
-                           idShortVideo: data.idShortVideo,
-                           idProduct: item
-                        }
-                     })
-                     console.log('arr hash tag', arrHashTag);
-                     await db.hashTagVideos.bulkCreate(arrHashTag, { individualHooks: true })
-                  }
-                  resolve({
-                     errCode: 0,
-                  })
-
+                  console.log('arr hash tag', arrHashTag);
+                  await db.hashTagVideos.bulkCreate(arrHashTag, { individualHooks: true })
                }
-               else {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Không tìm thấy video!',
-                  })
-               }
+               resolve({
+                  errCode: 0,
+               })
+
+            }
+            else {
+               resolve({
+                  errCode: 3,
+                  errMessage: 'Không tìm thấy video!',
+               })
             }
          }
       }
@@ -4663,7 +4334,7 @@ const updateShortVideoById = (data) => {
    })
 }
 
-const getListBlogUserByPage = (data) => {
+const getListBlogUserByPage = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.page) {
@@ -4674,125 +4345,115 @@ const getListBlogUserByPage = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-            }
-            else {
-               let idUser = decode.id
-               let date = new Date().getTime()
-               let blogs = await db.blogs.findAll({
-                  where: {
-                     idUser,
+            let idUser = payload.id
+            let date = new Date().getTime()
+            let blogs = await db.blogs.findAll({
+               where: {
+                  idUser,
+               },
+               offset: (data.page - 1) * 10,
+               limit: 10,
+               attributes: {
+                  exclude: ['updatedAt', 'timeBlog', 'idUser', 'contentMarkdown']
+               },
+               include: [
+                  {
+                     model: db.imageBlogs,
+                     attributes: {
+                        exclude: ['createdAt', 'updatedAt', 'stt', 'idCloudinary', 'idBlog', '']
+                     }
                   },
-                  offset: (data.page - 1) * 10,
-                  limit: 10,
-                  attributes: {
-                     exclude: ['updatedAt', 'timeBlog', 'idUser', 'contentMarkdown']
+                  {
+                     model: db.videoBlogs,
+                     attributes: {
+                        exclude: ['createdAt', 'updatedAt', 'stt', 'idBlog', '']
+                     }
                   },
-                  include: [
-                     {
-                        model: db.imageBlogs,
-                        attributes: {
-                           exclude: ['createdAt', 'updatedAt', 'stt', 'idCloudinary', 'idBlog', '']
-                        }
-                     },
-                     {
-                        model: db.videoBlogs,
-                        attributes: {
-                           exclude: ['createdAt', 'updatedAt', 'stt', 'idBlog', '']
-                        }
-                     },
-                     {
-                        model: db.User,
-                        attributes: {
-                           exclude: [
-                              'updatedAt', 'statusUser', 'sdt', 'pass', 'keyVerify', 'idGoogle', 'idGithub', 'idFacebook', 'id', 'email', 'createdAt', 'birtday', 'gender'
-                           ]
-                        },
-                        where: {
-                           statusUser: {
-                              [Op.ne]: 'false'
-                           }
-                        }
-                     },
-                     {
-                        model: db.blogShares, as: 'blogs-blogShares-parent',
-                        attributes: {
-                           exclude: ['createdAt', 'updatedAt', 'stt', 'idBlogShare', 'idProduct', 'idBlog']
-                        },
-                        include: [
-                           {
-                              model: db.product,
-                              attributes: {
-                                 exclude: ['createdAt', 'updatedAt', 'stt', 'sold', 'priceProduct', 'nameProductEn', 'isSell', 'idTypeProduct', 'idTrademark', 'contentMarkdown', 'contentHTML']
-                              },
-                              include: [
-                                 {
-                                    model: db.imageProduct, as: 'imageProduct-product',
-                                 }
-                              ]
-                           },
-                           {
-                              model: db.blogs, as: 'blogs-blogShares-child',
-                              attributes: {
-                                 exclude: ['createdAt', 'updatedAt', 'stt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
-                              },
-                           }
+                  {
+                     model: db.User,
+                     attributes: {
+                        exclude: [
+                           'updatedAt', 'statusUser', 'sdt', 'pass', 'keyVerify', 'idGoogle', 'idGithub', 'idFacebook', 'id', 'email', 'createdAt', 'birtday', 'gender'
                         ]
                      },
-                     // {
-                     //    model: db.likeBlog,
-                     //    attributes: ['id'],
-                     // },
-                     // {
-                     //    model: db.blogShares, as: 'listBlogShare',
-                     //    attributes: ['id']
-                     // },
-                     // {
-                     //    model: db.commentBlog,
-                     //    attributes: ['id']
-                     // }
-
-                  ],
-                  order: [['stt', 'DESC']],
-                  raw: false,
-                  nest: true
-               })
-
-               let count = await db.blogs.count({
-                  where: {
-                     idUser,
+                     where: {
+                        statusUser: {
+                           [Op.ne]: 'false'
+                        }
+                     }
                   },
-                  include: [
-                     {
-                        model: db.User,
-                        attributes: {
-                           exclude: [
-                              'updatedAt', 'statusUser', 'sdt', 'pass', 'keyVerify', 'idGoogle', 'idGithub', 'idFacebook', 'id', 'email', 'createdAt', 'birtday', 'gender'
+                  {
+                     model: db.blogShares, as: 'blogs-blogShares-parent',
+                     attributes: {
+                        exclude: ['createdAt', 'updatedAt', 'stt', 'idBlogShare', 'idProduct', 'idBlog']
+                     },
+                     include: [
+                        {
+                           model: db.product,
+                           attributes: {
+                              exclude: ['createdAt', 'updatedAt', 'stt', 'sold', 'priceProduct', 'nameProductEn', 'isSell', 'idTypeProduct', 'idTrademark', 'contentMarkdown', 'contentHTML']
+                           },
+                           include: [
+                              {
+                                 model: db.imageProduct, as: 'imageProduct-product',
+                              }
                            ]
                         },
-                        where: {
-                           statusUser: {
-                              [Op.ne]: 'false'
-                           }
+                        {
+                           model: db.blogs, as: 'blogs-blogShares-child',
+                           attributes: {
+                              exclude: ['createdAt', 'updatedAt', 'stt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
+                           },
                         }
-                     },
-                  ],
-                  raw: false,
-                  nest: true
-               })
+                     ]
+                  },
+                  // {
+                  //    model: db.likeBlog,
+                  //    attributes: ['id'],
+                  // },
+                  // {
+                  //    model: db.blogShares, as: 'listBlogShare',
+                  //    attributes: ['id']
+                  // },
+                  // {
+                  //    model: db.commentBlog,
+                  //    attributes: ['id']
+                  // }
 
-               resolve({
-                  errCode: 0,
-                  data: blogs,
-                  count
-               })
-            }
+               ],
+               order: [['stt', 'DESC']],
+               raw: false,
+               nest: true
+            })
+
+            let count = await db.blogs.count({
+               where: {
+                  idUser,
+               },
+               include: [
+                  {
+                     model: db.User,
+                     attributes: {
+                        exclude: [
+                           'updatedAt', 'statusUser', 'sdt', 'pass', 'keyVerify', 'idGoogle', 'idGithub', 'idFacebook', 'id', 'email', 'createdAt', 'birtday', 'gender'
+                        ]
+                     },
+                     where: {
+                        statusUser: {
+                           [Op.ne]: 'false'
+                        }
+                     }
+                  },
+               ],
+               raw: false,
+               nest: true
+            })
+
+            resolve({
+               errCode: 0,
+               data: blogs,
+               count
+            })
          }
       }
       catch (e) {
@@ -4801,7 +4462,7 @@ const getListBlogUserByPage = (data) => {
    })
 }
 
-const deleteBlogUserById = (data) => {
+const deleteBlogUserById = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idBlog) {
@@ -4812,99 +4473,89 @@ const deleteBlogUserById = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id
+
+            let blog = await db.blogs.findOne({
+               where: {
+                  id: data.idBlog,
+                  idUser
+               },
+               include: [
+                  {
+                     model: db.blogShares,
+                     as: 'blogs-blogShares-parent',
+                  }
+               ],
+               raw: false,
+               nest: true
+            })
+            if (!blog) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 3,
+                  errMessage: 'Bài viết không tồn tại!',
                })
             }
             else {
-               let idUser = decode.id
-
-               let blog = await db.blogs.findOne({
+               await db.blogShares.destroy({
                   where: {
-                     id: data.idBlog,
-                     idUser
-                  },
-                  include: [
-                     {
-                        model: db.blogShares,
-                        as: 'blogs-blogShares-parent',
-                     }
-                  ],
-                  raw: false,
-                  nest: true
+                     idBlog: blog.id
+                  }
                })
-               if (!blog) {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Bài viết không tồn tại!',
+               let videoBlog = await db.videoBlogs.findOne({
+                  where: {
+                     idBlog: blog.id
+                  },
+                  raw: false
+               })
+               if (videoBlog) {
+                  if (videoBlog.idDrive !== '')
+                     GG_Drive.deleteFile(videoBlog.idDrive)
+                  await videoBlog.destroy()
+               }
+               let imageBlogs = await db.imageBlogs.findAll({
+                  where: {
+                     idBlog: blog.id
+                  }
+               })
+               if (imageBlogs && imageBlogs.length > 0) {
+                  imageBlogs.map(item => {
+                     cloudinary.v2.uploader.destroy(item.idCloudinary)
                   })
                }
-               else {
-                  await db.blogShares.destroy({
-                     where: {
-                        idBlog: blog.id
-                     }
-                  })
-                  let videoBlog = await db.videoBlogs.findOne({
-                     where: {
-                        idBlog: blog.id
-                     },
-                     raw: false
-                  })
-                  if (videoBlog) {
-                     if (videoBlog.idDrive !== '')
-                        GG_Drive.deleteFile(videoBlog.idDrive)
-                     await videoBlog.destroy()
+               await db.imageBlogs.destroy({
+                  where: {
+                     idBlog: blog.id
                   }
-                  let imageBlogs = await db.imageBlogs.findAll({
-                     where: {
-                        idBlog: blog.id
-                     }
-                  })
-                  if (imageBlogs && imageBlogs.length > 0) {
-                     imageBlogs.map(item => {
-                        cloudinary.v2.uploader.destroy(item.idCloudinary)
+               })
+
+
+               //xoa amount share
+               if (blog.typeBlog === "shareBlog") {
+                  if (data.idBlogShare) {
+                     let blogShare = await db.blogs.findOne({
+                        where: {
+                           id: data.idBlogShare
+                        },
+                        raw: false
                      })
-                  }
-                  await db.imageBlogs.destroy({
-                     where: {
-                        idBlog: blog.id
+
+
+                     if (blogShare) {
+                        console.log('tim thay');
+                        blogShare.amountShare = blogShare.amountShare - 1
+                        await blogShare.save()
                      }
-                  })
-
-
-                  //xoa amount share
-                  if (blog.typeBlog === "shareBlog") {
-                     if (data.idBlogShare) {
-                        let blogShare = await db.blogs.findOne({
-                           where: {
-                              id: data.idBlogShare
-                           },
-                           raw: false
-                        })
-
-
-                        if (blogShare) {
-                           console.log('tim thay');
-                           blogShare.amountShare = blogShare.amountShare - 1
-                           await blogShare.save()
-                        }
-                        else {
-                           console.log('khong tim thay');
-                        }
+                     else {
+                        console.log('khong tim thay');
                      }
                   }
-
-
-                  await blog.destroy()
-                  resolve({
-                     errCode: 0,
-                  })
                }
+
+
+               await blog.destroy()
+               resolve({
+                  errCode: 0,
+               })
             }
          }
       }
@@ -4914,7 +4565,7 @@ const deleteBlogUserById = (data) => {
    })
 }
 
-const editContentBlogUserById = (data) => {
+const editContentBlogUserById = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idBlog || !data.content) {
@@ -4925,38 +4576,28 @@ const editContentBlogUserById = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id
+
+            let blog = await db.blogs.findOne({
+               where: {
+                  idUser,
+                  id: data.idBlog
+               },
+               raw: false
+            })
+            if (!blog) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 3,
+                  errMessage: 'Bài viết không tồn tại!',
                })
             }
             else {
-               let idUser = decode.id
+               blog.contentHTML = data.content
+               await blog.save()
 
-               let blog = await db.blogs.findOne({
-                  where: {
-                     idUser,
-                     id: data.idBlog
-                  },
-                  raw: false
+               resolve({
+                  errCode: 0,
                })
-               if (!blog) {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Bài viết không tồn tại!',
-                  })
-               }
-               else {
-                  blog.contentHTML = data.content
-                  await blog.save()
-
-                  resolve({
-                     errCode: 0,
-                  })
-               }
             }
          }
       }
@@ -4966,7 +4607,7 @@ const editContentBlogUserById = (data) => {
    })
 }
 
-const deleteCommentBlogById = (data) => {
+const deleteCommentBlogById = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idComment) {
@@ -4977,60 +4618,50 @@ const deleteCommentBlogById = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-            }
-            else {
-               let idUser = decode.id
-               let commentBlog = await db.commentBlog.findOne({
-                  where: {
-                     id: data.idComment,
-                     idUser
-                  },
-                  include: [
-                     {
-                        model: db.User,
-                        where: {
-                           statusUser: {
-                              [Op.ne]: 'false'
-                           }
+            let idUser = payload.id
+            let commentBlog = await db.commentBlog.findOne({
+               where: {
+                  id: data.idComment,
+                  idUser
+               },
+               include: [
+                  {
+                     model: db.User,
+                     where: {
+                        statusUser: {
+                           [Op.ne]: 'false'
                         }
                      }
-                  ],
-                  raw: false,
-                  nest: true
-               })
-
-               if (!commentBlog) {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Hiện không thể thực hiện tính năng này!',
-                  })
-                  return;
-               }
-               else {
-                  await commentBlog.destroy()
-
-                  let blog = await db.blogs.findOne({
-                     where: {
-                        id: commentBlog.idBlog
-                     },
-                     raw: false
-                  })
-                  if (blog) {
-                     blog.amountComment = blog.amountComment - 1
-                     await blog.save()
                   }
+               ],
+               raw: false,
+               nest: true
+            })
 
-                  resolve({
-                     errCode: 0,
-                  })
+            if (!commentBlog) {
+               resolve({
+                  errCode: 3,
+                  errMessage: 'Hiện không thể thực hiện tính năng này!',
+               })
+               return;
+            }
+            else {
+               await commentBlog.destroy()
+
+               let blog = await db.blogs.findOne({
+                  where: {
+                     id: commentBlog.idBlog
+                  },
+                  raw: false
+               })
+               if (blog) {
+                  blog.amountComment = blog.amountComment - 1
+                  await blog.save()
                }
+
+               resolve({
+                  errCode: 0,
+               })
             }
          }
       }
@@ -5040,7 +4671,7 @@ const deleteCommentBlogById = (data) => {
    })
 }
 
-const updateCommentBlogById = (data) => {
+const updateCommentBlogById = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idComment || !data.content) {
@@ -5051,49 +4682,39 @@ const updateCommentBlogById = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-            }
-            else {
-               let idUser = decode.id
-               let commentBlog = await db.commentBlog.findOne({
-                  where: {
-                     id: data.idComment,
-                     idUser
-                  },
-                  include: [
-                     {
-                        model: db.User,
-                        where: {
-                           statusUser: {
-                              [Op.ne]: 'false'
-                           }
+            let idUser = payload.id
+            let commentBlog = await db.commentBlog.findOne({
+               where: {
+                  id: data.idComment,
+                  idUser
+               },
+               include: [
+                  {
+                     model: db.User,
+                     where: {
+                        statusUser: {
+                           [Op.ne]: 'false'
                         }
                      }
-                  ],
-                  raw: false,
-                  nest: true
-               })
+                  }
+               ],
+               raw: false,
+               nest: true
+            })
 
-               if (!commentBlog) {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Hiện không thể thực hiện tính năng này!',
-                  })
-                  return;
-               }
-               else {
-                  commentBlog.content = data.content
-                  await commentBlog.save()
-                  resolve({
-                     errCode: 0,
-                  })
-               }
+            if (!commentBlog) {
+               resolve({
+                  errCode: 3,
+                  errMessage: 'Hiện không thể thực hiện tính năng này!',
+               })
+               return;
+            }
+            else {
+               commentBlog.content = data.content
+               await commentBlog.save()
+               resolve({
+                  errCode: 0,
+               })
             }
          }
       }
@@ -5235,7 +4856,7 @@ const getListBlogByIdUser = (data) => {
    })
 }
 
-const saveBlogCollection = (data) => {
+const saveBlogCollection = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idBlog) {
@@ -5246,53 +4867,43 @@ const saveBlogCollection = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id
+
+            let checkBlog = await db.blogs.findOne({
+               where: {
+                  id: data.idBlog
+               }
+            })
+
+            if (!checkBlog) {
                resolve({
                   errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errMessage: 'Không tìm thấy bài viết!',
                })
+               return;
             }
-            else {
-               let idUser = decode.id
 
-               let checkBlog = await db.blogs.findOne({
-                  where: {
-                     id: data.idBlog
-                  }
-               })
+            let [collection, create] = await db.collectionBlogs.findOrCreate({
+               where: {
+                  idBlog: data.idBlog,
+                  idUser
+               },
+               defaults: {
+                  id: uuidv4()
+               },
+               raw: false
+            })
 
-               if (!checkBlog) {
-                  resolve({
-                     errCode: 2,
-                     errMessage: 'Không tìm thấy bài viết!',
-                  })
-                  return;
-               }
-
-               let [collection, create] = await db.collectionBlogs.findOrCreate({
-                  where: {
-                     idBlog: data.idBlog,
-                     idUser
-                  },
-                  defaults: {
-                     id: uuidv4()
-                  },
-                  raw: false
-               })
-
-               if (!create) {
-                  await collection.destroy()
-                  resolve({
-                     errCode: 0,
-                  })
-                  return
-               }
+            if (!create) {
+               await collection.destroy()
                resolve({
                   errCode: 0,
                })
+               return
             }
+            resolve({
+               errCode: 0,
+            })
          }
       }
       catch (e) {
@@ -5301,7 +4912,7 @@ const saveBlogCollection = (data) => {
    })
 }
 
-const getListCollectionBlogUserByPage = (data) => {
+const getListCollectionBlogUserByPage = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.page) {
@@ -5312,78 +4923,64 @@ const getListCollectionBlogUserByPage = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-            }
-            else {
-               let idUser = decode.id
+            let idUser = payload.id
 
-               let collections = await db.collectionBlogs.findAll({
-                  where: {
-                     idUser
-                  },
-                  limit: 20,
-                  offset: (data.page - 1) * 20,
-                  attributes: ['id', 'createdAt'],
-                  include: [
-                     {
-                        model: db.blogs,
-                        attributes: ['contentHTML', 'backgroundColor', 'id'],
-                        include: [
-                           {
-                              model: db.User,
-                              attributes: ['firstName', 'lastName'],
-                              where: {
-                                 statusUser: {
-                                    [Op.ne]: 'false'
-                                 }
+            let collections = await db.collectionBlogs.findAll({
+               where: {
+                  idUser
+               },
+               limit: 20,
+               offset: (data.page - 1) * 20,
+               attributes: ['id', 'createdAt'],
+               include: [
+                  {
+                     model: db.blogs,
+                     attributes: ['contentHTML', 'backgroundColor', 'id'],
+                     include: [
+                        {
+                           model: db.User,
+                           attributes: ['firstName', 'lastName'],
+                           where: {
+                              statusUser: {
+                                 [Op.ne]: 'false'
                               }
                            }
-                        ]
-                     },
-
-                  ],
-                  raw: false
-               })
-
-               let count = await db.collectionBlogs.count({
-                  where: {
-                     idUser
+                        }
+                     ]
                   },
-                  include: [
-                     {
-                        model: db.blogs,
-                        include: [
-                           {
-                              model: db.User,
-                              where: {
-                                 statusUser: {
-                                    [Op.ne]: 'false'
-                                 }
+
+               ],
+               raw: false
+            })
+
+            let count = await db.collectionBlogs.count({
+               where: {
+                  idUser
+               },
+               include: [
+                  {
+                     model: db.blogs,
+                     include: [
+                        {
+                           model: db.User,
+                           where: {
+                              statusUser: {
+                                 [Op.ne]: 'false'
                               }
                            }
-                        ]
-                     },
+                        }
+                     ]
+                  },
 
-                  ],
-                  raw: false
-               })
+               ],
+               raw: false
+            })
 
-
-
-               resolve({
-                  errCode: 0,
-                  data: collections,
-                  count
-               })
-
-
-            }
+            resolve({
+               errCode: 0,
+               data: collections,
+               count
+            })
          }
       }
       catch (e) {
@@ -5392,7 +4989,7 @@ const getListCollectionBlogUserByPage = (data) => {
    })
 }
 
-const deleteCollectBlogById = (data) => {
+const deleteCollectBlogById = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idCollect) {
@@ -5403,29 +5000,17 @@ const deleteCollectBlogById = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-            }
-            else {
-               let idUser = decode.id
+            let idUser = payload.id
 
-               await db.collectionBlogs.destroy({
-                  where: {
-                     id: data.idCollect
-                  }
-               })
+            await db.collectionBlogs.destroy({
+               where: {
+                  id: data.idCollect
+               }
+            })
 
-               resolve({
-                  errCode: 0,
-               })
-
-
-            }
+            resolve({
+               errCode: 0,
+            })
          }
       }
       catch (e) {
@@ -5434,7 +5019,7 @@ const deleteCollectBlogById = (data) => {
    })
 }
 
-const createCommentShortVideo = (data) => {
+const createCommentShortVideo = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idShortVideo || !data.content) {
@@ -5445,70 +5030,60 @@ const createCommentShortVideo = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let shortVideo = await db.shortVideos.findOne({
+               where: {
+                  id: data.idShortVideo
+               },
+               raw: false
+            })
+            if (!shortVideo) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 3,
+                  errMessage: 'Không tìm thấy video nào!',
+               })
+               return
+            }
+
+            let idCmt = uuidv4()
+            await db.commentShortVideos.create({
+               id: idCmt,
+               idUser: payload.id,
+               idShortVideo: data.idShortVideo,
+               content: data.content
+            })
+
+            shortVideo.countComment = shortVideo.countComment + 1
+            await shortVideo.save()
+
+            let user = await db.User.findOne({
+               where: {
+                  id: payload.id
+               }
+            })
+            //notify
+            if (user.id !== shortVideo.idUser) {
+               let date = new Date().getTime()
+               await db.notifycations.create({
+                  id: uuidv4(),
+                  idUser: shortVideo.idUser,
+                  title: 'Bình luận mới trong video của bạn',
+                  content: `${user.firstName} ${user.lastName} đã để lại bình luận: ${data.content}`,
+                  timeCreate: date,
+                  typeNotify: 'short_video',
+                  urlImage: shortVideo.urlImage,
+                  redirect_to: `/short-video/foryou?_isv=${shortVideo.id}`
+               })
+
+               handleEmit(`new-notify-${shortVideo.idUser}`, {
+                  title: `${user.firstName} ${user.lastName} đã bình luận video của bạn`,
+                  content: `${data.content}`
                })
             }
-            else {
-               let shortVideo = await db.shortVideos.findOne({
-                  where: {
-                     id: data.idShortVideo
-                  },
-                  raw: false
-               })
-               if (!shortVideo) {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Không tìm thấy video nào!',
-                  })
-                  return
-               }
 
-               let idCmt = uuidv4()
-               await db.commentShortVideos.create({
-                  id: idCmt,
-                  idUser: decode.id,
-                  idShortVideo: data.idShortVideo,
-                  content: data.content
-               })
-
-               shortVideo.countComment = shortVideo.countComment + 1
-               await shortVideo.save()
-
-               let user = await db.User.findOne({
-                  where: {
-                     id: decode.id
-                  }
-               })
-               //notify
-               if (user.id !== shortVideo.idUser) {
-                  let date = new Date().getTime()
-                  await db.notifycations.create({
-                     id: uuidv4(),
-                     idUser: shortVideo.idUser,
-                     title: 'Bình luận mới trong video của bạn',
-                     content: `${user.firstName} ${user.lastName} đã để lại bình luận: ${data.content}`,
-                     timeCreate: date,
-                     typeNotify: 'short_video',
-                     urlImage: shortVideo.urlImage,
-                     redirect_to: `/short-video/foryou?_isv=${shortVideo.id}`
-                  })
-
-                  handleEmit(`new-notify-${shortVideo.idUser}`, {
-                     title: `${user.firstName} ${user.lastName} đã bình luận video của bạn`,
-                     content: `${data.content}`
-                  })
-               }
-
-               resolve({
-                  errCode: 0,
-                  idCmt: idCmt
-               })
-            }
+            resolve({
+               errCode: 0,
+               idCmt: idCmt
+            })
          }
       }
       catch (e) {
@@ -5518,7 +5093,7 @@ const createCommentShortVideo = (data) => {
 }
 
 
-const deleteCommentShortVideoById = (data) => {
+const deleteCommentShortVideoById = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idCommemtShortVideo) {
@@ -5529,48 +5104,38 @@ const deleteCommentShortVideoById = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let commentShortVideos = await db.commentShortVideos.findOne({
+               where: {
+                  id: data.idCommemtShortVideo,
+                  idUser: payload.id
+               },
+               raw: false
+            })
+            if (!commentShortVideos) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 3,
+                  errMessage: 'Không tìm thấy hoặc bạn không được phép thực hiện chức năng này!',
                })
+               return
             }
-            else {
-               let commentShortVideos = await db.commentShortVideos.findOne({
-                  where: {
-                     id: data.idCommemtShortVideo,
-                     idUser: decode.id
-                  },
-                  raw: false
-               })
-               if (!commentShortVideos) {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Không tìm thấy hoặc bạn không được phép thực hiện chức năng này!',
-                  })
-                  return
-               }
 
-               let shortVideo = await db.shortVideos.findOne({
-                  where: {
-                     id: commentShortVideos.idShortVideo
-                  },
-                  raw: false
-               })
+            let shortVideo = await db.shortVideos.findOne({
+               where: {
+                  id: commentShortVideos.idShortVideo
+               },
+               raw: false
+            })
 
-               if (shortVideo) {
-                  shortVideo.countComment = shortVideo.countComment - 1
-                  await shortVideo.save()
-               }
-
-               await commentShortVideos.destroy()
-
-               resolve({
-                  errCode: 0,
-               })
+            if (shortVideo) {
+               shortVideo.countComment = shortVideo.countComment - 1
+               await shortVideo.save()
             }
+
+            await commentShortVideos.destroy()
+
+            resolve({
+               errCode: 0,
+            })
          }
       }
       catch (e) {
@@ -5580,7 +5145,7 @@ const deleteCommentShortVideoById = (data) => {
 }
 
 
-const editCommentShortVideoById = (data) => {
+const editCommentShortVideoById = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idCommemtShortVideo || !data.content || !data.idShortVideo) {
@@ -5591,210 +5156,141 @@ const editCommentShortVideoById = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id
+            let commentShortVideos = await db.commentShortVideos.findOne({
+               where: {
+                  id: data.idCommemtShortVideo,
+                  idUser,
+                  idShortVideo: data.idShortVideo
+               },
+               raw: false
+            })
+            if (!commentShortVideos) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 3,
+                  errMessage: 'Không tìm thấy hoặc bạn không được phép thực hiện chức năng này!',
                })
+               return
             }
-            else {
-               let idUser = decode.id
-               let commentShortVideos = await db.commentShortVideos.findOne({
-                  where: {
-                     id: data.idCommemtShortVideo,
-                     idUser,
-                     idShortVideo: data.idShortVideo
-                  },
-                  raw: false
-               })
-               if (!commentShortVideos) {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Không tìm thấy hoặc bạn không được phép thực hiện chức năng này!',
-                  })
-                  return
-               }
 
-               commentShortVideos.content = data.content
-               await commentShortVideos.save()
+            commentShortVideos.content = data.content
+            await commentShortVideos.save()
+
+            resolve({
+               errCode: 0,
+            })
+         }
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
+
+const toggleLikeShortVideo = (data, payload) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         if (!data.accessToken || !data.idShortVideo) {
+            resolve({
+               errCode: 1,
+               errMessage: 'Missing required parameter!',
+               data
+            })
+         }
+         else {
+            let idUser = payload.id
+            let shortVideo = await db.shortVideos.findOne({
+               where: {
+                  id: data.idShortVideo
+               },
+               raw: false
+            })
+
+            if (!shortVideo) {
+               resolve({
+                  errCode: 3,
+                  errMessage: 'Không tìm thấy hoặc bạn không được phép thực hiện chức năng này!',
+               })
+               return
+            }
+
+            let [likeShortVideo, create] = await db.likeShortVideos.findOrCreate({
+               where: {
+                  idUser,
+                  idShortVideo: shortVideo.id
+               },
+               defaults: {
+                  id: uuidv4()
+               },
+            })
+
+            if (create) {
+               shortVideo.countLike = shortVideo.countLike + 1;
+               await shortVideo.save()
+
+               let user = await db.User.findOne({
+                  where: {
+                     id: idUser
+                  }
+               })
+
+               if (user.id !== shortVideo.idUser) {
+                  let date = new Date().getTime()
+                  await db.notifycations.create({
+                     id: uuidv4(),
+                     idUser: shortVideo.idUser,
+                     title: 'Lượt yêu thích video ngắn mới',
+                     content: `${user.firstName} ${user.lastName} đã thích 1 video của bạn`,
+                     timeCreate: date,
+                     typeNotify: 'short_video',
+                     urlImage: shortVideo.urlImage,
+                     redirect_to: `/short-video/foryou?_isv=${shortVideo.id}`
+                  })
+
+                  handleEmit(`new-notify-${shortVideo.idUser}`, {
+                     title: 'Lượt yêu thích video ngắn mới',
+                     content: `${user.firstName} ${user.lastName} đã thích 1 video của bạn`
+                  })
+               }
 
                resolve({
                   errCode: 0,
-               })
-            }
-         }
-      }
-      catch (e) {
-         reject(e);
-      }
-   })
-}
-
-const toggleLikeShortVideo = (data) => {
-   return new Promise(async (resolve, reject) => {
-      try {
-         if (!data.accessToken || !data.idShortVideo) {
-            resolve({
-               errCode: 1,
-               errMessage: 'Missing required parameter!',
-               data
-            })
-         }
-         else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  mess: 'add'
                })
             }
             else {
-               let idUser = decode.id
-               let shortVideo = await db.shortVideos.findOne({
-                  where: {
-                     id: data.idShortVideo
-                  },
-                  raw: false
-               })
+               shortVideo.countLike = shortVideo.countLike - 1;
+               await shortVideo.save()
 
-               if (!shortVideo) {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Không tìm thấy hoặc bạn không được phép thực hiện chức năng này!',
-                  })
-                  return
-               }
-
-               let [likeShortVideo, create] = await db.likeShortVideos.findOrCreate({
+               await db.likeShortVideos.destroy({
                   where: {
                      idUser,
                      idShortVideo: shortVideo.id
-                  },
-                  defaults: {
-                     id: uuidv4()
-                  },
-               })
-
-               if (create) {
-                  shortVideo.countLike = shortVideo.countLike + 1;
-                  await shortVideo.save()
-
-                  let user = await db.User.findOne({
-                     where: {
-                        id: idUser
-                     }
-                  })
-
-                  if (user.id !== shortVideo.idUser) {
-                     let date = new Date().getTime()
-                     await db.notifycations.create({
-                        id: uuidv4(),
-                        idUser: shortVideo.idUser,
-                        title: 'Lượt yêu thích video ngắn mới',
-                        content: `${user.firstName} ${user.lastName} đã thích 1 video của bạn`,
-                        timeCreate: date,
-                        typeNotify: 'short_video',
-                        urlImage: shortVideo.urlImage,
-                        redirect_to: `/short-video/foryou?_isv=${shortVideo.id}`
-                     })
-
-                     handleEmit(`new-notify-${shortVideo.idUser}`, {
-                        title: 'Lượt yêu thích video ngắn mới',
-                        content: `${user.firstName} ${user.lastName} đã thích 1 video của bạn`
-                     })
-                  }
-
-                  resolve({
-                     errCode: 0,
-                     mess: 'add'
-                  })
-               }
-               else {
-                  shortVideo.countLike = shortVideo.countLike - 1;
-                  await shortVideo.save()
-
-                  await db.likeShortVideos.destroy({
-                     where: {
-                        idUser,
-                        idShortVideo: shortVideo.id
-                     }
-                  })
-
-                  let user = await db.User.findOne({
-                     where: {
-                        id: idUser
-                     }
-                  })
-
-                  await db.notifycations.destroy({
-                     where: {
-                        idUser: shortVideo.idUser,
-                        title: 'Lượt yêu thích video ngắn mới',
-                        typeNotify: 'short_video',
-                        content: `${user.firstName} ${user.lastName} đã thích 1 video của bạn`,
-                        urlImage: shortVideo.urlImage,
-                     },
-                  })
-
-
-
-                  resolve({
-                     errCode: 0,
-                     mess: 'remove'
-                  })
-               }
-            }
-         }
-      }
-      catch (e) {
-         reject(e);
-      }
-   })
-}
-
-const checkUserLikeShortVideo = (data) => {
-   return new Promise(async (resolve, reject) => {
-      try {
-         if (!data.accessToken || !data.idShortVideo) {
-            resolve({
-               errCode: 1,
-               errMessage: 'Missing required parameter!',
-               data
-            })
-         }
-         else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-            }
-            else {
-               let idUser = decode.id
-               let likeShortVideo = await db.likeShortVideos.findOne({
-                  where: {
-                     idUser,
-                     idShortVideo: data.idShortVideo
                   }
                })
 
-               if (likeShortVideo) {
-                  resolve({
-                     errCode: 0,
-                     mess: true
-                  })
-               }
-               else {
-                  resolve({
-                     errCode: 0,
-                     mess: false
-                  })
-               }
+               let user = await db.User.findOne({
+                  where: {
+                     id: idUser
+                  }
+               })
+
+               await db.notifycations.destroy({
+                  where: {
+                     idUser: shortVideo.idUser,
+                     title: 'Lượt yêu thích video ngắn mới',
+                     typeNotify: 'short_video',
+                     content: `${user.firstName} ${user.lastName} đã thích 1 video của bạn`,
+                     urlImage: shortVideo.urlImage,
+                  },
+               })
+
+
+
+               resolve({
+                  errCode: 0,
+                  mess: 'remove'
+               })
             }
          }
       }
@@ -5804,7 +5300,7 @@ const checkUserLikeShortVideo = (data) => {
    })
 }
 
-const saveCollectionShortVideo = (data) => {
+const checkUserLikeShortVideo = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idShortVideo) {
@@ -5815,40 +5311,25 @@ const saveCollectionShortVideo = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id
+            let likeShortVideo = await db.likeShortVideos.findOne({
+               where: {
+                  idUser,
+                  idShortVideo: data.idShortVideo
+               }
+            })
+
+            if (likeShortVideo) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 0,
+                  mess: true
                })
             }
             else {
-               let idUser = decode.id
-               let [collectionShortVideo, create] = await db.collectionShortVideos.findOrCreate({
-                  where: {
-                     idUser,
-                     idShortVideo: data.idShortVideo
-                  },
-                  defaults: {
-                     id: uuidv4()
-                  },
-                  raw: false
+               resolve({
+                  errCode: 0,
+                  mess: false
                })
-
-               if (create) {
-                  resolve({
-                     errCode: 0,
-                     mess: 'add'
-                  })
-               }
-               else {
-                  await collectionShortVideo.destroy();
-                  resolve({
-                     errCode: 0,
-                     mess: 'remove'
-                  })
-               }
             }
          }
       }
@@ -5858,7 +5339,7 @@ const saveCollectionShortVideo = (data) => {
    })
 }
 
-const CheckSaveCollectionShortVideo = (data) => {
+const saveCollectionShortVideo = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idShortVideo) {
@@ -5869,35 +5350,69 @@ const CheckSaveCollectionShortVideo = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id
+            let [collectionShortVideo, create] = await db.collectionShortVideos.findOrCreate({
+               where: {
+                  idUser,
+                  idShortVideo: data.idShortVideo
+               },
+               defaults: {
+                  id: uuidv4()
+               },
+               raw: false
+            })
+
+            if (create) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 0,
+                  mess: 'add'
                })
             }
             else {
-               let idUser = decode.id
-               let collectionShortVideo = await db.collectionShortVideos.findOne({
-                  where: {
-                     idUser,
-                     idShortVideo: data.idShortVideo
-                  },
+               await collectionShortVideo.destroy();
+               resolve({
+                  errCode: 0,
+                  mess: 'remove'
                })
+            }
+         }
+      }
+      catch (e) {
+         reject(e);
+      }
+   })
+}
 
-               if (collectionShortVideo) {
-                  resolve({
-                     errCode: 0,
-                     mess: true
-                  })
-               }
-               else {
-                  resolve({
-                     errCode: 0,
-                     mess: false
-                  })
-               }
+const CheckSaveCollectionShortVideo = (data, payload) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         if (!data.accessToken || !data.idShortVideo) {
+            resolve({
+               errCode: 1,
+               errMessage: 'Missing required parameter!',
+               data
+            })
+         }
+         else {
+            let idUser = payload.id
+            let collectionShortVideo = await db.collectionShortVideos.findOne({
+               where: {
+                  idUser,
+                  idShortVideo: data.idShortVideo
+               },
+            })
+
+            if (collectionShortVideo) {
+               resolve({
+                  errCode: 0,
+                  mess: true
+               })
+            }
+            else {
+               resolve({
+                  errCode: 0,
+                  mess: false
+               })
             }
          }
       }
@@ -6422,7 +5937,7 @@ const getUserById = (data) => {
    })
 }
 
-const deleteShortVideoById = (data) => {
+const deleteShortVideoById = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idShortVideo) {
@@ -6433,66 +5948,55 @@ const deleteShortVideoById = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
+            let idUser = payload.id
+            let shortVideo = await db.shortVideos.findOne({
+               where: {
+                  id: data.idShortVideo,
+                  idUser
+               },
+               raw: false
+            })
+            if (!shortVideo) {
                resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
+                  errCode: 3,
+                  errMessage: 'Không tìm thấy video nào!',
                })
+               return
             }
-            else {
-               let idUser = decode.id
-               let shortVideo = await db.shortVideos.findOne({
-                  where: {
-                     id: data.idShortVideo,
-                     idUser
-                  },
-                  raw: false
-               })
-               if (!shortVideo) {
-                  resolve({
-                     errCode: 3,
-                     errMessage: 'Không tìm thấy video nào!',
-                  })
-                  return
+
+            GG_Drive.deleteFile(shortVideo.idDriveVideo)
+            cloudinary.v2.uploader.destroy(shortVideo.idCloudinary)
+
+            await shortVideo.destroy()
+            console.log('xoa shortVideo');
+            await db.hashTagVideos.destroy({
+               where: {
+                  idShortVideo: data.idShortVideo
                }
+            })
+            console.log('xoa hashTagVideos');
+            await db.commentShortVideos.destroy({
+               where: {
+                  idShortVideo: data.idShortVideo
+               }
+            })
+            console.log('xoa commentShortVideos');
+            await db.likeShortVideos.destroy({
+               where: {
+                  idShortVideo: data.idShortVideo
+               }
+            })
+            console.log('xoa likeShortVideos');
+            await db.collectionShortVideos.destroy({
+               where: {
+                  idShortVideo: data.idShortVideo
+               }
+            })
+            console.log('xoa collectionShortVideos');
 
-               GG_Drive.deleteFile(shortVideo.idDriveVideo)
-               cloudinary.v2.uploader.destroy(shortVideo.idCloudinary)
-
-               await shortVideo.destroy()
-               console.log('xoa shortVideo');
-               await db.hashTagVideos.destroy({
-                  where: {
-                     idShortVideo: data.idShortVideo
-                  }
-               })
-               console.log('xoa hashTagVideos');
-               await db.commentShortVideos.destroy({
-                  where: {
-                     idShortVideo: data.idShortVideo
-                  }
-               })
-               console.log('xoa commentShortVideos');
-               await db.likeShortVideos.destroy({
-                  where: {
-                     idShortVideo: data.idShortVideo
-                  }
-               })
-               console.log('xoa likeShortVideos');
-               await db.collectionShortVideos.destroy({
-                  where: {
-                     idShortVideo: data.idShortVideo
-                  }
-               })
-               console.log('xoa collectionShortVideos');
-
-               resolve({
-                  errCode: 0,
-               })
-
-            }
+            resolve({
+               errCode: 0,
+            })
          }
       }
       catch (e) {
@@ -6501,7 +6005,7 @@ const deleteShortVideoById = (data) => {
    })
 }
 
-const checkLikeBlogById = (data) => {
+const checkLikeBlogById = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.idBlog || !data.accessToken) {
@@ -6512,29 +6016,18 @@ const checkLikeBlogById = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-            }
-            else {
-               let idUser = decode.id
-               let check = await db.likeBlog.count({
-                  where: {
-                     idUser,
-                     idBlog: data.idBlog
-                  }
-               })
+            let idUser = payload.id
+            let check = await db.likeBlog.count({
+               where: {
+                  idUser,
+                  idBlog: data.idBlog
+               }
+            })
 
-               resolve({
-                  errCode: 0,
-                  data: check === 0 ? false : true
-               })
-
-            }
+            resolve({
+               errCode: 0,
+               data: check === 0 ? false : true
+            })
          }
       }
       catch (e) {
@@ -6543,7 +6036,7 @@ const checkLikeBlogById = (data) => {
    })
 }
 
-const checkSaveBlogById = (data) => {
+const checkSaveBlogById = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.idBlog || !data.accessToken) {
@@ -6554,29 +6047,18 @@ const checkSaveBlogById = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-            }
-            else {
-               let idUser = decode.id
-               let check = await db.collectionBlogs.count({
-                  where: {
-                     idUser,
-                     idBlog: data.idBlog
-                  }
-               })
+            let idUser = payload.id
+            let check = await db.collectionBlogs.count({
+               where: {
+                  idUser,
+                  idBlog: data.idBlog
+               }
+            })
 
-               resolve({
-                  errCode: 0,
-                  data: check === 0 ? false : true
-               })
-
-            }
+            resolve({
+               errCode: 0,
+               data: check === 0 ? false : true
+            })
          }
       }
       catch (e) {
@@ -6599,7 +6081,7 @@ const testHeaderLogin = (data) => {
    })
 }
 
-const getListNotifyAll = (data) => {
+const getListNotifyAll = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken) {
@@ -6610,40 +6092,30 @@ const getListNotifyAll = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-            }
-            else {
-               let idUser = decode.id
+            let idUser = payload.id
 
-               let date = new Date().getTime() - 259200000
-               let rows = await db.notifycations.findAll({
-                  where: {
-                     idUser,
-                     timeCreate: {
-                        [Op.gt]: date
-                     }
-                  },
-                  limit: 10,
-                  order: [['timeCreate', 'DESC']],
-                  raw: true
-               })
+            let date = new Date().getTime() - 259200000
+            let rows = await db.notifycations.findAll({
+               where: {
+                  idUser,
+                  timeCreate: {
+                     [Op.gt]: date
+                  }
+               },
+               limit: 10,
+               order: [['timeCreate', 'DESC']],
+               raw: true
+            })
 
-               let count = rows.reduce((n, item) => {
-                  if (item.seen === 'false') return n + 1
-                  return n
-               }, 0)
-               resolve({
-                  errCode: 0,
-                  data: rows,
-                  count
-               })
-            }
+            let count = rows.reduce((n, item) => {
+               if (item.seen === 'false') return n + 1
+               return n
+            }, 0)
+            resolve({
+               errCode: 0,
+               data: rows,
+               count
+            })
          }
       }
       catch (e) {
@@ -6652,7 +6124,7 @@ const getListNotifyAll = (data) => {
    })
 }
 
-const getListNotifyByType = (data) => {
+const getListNotifyByType = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.type || !data.page) {
@@ -6663,47 +6135,37 @@ const getListNotifyByType = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-            }
-            else {
-               let idUser = decode.id
+            let idUser = payload.id
 
-               let date = new Date().getTime() - 604800000
-               let rows = await db.notifycations.findAll({
-                  where: {
-                     idUser,
-                     timeCreate: {
-                        [Op.gt]: date
-                     },
-                     typeNotify: data.type
+            let date = new Date().getTime() - 604800000
+            let rows = await db.notifycations.findAll({
+               where: {
+                  idUser,
+                  timeCreate: {
+                     [Op.gt]: date
                   },
-                  limit: 20,
-                  offset: (data.page - 1) * 20,
-                  order: [['timeCreate', 'DESC']]
-               })
+                  typeNotify: data.type
+               },
+               limit: 20,
+               offset: (data.page - 1) * 20,
+               order: [['timeCreate', 'DESC']]
+            })
 
-               let count = await db.notifycations.count({
-                  where: {
-                     idUser,
-                     timeCreate: {
-                        [Op.gt]: date
-                     },
-                     typeNotify: data.type
+            let count = await db.notifycations.count({
+               where: {
+                  idUser,
+                  timeCreate: {
+                     [Op.gt]: date
                   },
-               })
+                  typeNotify: data.type
+               },
+            })
 
-               resolve({
-                  errCode: 0,
-                  data: rows,
-                  count
-               })
-            }
+            resolve({
+               errCode: 0,
+               data: rows,
+               count
+            })
          }
       }
       catch (e) {
@@ -6712,7 +6174,7 @@ const getListNotifyByType = (data) => {
    })
 }
 
-const seenNotifyOfUser = (data) => {
+const seenNotifyOfUser = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken) {
@@ -6723,28 +6185,18 @@ const seenNotifyOfUser = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-            }
-            else {
-               let idUser = decode.id
+            let idUser = payload.id
 
-               await db.notifycations.update({ seen: "true" }, {
-                  where: {
-                     seen: 'false',
-                     idUser
-                  }
-               });
+            await db.notifycations.update({ seen: "true" }, {
+               where: {
+                  seen: 'false',
+                  idUser
+               }
+            });
 
-               resolve({
-                  errCode: 0,
-               })
-            }
+            resolve({
+               errCode: 0,
+            })
          }
       }
       catch (e) {
@@ -6779,7 +6231,7 @@ const sendEmailFromContact = (data) => {
 }
 
 
-const createNewReportVideo = (data) => {
+const createNewReportVideo = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idShortVideo || !data.content) {
@@ -6790,20 +6242,11 @@ const createNewReportVideo = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-               return
-            }
 
             await db.reportVideos.create({
                id: uuidv4(),
                idShortVideo: data.idShortVideo,
-               idUser: decode.id,
+               idUser: payload.id,
                content: data.content,
                status: 'true'
             })
@@ -6818,7 +6261,7 @@ const createNewReportVideo = (data) => {
    })
 }
 
-const createNewReportBlog = (data) => {
+const createNewReportBlog = (data, payload) => {
    return new Promise(async (resolve, reject) => {
       try {
          if (!data.accessToken || !data.idBlog || !data.content) {
@@ -6829,20 +6272,11 @@ const createNewReportBlog = (data) => {
             })
          }
          else {
-            let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
-            if (decode === null) {
-               resolve({
-                  errCode: 2,
-                  errMessage: 'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
-                  decode
-               })
-               return
-            }
 
             await db.reportBlogs.create({
                id: uuidv4(),
                idBlog: data.idBlog,
-               idUser: decode.id,
+               idUser: payload.id,
                content: data.content,
                status: 'true'
             })
@@ -6872,7 +6306,7 @@ module.exports = {
    createNewEvaluateProductFailed, updataEvaluateProduct, deleteVideoEvaluate,
    updateVideoEvaluate, updateProfileUser, updateAvatarUser,
    getConfirmCodeChangePass, confirmCodeChangePass, createNewBlog,
-   createNewImageBlog, uploadVideoNewBlog, getBlogById,
+   createNewImageBlog, uploadVideoNewBlog, getBlogEditById,
    updateBlog, shareProduct, shareBlog, toggleLikeBlog,
    createNewCommentBlog, createNewShortVideo, uploadCoverImageShortVideo,
    uploadVideoForShortVideo, getShortVideoById,

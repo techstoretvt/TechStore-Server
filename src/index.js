@@ -5,6 +5,8 @@ const cors = require('cors');
 const { Server } = require('socket.io')
 const http = require('http');
 const { ApolloServer } = require('apollo-server-express')
+const createError = require("http-errors");
+const logEvents = require('./helpers/logEvents')
 
 import configViewEngine from "./config/viewEngine";
 import initAppRoute from "./route/appRoute";
@@ -39,6 +41,30 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '100mb' }))
 initAppRoute(app);
 initUserRoute(app);
 initAdminRoute(app);
+
+app.get('/error', (req, res, next) => {
+    next(createError.InternalServerError('This is error.'))
+})
+
+// app.use((req, res, next) => {
+//     next(createError.NotFound('This route is not exits.'))
+// })
+
+app.use((err, req, res, next) => {
+    if (err.status && err.status >= 500)
+        logEvents(`${req.url} -- ${req.method} -- ${err.status || 500} -- ${err.message}`)
+
+    console.log({
+        status: err.status || 500,
+        errCode: -1,
+        errMessage: err.message
+    });
+    res.status(err.status || 500).json({
+        status: err.status || 500,
+        errCode: -1,
+        errMessage: err.message
+    })
+})
 
 //web socket
 io.on('connection', (socket) => {

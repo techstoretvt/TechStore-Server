@@ -2,26 +2,24 @@ import multer from 'multer';
 import userService from '../services/userService'
 require('dotenv').config();
 
+
 const upload = multer().single('video');
 
 
-const CreateUser = async (req, res) => {
+const CreateUser = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.CreateUser(req.body)
+        // console.log('headers: ', req.headers);
+        let data = await userService.CreateUser(req.body, req.headers)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const verifyCreateUser = async (req, res) => {
+const verifyCreateUser = async (req, res, next) => {
     try {
         //call service data
         let data = await userService.verifyCreateUser(req.body)
@@ -29,406 +27,306 @@ const verifyCreateUser = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const userLogin = async (req, res) => {
+const userLogin = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.userLogin(req.body)
+        let data = await userService.userLogin(req.body, req.headers)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const refreshToken = async (req, res) => {
+const refreshToken = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.refreshToken(req.body)
+        let data = await userService.refreshToken(req.body, req.headers)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const getUserLogin = async (req, res) => {
+const getUserLogin = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.getUserLogin(req.query)
+        let data = await userService.getUserLogin(req.query, req.payload)
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const verifyEmail = (req, res) => {
+const verifyEmail = (req, res, next) => {
     res.render('verifyEmailPage.ejs')
 }
 
-const accountVerifyPage = (req, res) => {
+const accountVerifyPage = (req, res, next) => {
     res.render('accountVerifyPage.ejs')
 }
 
-const loginGoogle = async (req, res) => {
+const loginGoogle = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.loginGoogle(req.body)
+        let data = await userService.loginGoogle(req.body, req.headers)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const loginFacebook = async (req, res) => {
+const loginFacebook = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.loginFacebook(req.body)
+        let data = await userService.loginFacebook(req.body, req.headers)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const loginGithub = async (req, res) => {
+const loginGithub = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.loginGithub(req.body)
+        let data = await userService.loginGithub(req.body, req.headers)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const addProductToCart = async (req, res) => {
+const addProductToCart = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.addProductToCart(req.body)
+        let data = await userService.addProductToCart(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const addCartOrMoveCart = async (req, res) => {
+const addCartOrMoveCart = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.addCartOrMoveCart(req.body)
+        let data = await userService.addCartOrMoveCart(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const addNewAddressUser = async (req, res) => {
+const addNewAddressUser = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.addNewAddressUser(req.body)
+        let data = await userService.addNewAddressUser(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const getAddressUser = async (req, res) => {
+const getAddressUser = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.getAddressUser(req.query)
+        let data = await userService.getAddressUser(req.query, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const setDefaultAddress = async (req, res) => {
+const setDefaultAddress = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.setDefaultAddress(req.body)
+        let data = await userService.setDefaultAddress(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const deleteAddressUser = async (req, res) => {
+const deleteAddressUser = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.deleteAddressUser(req.body)
+        let data = await userService.deleteAddressUser(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const editAddressUser = async (req, res) => {
+const editAddressUser = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.editAddressUser(req.body)
+        let data = await userService.editAddressUser(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const getListCartUser = async (req, res) => {
+const getListCartUser = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.getListCartUser(req.query)
+        let data = await userService.getListCartUser(req.query, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const editAmountCartUser = async (req, res) => {
+const editAmountCartUser = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.editAmountCartUser(req.body)
+        let data = await userService.editAmountCartUser(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const chooseProductInCart = async (req, res) => {
+const chooseProductInCart = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.chooseProductInCart(req.body)
+        let data = await userService.chooseProductInCart(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const deleteProductInCart = async (req, res) => {
+const deleteProductInCart = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.deleteProductInCart(req.body)
+        let data = await userService.deleteProductInCart(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const updateClassifyProductInCart = async (req, res) => {
+const updateClassifyProductInCart = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.updateClassifyProductInCart(req.body)
+        let data = await userService.updateClassifyProductInCart(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const createNewBill = async (req, res) => {
+const createNewBill = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.createNewBill(req.body)
+        let data = await userService.createNewBill(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const chooseAllProductInCart = async (req, res) => {
+const chooseAllProductInCart = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.chooseAllProductInCart(req.body)
+        let data = await userService.chooseAllProductInCart(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const getUserLoginRefreshToken = async (req, res) => {
+const getUserLoginRefreshToken = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.getUserLoginRefreshToken(req.query)
+        let data = await userService.getUserLoginRefreshToken(req.query, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const getListBillByType = async (req, res) => {
+const getListBillByType = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.getListBillByType(req.query)
+        let data = await userService.getListBillByType(req.query, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const userCancelBill = async (req, res) => {
+const userCancelBill = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.userCancelBill(req.body)
+        let data = await userService.userCancelBill(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const userRepurchaseBill = async (req, res) => {
+const userRepurchaseBill = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.userRepurchaseBill(req.body)
+        let data = await userService.userRepurchaseBill(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const getCodeVeridyForgetPass = async (req, res) => {
+const getCodeVeridyForgetPass = async (req, res, next) => {
     try {
         //call service data
         let data = await userService.getCodeVeridyForgetPass(req.body)
@@ -436,15 +334,11 @@ const getCodeVeridyForgetPass = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const changePassForget = async (req, res) => {
+const changePassForget = async (req, res, next) => {
     try {
         //call service data
         let data = await userService.changePassForget(req.body)
@@ -452,15 +346,11 @@ const changePassForget = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const checkKeyVerify = async (req, res) => {
+const checkKeyVerify = async (req, res, next) => {
     try {
         //call service data
         let data = await userService.checkKeyVerify(req.body)
@@ -468,47 +358,35 @@ const checkKeyVerify = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const hasReceivedProduct = async (req, res) => {
+const hasReceivedProduct = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.hasReceivedProduct(req.body)
+        let data = await userService.hasReceivedProduct(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const buyProductByCard = async (req, res) => {
+const buyProductByCard = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.buyProductByCard(req.body)
+        let data = await userService.buyProductByCard(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const buyProductByCardSucess = async (req, res) => {
+const buyProductByCardSucess = async (req, res, next) => {
     try {
         //call service data
         let data = await userService.buyProductByCardSucess(req.query)
@@ -522,31 +400,23 @@ const buyProductByCardSucess = async (req, res) => {
 
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const createNewEvaluateProduct = async (req, res) => {
+const createNewEvaluateProduct = async (req, res, next) => {
     try {
         //call service data
-        let data = await userService.createNewEvaluateProduct(req.body)
+        let data = await userService.createNewEvaluateProduct(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const uploadVideoEvaluateProduct = async (req, res) => {
+const uploadVideoEvaluateProduct = async (req, res, next) => {
     try {
         upload(req, res, function (err) {
             if (req.fileValidationError) {
@@ -564,15 +434,11 @@ const uploadVideoEvaluateProduct = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const uploadImagesEvaluateProduct = async (req, res) => {
+const uploadImagesEvaluateProduct = async (req, res, next) => {
     try {
         let data = await userService.uploadImagesEvaluateProduct({
             files: req.files,
@@ -582,152 +448,113 @@ const uploadImagesEvaluateProduct = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const createNewEvaluateProductFailed = async (req, res) => {
+const createNewEvaluateProductFailed = async (req, res, next) => {
     try {
         let data = await userService.createNewEvaluateProductFailed(req.body)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const updataEvaluateProduct = async (req, res) => {
+const updataEvaluateProduct = async (req, res, next) => {
     try {
-        let data = await userService.updataEvaluateProduct(req.body)
+        let data = await userService.updataEvaluateProduct(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
-const deleteVideoEvaluate = async (req, res) => {
+const deleteVideoEvaluate = async (req, res, next) => {
     try {
         let data = await userService.deleteVideoEvaluate(req.body)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
-const updateVideoEvaluate = async (req, res) => {
+const updateVideoEvaluate = async (req, res, next) => {
     try {
         let data = await userService.updateVideoEvaluate(req.query.id, req.file.filename)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const updateProfileUser = async (req, res) => {
+const updateProfileUser = async (req, res, next) => {
     try {
-        let data = await userService.updateProfileUser(req.body)
+        let data = await userService.updateProfileUser(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const updateAvatarUser = async (req, res) => {
+const updateAvatarUser = async (req, res, next) => {
     try {
         let data = await userService.updateAvatarUser({
             file: req.file,
             query: req.query,
+            payload: req.payload
         })
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const getConfirmCodeChangePass = async (req, res) => {
+const getConfirmCodeChangePass = async (req, res, next) => {
     try {
         let data = await userService.getConfirmCodeChangePass(req.body)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const confirmCodeChangePass = async (req, res) => {
+const confirmCodeChangePass = async (req, res, next) => {
     try {
         let data = await userService.confirmCodeChangePass(req.body)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
 
-const createNewBlog = async (req, res) => {
+const createNewBlog = async (req, res, next) => {
     try {
-        let data = await userService.createNewBlog(req.body)
+        let data = await userService.createNewBlog(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const createNewImageBlog = async (req, res) => {
+const createNewImageBlog = async (req, res, next) => {
     try {
         let data = await userService.createNewImageBlog({
             files: req.files,
@@ -737,135 +564,99 @@ const createNewImageBlog = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
 
-const uploadVideoNewBlog = async (req, res) => {
+const uploadVideoNewBlog = async (req, res, next) => {
     try {
         let data = await userService.uploadVideoNewBlog(req.query.idBlog, req.file.filename)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const getBlogById = async (req, res) => {
+const getBlogEditById = async (req, res, next) => {
     try {
-        let data = await userService.getBlogById(req.query)
+        let data = await userService.getBlogEditById(req.query, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const updateBlog = async (req, res) => {
+const updateBlog = async (req, res, next) => {
     try {
-        let data = await userService.updateBlog(req.body)
+        let data = await userService.updateBlog(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
-const shareProduct = async (req, res) => {
+const shareProduct = async (req, res, next) => {
     try {
-        let data = await userService.shareProduct(req.body)
+        let data = await userService.shareProduct(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const shareBlog = async (req, res) => {
+const shareBlog = async (req, res, next) => {
     try {
-        let data = await userService.shareBlog(req.body)
+        let data = await userService.shareBlog(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const toggleLikeBlog = async (req, res) => {
+const toggleLikeBlog = async (req, res, next) => {
     try {
-        let data = await userService.toggleLikeBlog(req.body)
+        let data = await userService.toggleLikeBlog(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const createNewCommentBlog = async (req, res) => {
+const createNewCommentBlog = async (req, res, next) => {
     try {
-        let data = await userService.createNewCommentBlog(req.body)
+        let data = await userService.createNewCommentBlog(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const createNewShortVideo = async (req, res) => {
+const createNewShortVideo = async (req, res, next) => {
     try {
-        let data = await userService.createNewShortVideo(req.body)
+        let data = await userService.createNewShortVideo(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const uploadCoverImageShortVideo = async (req, res) => {
+const uploadCoverImageShortVideo = async (req, res, next) => {
     try {
         let data = await userService.uploadCoverImageShortVideo({
             file: req.file,
@@ -875,377 +666,277 @@ const uploadCoverImageShortVideo = async (req, res) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const uploadVideoForShortVideo = async (req, res) => {
+const uploadVideoForShortVideo = async (req, res, next) => {
     try {
         let data = await userService.uploadVideoForShortVideo(req.query.idShortVideo, req.file.filename)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const getShortVideoById = async (req, res) => {
+const getShortVideoById = async (req, res, next) => {
     try {
-        let data = await userService.getShortVideoById(req.query)
+        let data = await userService.getShortVideoById(req.query, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const updateShortVideoById = async (req, res) => {
+const updateShortVideoById = async (req, res, next) => {
     try {
-        let data = await userService.updateShortVideoById(req.body)
+        let data = await userService.updateShortVideoById(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const getListBlogUserByPage = async (req, res) => {
+const getListBlogUserByPage = async (req, res, next) => {
     try {
-        let data = await userService.getListBlogUserByPage(req.query)
+        let data = await userService.getListBlogUserByPage(req.query, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const deleteBlogUserById = async (req, res) => {
+const deleteBlogUserById = async (req, res, next) => {
     try {
-        let data = await userService.deleteBlogUserById(req.body)
+        let data = await userService.deleteBlogUserById(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const editContentBlogUserById = async (req, res) => {
+const editContentBlogUserById = async (req, res, next) => {
     try {
-        let data = await userService.editContentBlogUserById(req.body)
+        let data = await userService.editContentBlogUserById(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
 
-const deleteCommentBlogById = async (req, res) => {
+const deleteCommentBlogById = async (req, res, next) => {
     try {
-        let data = await userService.deleteCommentBlogById(req.body)
+        let data = await userService.deleteCommentBlogById(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const updateCommentBlogById = async (req, res) => {
+const updateCommentBlogById = async (req, res, next) => {
     try {
-        let data = await userService.updateCommentBlogById(req.body)
+        let data = await userService.updateCommentBlogById(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const getListBlogByIdUser = async (req, res) => {
+const getListBlogByIdUser = async (req, res, next) => {
     try {
         let data = await userService.getListBlogByIdUser(req.query)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const saveBlogCollection = async (req, res) => {
+const saveBlogCollection = async (req, res, next) => {
     try {
-        let data = await userService.saveBlogCollection(req.body)
+        let data = await userService.saveBlogCollection(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const getListCollectionBlogUserByPage = async (req, res) => {
+const getListCollectionBlogUserByPage = async (req, res, next) => {
     try {
-        let data = await userService.getListCollectionBlogUserByPage(req.query)
+        let data = await userService.getListCollectionBlogUserByPage(req.query, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const deleteCollectBlogById = async (req, res) => {
+const deleteCollectBlogById = async (req, res, next) => {
     try {
-        let data = await userService.deleteCollectBlogById(req.body)
+        let data = await userService.deleteCollectBlogById(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const createCommentShortVideo = async (req, res) => {
+const createCommentShortVideo = async (req, res, next) => {
     try {
-        let data = await userService.createCommentShortVideo(req.body)
+        let data = await userService.createCommentShortVideo(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const deleteCommentShortVideoById = async (req, res) => {
+const deleteCommentShortVideoById = async (req, res, next) => {
     try {
-        let data = await userService.deleteCommentShortVideoById(req.body)
+        let data = await userService.deleteCommentShortVideoById(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const editCommentShortVideoById = async (req, res) => {
+const editCommentShortVideoById = async (req, res, next) => {
     try {
-        let data = await userService.editCommentShortVideoById(req.body)
+        let data = await userService.editCommentShortVideoById(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const toggleLikeShortVideo = async (req, res) => {
+const toggleLikeShortVideo = async (req, res, next) => {
     try {
-        let data = await userService.toggleLikeShortVideo(req.body)
+        let data = await userService.toggleLikeShortVideo(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
 
-const checkUserLikeShortVideo = async (req, res) => {
+const checkUserLikeShortVideo = async (req, res, next) => {
     try {
-        let data = await userService.checkUserLikeShortVideo(req.query)
+        let data = await userService.checkUserLikeShortVideo(req.query, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const saveCollectionShortVideo = async (req, res) => {
+const saveCollectionShortVideo = async (req, res, next) => {
     try {
-        let data = await userService.saveCollectionShortVideo(req.body)
+        let data = await userService.saveCollectionShortVideo(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const CheckSaveCollectionShortVideo = async (req, res) => {
+const CheckSaveCollectionShortVideo = async (req, res, next) => {
     try {
-        let data = await userService.CheckSaveCollectionShortVideo(req.query)
+        let data = await userService.CheckSaveCollectionShortVideo(req.query, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const getListVideoByIdUser = async (req, res) => {
+const getListVideoByIdUser = async (req, res, next) => {
     try {
         let data = await userService.getListVideoByIdUser(req.query)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const getUserById = async (req, res) => {
+const getUserById = async (req, res, next) => {
     try {
         let data = await userService.getUserById(req.query)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const deleteShortVideoById = async (req, res) => {
+const deleteShortVideoById = async (req, res, next) => {
     try {
-        let data = await userService.deleteShortVideoById(req.body)
+        let data = await userService.deleteShortVideoById(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const checkLikeBlogById = async (req, res) => {
+const checkLikeBlogById = async (req, res, next) => {
     try {
-        let data = await userService.checkLikeBlogById(req.query)
+        let data = await userService.checkLikeBlogById(req.query, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const checkSaveBlogById = async (req, res) => {
+const checkSaveBlogById = async (req, res, next) => {
     try {
-        let data = await userService.checkSaveBlogById(req.query)
+        let data = await userService.checkSaveBlogById(req.query, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const testHeaderLogin = async (req, res) => {
+const testHeaderLogin = async (req, res, next) => {
     try {
         // let data = await userService.testHeaderLogin(req.query)
 
@@ -1263,101 +954,73 @@ const testHeaderLogin = async (req, res) => {
         })
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const getListNotifyAll = async (req, res) => {
+const getListNotifyAll = async (req, res, next) => {
     try {
-        let data = await userService.getListNotifyAll(req.query)
+        let data = await userService.getListNotifyAll(req.query, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const getListNotifyByType = async (req, res) => {
+const getListNotifyByType = async (req, res, next) => {
     try {
-        let data = await userService.getListNotifyByType(req.query)
+        let data = await userService.getListNotifyByType(req.query, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const seenNotifyOfUser = async (req, res) => {
+const seenNotifyOfUser = async (req, res, next) => {
     try {
-        let data = await userService.seenNotifyOfUser(req.body)
+        let data = await userService.seenNotifyOfUser(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const sendEmailFromContact = async (req, res) => {
+const sendEmailFromContact = async (req, res, next) => {
     try {
         let data = await userService.sendEmailFromContact(req.body)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const createNewReportVideo = async (req, res) => {
+const createNewReportVideo = async (req, res, next) => {
     try {
-        let data = await userService.createNewReportVideo(req.body)
+        let data = await userService.createNewReportVideo(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
-const createNewReportBlog = async (req, res) => {
+const createNewReportBlog = async (req, res, next) => {
     try {
-        let data = await userService.createNewReportBlog(req.body)
+        let data = await userService.createNewReportBlog(req.body, req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        console.log('Get all code error: ', e);
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        next(e)
     }
 }
 
@@ -1411,7 +1074,7 @@ module.exports = {
     createNewBlog,
     createNewImageBlog,
     uploadVideoNewBlog,
-    getBlogById,
+    getBlogEditById,
     updateBlog,
     shareProduct,
     shareBlog,

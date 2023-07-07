@@ -1060,7 +1060,7 @@ const searchProduct = (data) => {
                     raw: false,
                     nest: true
                 })
-                console.log('res1', listProducts);
+                // console.log('res1', listProducts);
 
                 const options = {
                     keys: [
