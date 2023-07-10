@@ -89,6 +89,38 @@ const verifyAccessToken = (req, res, next) => {
 
 }
 
+const verifyAccessTokenAdmin = (req, res, next) => {
+    // console.log(req.headers);
+    if (!req.headers['authorization']) {
+        return next(createError.Unauthorized())
+    }
+
+    const authHeader = req.headers['authorization'];
+    const bearerToken = authHeader.split(' ');
+    const token = bearerToken[1];
+
+
+    JWT.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, payload) => {
+        if (err) {
+            if (err.name === 'JsonWebTokenError') {
+                return next(createError.Unauthorized(err.message))
+            }
+            return next(createError.Unauthorized(err.message))
+        }
+
+        let user = await db.User.findOne({
+            where: {
+                id: payload.id
+            }
+        })
+        if (!user || user.idTypeUser === '3') return next(createError.Unauthorized('Not admin'))
+
+        req.payload = payload;
+        next();
+    })
+
+}
+
 const verifyRefreshToken = async (refreshToken, device_id = 'test') => {
     return new Promise((resolve, reject) => {
         JWT.verify(refreshToken, process.env.REFESH_TOKEN_SECRET, async (err, payload) => {
@@ -119,5 +151,6 @@ module.exports = {
     signAccessToken,
     signRefreshToken,
     verifyAccessToken,
-    verifyRefreshToken
+    verifyRefreshToken,
+    verifyAccessTokenAdmin
 }

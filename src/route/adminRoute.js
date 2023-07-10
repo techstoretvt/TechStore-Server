@@ -3,6 +3,7 @@ import adminController from '../controllers/adminController'
 import multer from 'multer';
 import path from 'path'
 import { routes } from '../services/commont'
+import { verifyAccessTokenAdmin } from '../helpers/JWT_service'
 
 const fileUploader = require('../config/cloudinary.config');
 import cloudinary_product from '../utils/cloudinary/cloudinary_product'
@@ -33,78 +34,80 @@ let upload = multer({
 const initAdminRoute = (app) => {
 
     //admin api
-    router.get(routes.getAllTypeProduct, adminController.getAllTypeProduct)
-    router.get(routes.getAllTrademark, adminController.getAllTrademark)
-    router.get(routes.getListProductByPage, adminController.getListProductByPage)
-    router.get(routes.getProductBySwapAndPage, adminController.getProductBySwapAndPage);
-    router.get(routes.getListUserAdmin, adminController.getListUserAdmin)
-    router.get(routes.getListEventPromotion, adminController.getListEventPromotion)
-    router.get(routes.getListBillByTypeAdmin, adminController.getListBillByTypeAdmin)
-    router.get(routes.getListVideoAdminByPage, adminController.getListVideoAdminByPage)
-    router.get(routes.getListReportAdmin, adminController.getListReportAdmin)
-    router.get(routes.getListBlogAdminByPage, adminController.getListBlogAdminByPage)
-    router.get(routes.getListReportBlogAdmin, adminController.getListReportBlogAdmin)
-    router.get(routes.getStatisticalAdmin, adminController.getStatisticalAdmin)
-    router.get(routes.StatisticalEvaluateAdmin, adminController.StatisticalEvaluateAdmin)
-    router.get(routes.getStatisticalSale, adminController.getStatisticalSale)
-    router.get(routes.getListKeyWordAdmin, adminController.getListKeyWordAdmin)
-    router.get(routes.getListUserTypeAdmin, adminController.getListUserTypeAdmin)
-    router.get(routes.getCountBillOfMonth, adminController.getCountBillOfMonth)
-    router.get(routes.getMoneyOfMonth, adminController.getMoneyOfMonth)
-    router.get(routes.getDetailBillByIdAdmin, adminController.getDetailBillByIdAdmin)
-    router.get(routes.getInventoryByTypeProduct, adminController.getInventoryByTypeProduct)
+    router.get(routes.getAllTypeProduct, verifyAccessTokenAdmin, adminController.getAllTypeProduct)
+    router.get(routes.getAllTrademark, verifyAccessTokenAdmin, adminController.getAllTrademark)
+    router.get(routes.getListProductByPage, verifyAccessTokenAdmin, adminController.getListProductByPage)
+    router.get(routes.getProductBySwapAndPage, verifyAccessTokenAdmin, adminController.getProductBySwapAndPage);
+    router.get(routes.getListUserAdmin, verifyAccessTokenAdmin, adminController.getListUserAdmin)
+    router.get(routes.getListEventPromotion, verifyAccessTokenAdmin, adminController.getListEventPromotion)
+    router.get(routes.getListBillByTypeAdmin, verifyAccessTokenAdmin, adminController.getListBillByTypeAdmin)
+    router.get(routes.getListVideoAdminByPage, verifyAccessTokenAdmin, adminController.getListVideoAdminByPage)
+    router.get(routes.getListReportAdmin, verifyAccessTokenAdmin, adminController.getListReportAdmin)
+    router.get(routes.getListBlogAdminByPage, verifyAccessTokenAdmin, adminController.getListBlogAdminByPage)
+    router.get(routes.getListReportBlogAdmin, verifyAccessTokenAdmin, adminController.getListReportBlogAdmin)
+    router.get(routes.getStatisticalAdmin, verifyAccessTokenAdmin, adminController.getStatisticalAdmin)
+    router.get(routes.StatisticalEvaluateAdmin, verifyAccessTokenAdmin, adminController.StatisticalEvaluateAdmin)
+    router.get(routes.getStatisticalSale, verifyAccessTokenAdmin, adminController.getStatisticalSale)
+    router.get(routes.getListKeyWordAdmin, verifyAccessTokenAdmin, adminController.getListKeyWordAdmin)
+    router.get(routes.getListUserTypeAdmin, verifyAccessTokenAdmin, adminController.getListUserTypeAdmin)
+    router.get(routes.getCountBillOfMonth, verifyAccessTokenAdmin, adminController.getCountBillOfMonth)
+    router.get(routes.getMoneyOfMonth, verifyAccessTokenAdmin, adminController.getMoneyOfMonth)
+    router.get(routes.getDetailBillByIdAdmin, verifyAccessTokenAdmin, adminController.getDetailBillByIdAdmin)
+    router.get(routes.getInventoryByTypeProduct, verifyAccessTokenAdmin, adminController.getInventoryByTypeProduct)
 
     //winform
-    router.get(routes.getListBillNoConfirm, adminController.getListBillNoConfirm)
-    router.get(routes.getDetailBillAdmin, adminController.getDetailBillAdmin)
-    router.get(routes.getListImageProductAdmin, adminController.getListImageProductAdmin)
-    router.get(routes.getInfoProductAdmin, adminController.getInfoProductAdmin)
-    router.get(routes.getClassifyProductAdmin, adminController.getClassifyProductAdmin)
-    router.get(routes.getAddressBillAdmin, adminController.getAddressBillAdmin)
-    router.get(routes.confirmBillAdmin, adminController.confirmBillAdmin)
-    router.get(routes.updateStatusBillAdmin, adminController.updateStatusBillAdmin)
-    router.get(routes.getListStatusBillAdmin, adminController.getListStatusBillAdmin)
+    router.get(routes.getListBillNoConfirm, verifyAccessTokenAdmin, adminController.getListBillNoConfirm)
+    router.get(routes.getDetailBillAdmin, verifyAccessTokenAdmin, adminController.getDetailBillAdmin)
+    router.get(routes.getListImageProductAdmin, verifyAccessTokenAdmin, adminController.getListImageProductAdmin)
+    router.get(routes.getInfoProductAdmin, verifyAccessTokenAdmin, adminController.getInfoProductAdmin)
+    router.get(routes.getClassifyProductAdmin, verifyAccessTokenAdmin, adminController.getClassifyProductAdmin)
+    router.get(routes.getAddressBillAdmin, verifyAccessTokenAdmin, adminController.getAddressBillAdmin)
+    router.get(routes.confirmBillAdmin, verifyAccessTokenAdmin, adminController.confirmBillAdmin)
+    router.get(routes.updateStatusBillAdmin, verifyAccessTokenAdmin, adminController.updateStatusBillAdmin)
+    router.get(routes.getListStatusBillAdmin, verifyAccessTokenAdmin, adminController.getListStatusBillAdmin)
     //end winform
 
 
 
-    router.post(routes.addTrademark, adminController.addTrademark)
-    router.post(routes.addTypeProduct, cloudinary_typePoduct.single('file'), adminController.addTypeProduct)
-    router.post(routes.cloudinaryUpload, cloudinary_product.array('file'), adminController.cloudinaryUpload);
-    router.post(routes.createNewProduct, adminController.createNewProduct)
-    router.post(routes.addPromotionByIdProduct, adminController.addPromotionByIdProduct);
-    router.post(routes.swapImageProduct, adminController.swapImageProduct);
-    router.post(routes.createNewKeyWord, adminController.createNewKeyWord)
-    router.post(routes.createNotify_noimage, adminController.createNotify_noimage)
-    router.post(routes.createNotify_image, cloudinary_notify.single('file'), adminController.createNotify_image)
-    router.post(routes.CheckLoginAdminAccessToken, adminController.CheckLoginAdminAccessToken)
-    router.post(routes.createNewUserAdmin, adminController.createNewUserAdmin)
-    router.post(routes.createEventPromotion, adminController.createEventPromotion)
-    router.post(routes.upLoadImageCoverPromotion, cloudinary_eventPromotion.single('file'), adminController.upLoadImageCoverPromotion)
+    router.post(routes.addTrademark, verifyAccessTokenAdmin, adminController.addTrademark)
+    router.post(routes.addTypeProduct, verifyAccessTokenAdmin, cloudinary_typePoduct.single('file'), adminController.addTypeProduct)
+    router.post(routes.cloudinaryUpload, verifyAccessTokenAdmin, cloudinary_product.array('file'), adminController.cloudinaryUpload);
+    router.post(routes.createNewProduct, verifyAccessTokenAdmin, adminController.createNewProduct)
+    router.post(routes.addPromotionByIdProduct, verifyAccessTokenAdmin, adminController.addPromotionByIdProduct);
+    router.post(routes.swapImageProduct, verifyAccessTokenAdmin, adminController.swapImageProduct);
+    router.post(routes.createNewKeyWord, verifyAccessTokenAdmin, adminController.createNewKeyWord)
+    router.post(routes.createNotify_noimage, verifyAccessTokenAdmin, adminController.createNotify_noimage)
+    router.post(routes.createNotify_image, verifyAccessTokenAdmin, cloudinary_notify.single('file'), adminController.createNotify_image)
+    router.post(routes.CheckLoginAdminAccessToken, verifyAccessTokenAdmin, adminController.CheckLoginAdminAccessToken)
+    router.post(routes.createNewUserAdmin, verifyAccessTokenAdmin, adminController.createNewUserAdmin)
+    router.post(routes.createEventPromotion, verifyAccessTokenAdmin, adminController.createEventPromotion)
+    router.post(routes.upLoadImageCoverPromotion, verifyAccessTokenAdmin, cloudinary_eventPromotion.single('file'), adminController.upLoadImageCoverPromotion)
+    router.post(routes.adminLogin, adminController.adminLogin)
+    router.post(routes.checkLoginWithAdmin, verifyAccessTokenAdmin, adminController.checkLoginWithAdmin)
 
 
-    router.put(routes.confirmBillById, adminController.confirmBillById)
-    router.put(routes.cancelBillById, adminController.cancelBillById)
-    router.put(routes.updateTypeProductById, cloudinary_typePoduct.single('file'), adminController.updateTypeProductById)
-    router.put(routes.updateTrademarkById, adminController.updateTrademarkById)
-    router.put(routes.editProductById, adminController.editProductById)
-    router.put(routes.blockProduct, adminController.blockProduct)
-    router.put(routes.editImageProduct, cloudinary_product.single('file'), adminController.editImageProduct)
-    router.put(routes.lockUserAdmin, adminController.lockUserAdmin)
-    router.put(routes.editEventPromotion, adminController.editEventPromotion)
-    router.put(routes.updateStatusBillAdminWeb, adminController.updateStatusBillAdminWeb)
-    router.put(routes.skipReportVideoAdmin, adminController.skipReportVideoAdmin)
-    router.put(routes.skipReportBlogAdmin, adminController.skipReportBlogAdmin)
-    router.put(routes.editKeyWordSearchAdmin, adminController.editKeyWordSearchAdmin)
+    router.put(routes.confirmBillById, verifyAccessTokenAdmin, adminController.confirmBillById)
+    router.put(routes.cancelBillById, verifyAccessTokenAdmin, adminController.cancelBillById)
+    router.put(routes.updateTypeProductById, verifyAccessTokenAdmin, cloudinary_typePoduct.single('file'), adminController.updateTypeProductById)
+    router.put(routes.updateTrademarkById, verifyAccessTokenAdmin, adminController.updateTrademarkById)
+    router.put(routes.editProductById, verifyAccessTokenAdmin, adminController.editProductById)
+    router.put(routes.blockProduct, verifyAccessTokenAdmin, adminController.blockProduct)
+    router.put(routes.editImageProduct, verifyAccessTokenAdmin, cloudinary_product.single('file'), adminController.editImageProduct)
+    router.put(routes.lockUserAdmin, verifyAccessTokenAdmin, adminController.lockUserAdmin)
+    router.put(routes.editEventPromotion, verifyAccessTokenAdmin, adminController.editEventPromotion)
+    router.put(routes.updateStatusBillAdminWeb, verifyAccessTokenAdmin, adminController.updateStatusBillAdminWeb)
+    router.put(routes.skipReportVideoAdmin, verifyAccessTokenAdmin, adminController.skipReportVideoAdmin)
+    router.put(routes.skipReportBlogAdmin, verifyAccessTokenAdmin, adminController.skipReportBlogAdmin)
+    router.put(routes.editKeyWordSearchAdmin, verifyAccessTokenAdmin, adminController.editKeyWordSearchAdmin)
 
 
-    router.delete(routes.deleteTypeProduct, adminController.deleteTypeProduct)
-    router.delete(routes.deleteTrademarkById, adminController.deleteTrademarkById)
-    router.delete(routes.deleteErrorProduct, adminController.deleteErrorProduct);
-    router.delete(routes.deleteShortVideoAdmin, adminController.deleteShortVideoAdmin)
-    router.delete(routes.deleteBlogAdminById, adminController.deleteBlogAdminById)
-    router.delete(routes.deleteKeyWordAdmin, adminController.deleteKeyWordAdmin)
-    router.delete(routes.deleteEventPromotionAdmin, adminController.deleteEventPromotionAdmin)
+    router.delete(routes.deleteTypeProduct, verifyAccessTokenAdmin, adminController.deleteTypeProduct)
+    router.delete(routes.deleteTrademarkById, verifyAccessTokenAdmin, adminController.deleteTrademarkById)
+    router.delete(routes.deleteErrorProduct, verifyAccessTokenAdmin, adminController.deleteErrorProduct);
+    router.delete(routes.deleteShortVideoAdmin, verifyAccessTokenAdmin, adminController.deleteShortVideoAdmin)
+    router.delete(routes.deleteBlogAdminById, verifyAccessTokenAdmin, adminController.deleteBlogAdminById)
+    router.delete(routes.deleteKeyWordAdmin, verifyAccessTokenAdmin, adminController.deleteKeyWordAdmin)
+    router.delete(routes.deleteEventPromotionAdmin, verifyAccessTokenAdmin, adminController.deleteEventPromotionAdmin)
 
 
 

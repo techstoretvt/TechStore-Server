@@ -1,6 +1,6 @@
 import db from '../models'
 import { v4 as uuidv4 } from 'uuid';
-import { sendEmail, hashPassword, decodeToken } from './commont'
+import { sendEmail, hashPassword, decodeToken, comparePassword } from './commont'
 import { Sequelize } from 'sequelize';
 var cloudinary = require('cloudinary');
 const { Op } = require("sequelize");
@@ -9,7 +9,11 @@ require('dotenv').config();
 import FuzzySearch from 'fuzzy-search';
 import jwt from 'jsonwebtoken'
 import provinces from './provinces.json'
+import commont from './commont';
 const { google } = require('googleapis');
+const createError = require("http-errors");
+import { signAccessToken, signRefreshToken } from '../helpers/JWT_service'
+
 // import { v4 as uuidv4 } from 'uuid';
 // cloudinary.config({
 //     cloud_name: process.env.CLOUDINARY_NAME,
@@ -217,7 +221,7 @@ const addTypeProduct = (data) => {
     })
 }
 
-const getAllTypeProduct = () => {
+const getAllTypeProduct = (payload) => {
     return new Promise(async (resolve, reject) => {
         try {
             let typeProducts = await db.typeProduct.findAll({
@@ -4061,6 +4065,101 @@ const getInventoryByTypeProduct = (data) => {
     })
 }
 
+const adminLogin = (data, header) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.email || !data.pass) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data
+                })
+            }
+            else {
+
+                let user = await db.User.findOne({
+                    where: {
+                        email: data.email,
+                        typeAccount: 'web'
+                    }
+                })
+
+                if (!user) throw (createError.NotFound('Not found account.'))
+
+                if (user.idTypeUser !== "1" && user.idTypeUser !== '2') throw (createError.Unauthorized('Login with account admin'));
+
+                if (user.statusUser === 'false') throw (createError.Unauthorized('Account was blocked.'))
+
+                if (user.statusUser !== 'true' && user.statusUser !== 'false') {
+                    let now = new Date().getTime();
+                    let time_block = +user.statusUser;
+
+                    if (now < time_block) throw (createError.Unauthorized('Account was blocked.'))
+                }
+
+                if (!commont.comparePassword(data.pass, user.pass)) throw (createError.Unauthorized('Incorrect password'))
+
+
+                const accessToken = await signAccessToken(user.id);
+                const refreshToken = await signRefreshToken(user.id, header['user-agent'])
+
+
+
+
+
+                resolve({
+                    errCode: 0,
+                    data: {
+                        accessToken,
+                        refreshToken
+                    }
+                })
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const checkLoginWithAdmin = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idType) throw (createError.BadRequest('Missing required para,eter.'));
+            console.log('Payload: ', payload);
+            let user = await db.User.findOne({
+                where: {
+                    id: payload.id
+                }
+            })
+
+            if (!user) throw (createError.NotFound('Not found account.'))
+
+            if (user.statusUser === 'false') throw (createError.Unauthorized('Account was blocked.'));
+            if (user.statusUser !== 'true' && user.statusUser !== 'false') {
+                let now = new Date().getTime();
+                let time_block = +user.statusUser;
+                if (now < time_block) throw (createError.Unauthorized('Account was blocked.'));
+            }
+
+            if (data.idType === '2' && user.idTypeUser === '3') throw (createError.Unauthorized('Login with account admin.'))
+            if (data.idType === '1' && user.idTypeUser !== '1') {
+                return resolve({
+                    errCode: 1,
+                    errMessage: 'Login with admin root'
+                })
+            }
+
+
+            resolve({
+                errCode: 0,
+            })
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
 
 //winform
 const getListBillNoConfirm = () => {
@@ -4611,7 +4710,8 @@ module.exports = {
     getMoneyOfMonth,
     getDetailBillByIdAdmin,
     getInventoryByTypeProduct,
-
+    adminLogin,
+    checkLoginWithAdmin,
 
     //winform
     getListBillNoConfirm,

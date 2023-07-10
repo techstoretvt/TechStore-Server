@@ -136,6 +136,8 @@ const routes = {
     getMoneyOfMonth: '/api/v1/get-money-of-month',
     getDetailBillByIdAdmin: '/api/v1/get-detail-bill-by-id-admin',
     getInventoryByTypeProduct: '/api/v1/get-inventory-by-type-product',
+    adminLogin: '/api/v2/admin-login',
+    checkLoginWithAdmin: '/api/v2/check-login-with-admin',
 
     //winform
     getListBillNoConfirm: '/api/v1/get-list-bill-no-confirm',

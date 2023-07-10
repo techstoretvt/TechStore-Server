@@ -7,7 +7,7 @@ const checkStartServer = async (req, res, next) => {
         })
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -19,7 +19,7 @@ const getProductPromotionHome = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -31,7 +31,7 @@ const getTopSellProduct = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -43,7 +43,7 @@ const getNewCollectionProduct = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -55,7 +55,7 @@ const getProductFlycam = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -67,7 +67,7 @@ const getListProductMayLike = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -79,7 +79,7 @@ const getEvaluateByIdProduct = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -91,7 +91,7 @@ const searchProduct = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 //test
@@ -103,7 +103,7 @@ const GetListProduct = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -115,7 +115,7 @@ const createProduct = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 //end test
@@ -128,7 +128,7 @@ const getListBlog = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -140,7 +140,7 @@ const getListHashTag = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -152,7 +152,7 @@ const getBlogShareProduct = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -163,7 +163,7 @@ const getBlogShareDefault = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -174,7 +174,7 @@ const getBlogById = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -185,7 +185,7 @@ const getCommentBlogByIdBlog = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -196,7 +196,7 @@ const increaseViewBlogById = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -207,7 +207,7 @@ const getListShortVideo = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -218,7 +218,7 @@ const getListCommentShortVideoById = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -229,7 +229,7 @@ const getListProductHashTagByIdVideo = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -239,7 +239,7 @@ const getProductById = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -249,7 +249,7 @@ const getListBlogHome = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -259,7 +259,7 @@ const getEventPromotionById = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -269,7 +269,7 @@ const getListEventPromotionHome = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -279,7 +279,7 @@ const getContentEventPromotionById = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 

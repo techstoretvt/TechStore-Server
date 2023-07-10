@@ -2,8 +2,6 @@ import adminService from '../services/adminService'
 
 const addTypeProduct = async (req, res, next) => {
     try {
-        //call service data
-        // let data = await adminService.addTypeProduct(req.body)
         let data = await adminService.addTypeProduct({
             file: req.file,
             query: req.query,
@@ -12,19 +10,19 @@ const addTypeProduct = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
 const getAllTypeProduct = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getAllTypeProduct()
+        let data = await adminService.getAllTypeProduct(req.payload)
 
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -36,7 +34,7 @@ const deleteTypeProduct = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -52,7 +50,7 @@ const updateTypeProductById = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -64,7 +62,7 @@ const addTrademark = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -76,7 +74,7 @@ const getAllTrademark = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -88,7 +86,7 @@ const deleteTrademarkById = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 const updateTrademarkById = async (req, res, next) => {
@@ -99,7 +97,7 @@ const updateTrademarkById = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -111,7 +109,7 @@ const createNewProduct = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -126,7 +124,7 @@ const cloudinaryUpload = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -138,7 +136,7 @@ const getListProductByPage = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -150,7 +148,7 @@ const blockProduct = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -162,7 +160,7 @@ const editProductById = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -177,7 +175,7 @@ const editImageProduct = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -189,7 +187,7 @@ const swapImageProduct = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -201,7 +199,7 @@ const getProductBySwapAndPage = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -213,7 +211,7 @@ const addPromotionByIdProduct = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -225,7 +223,7 @@ const testApi = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -237,7 +235,7 @@ const deleteErrorProduct = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -249,7 +247,7 @@ const confirmBillById = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -261,7 +259,7 @@ const cancelBillById = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -273,7 +271,7 @@ const createNewKeyWord = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -285,7 +283,7 @@ const createNotify_noimage = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -300,7 +298,7 @@ const createNotify_image = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -312,7 +310,7 @@ const CheckLoginAdminAccessToken = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -324,7 +322,7 @@ const createNewUserAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -336,7 +334,7 @@ const getListUserAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -348,7 +346,7 @@ const lockUserAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 const createEventPromotion = async (req, res, next) => {
@@ -359,7 +357,7 @@ const createEventPromotion = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -371,7 +369,7 @@ const upLoadImageCoverPromotion = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -383,7 +381,7 @@ const getListEventPromotion = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -395,7 +393,7 @@ const editEventPromotion = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -407,7 +405,7 @@ const getListBillByTypeAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -419,7 +417,7 @@ const updateStatusBillAdminWeb = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -431,7 +429,7 @@ const getListVideoAdminByPage = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -443,7 +441,7 @@ const deleteShortVideoAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -455,7 +453,7 @@ const getListReportAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -467,7 +465,7 @@ const skipReportVideoAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -479,7 +477,7 @@ const getListBlogAdminByPage = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -491,7 +489,7 @@ const deleteBlogAdminById = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -503,7 +501,7 @@ const getListReportBlogAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -515,7 +513,7 @@ const skipReportBlogAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -527,7 +525,7 @@ const getStatisticalAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -539,7 +537,7 @@ const StatisticalEvaluateAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -551,7 +549,7 @@ const getStatisticalSale = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -563,7 +561,7 @@ const getListKeyWordAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -575,7 +573,7 @@ const editKeyWordSearchAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -587,7 +585,7 @@ const deleteKeyWordAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -599,7 +597,7 @@ const getListUserTypeAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -611,7 +609,7 @@ const deleteEventPromotionAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -623,7 +621,7 @@ const getCountBillOfMonth = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -635,7 +633,7 @@ const getMoneyOfMonth = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -647,7 +645,7 @@ const getDetailBillByIdAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -659,7 +657,31 @@ const getInventoryByTypeProduct = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
+    }
+}
+
+const adminLogin = async (req, res, next) => {
+    try {
+        //call service data
+        let data = await adminService.adminLogin(req.body, req.headers)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        next(e)
+    }
+}
+
+const checkLoginWithAdmin = async (req, res, next) => {
+    try {
+        //call service data
+        let data = await adminService.checkLoginWithAdmin(req.body, req.payload)
+
+        return res.status(200).json(data)
+    }
+    catch (e) {
+        next(e)
     }
 }
 
@@ -675,7 +697,7 @@ const getListBillNoConfirm = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -687,7 +709,7 @@ const getDetailBillAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -699,7 +721,7 @@ const getListImageProductAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -711,7 +733,7 @@ const getInfoProductAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -723,7 +745,7 @@ const getClassifyProductAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -735,7 +757,7 @@ const getAddressBillAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -747,7 +769,7 @@ const confirmBillAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -759,7 +781,7 @@ const updateStatusBillAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -771,7 +793,7 @@ const getListStatusBillAdmin = async (req, res, next) => {
         return res.status(200).json(data)
     }
     catch (e) {
-        next(createError.InternalServerError())
+        next(e)
     }
 }
 
@@ -832,7 +854,8 @@ module.exports = {
     getMoneyOfMonth,
     getDetailBillByIdAdmin,
     getInventoryByTypeProduct,
-
+    adminLogin,
+    checkLoginWithAdmin,
 
     //winform
     getListBillNoConfirm,
