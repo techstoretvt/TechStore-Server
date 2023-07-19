@@ -1,50 +1,54 @@
-import express from "express";
+import express from 'express';
 require('dotenv').config();
-import bodyParser from "body-parser";
+import bodyParser from 'body-parser';
 const cors = require('cors');
-const { Server } = require('socket.io')
+const { Server } = require('socket.io');
 const http = require('http');
-const { ApolloServer } = require('apollo-server-express')
-const createError = require("http-errors");
-const logEvents = require('./helpers/logEvents')
+const cookieParser = require('cookie-parser');
+const { ApolloServer } = require('apollo-server-express');
+const createError = require('http-errors');
+const logEvents = require('./helpers/logEvents');
 
-import configViewEngine from "./config/viewEngine";
-import initAppRoute from "./route/appRoute";
-import initUserRoute from './route/userRoute'
-import initAdminRoute from './route/adminRoute'
-const typeDefs = require('./GraphQL/schema/schema')
-const resolvers = require('./GraphQL/resolver/resolver')
+import configViewEngine from './config/viewEngine';
+import initAppRoute from './route/appRoute';
+import initUserRoute from './route/userRoute';
+import initAdminRoute from './route/adminRoute';
+const typeDefs = require('./GraphQL/schema/schema');
+const resolvers = require('./GraphQL/resolver/resolver');
 
 const app = express();
-
-
 
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
         origin: [process.env.LINK_FONTEND, process.env.LINK_ADMIN],
-        methods: ["GET", "POST"]
-    }
+        methods: ['GET', 'POST'],
+    },
 });
-
 
 //View engine
 configViewEngine(app);
 
-app.use(cors({
-    exposedHeaders: ['authorization']
-}));
+app.use(
+    cors({
+        // exposedHeaders: ['authorization'],
+        credentials: true,
+        origin: 'http://localhost:3000',
+    })
+);
 
 app.use(bodyParser.json({ limit: '100mb' }));
-app.use(bodyParser.urlencoded({ extended: true, limit: '100mb' }))
+app.use(bodyParser.urlencoded({ extended: true, limit: '100mb' }));
+
+app.use(cookieParser());
 
 initAppRoute(app);
 initUserRoute(app);
 initAdminRoute(app);
 
 app.get('/error', (req, res, next) => {
-    next(createError.InternalServerError('This is error.'))
-})
+    next(createError.InternalServerError('This is error.'));
+});
 
 // app.use((req, res, next) => {
 //     next(createError.NotFound('This route is not exits.'))
@@ -52,19 +56,23 @@ app.get('/error', (req, res, next) => {
 
 app.use((err, req, res, next) => {
     if (err.status && err.status >= 500)
-        logEvents(`${req.url} -- ${req.method} -- ${err.status || 500} -- ${err.message}`)
+        logEvents(
+            `${req.url} -- ${req.method} -- ${err.status || 500} -- ${
+                err.message
+            }`
+        );
 
     console.log({
         status: err.status || 500,
         errCode: -1,
-        errMessage: err.message
+        errMessage: err.message,
     });
     res.status(err.status || 500).json({
         status: err.status || 500,
         errCode: -1,
-        errMessage: err.message
-    })
-})
+        errMessage: err.message,
+    });
+});
 
 //web socket
 io.on('connection', (socket) => {
@@ -75,36 +83,34 @@ io.on('connection', (socket) => {
 
         io.emit(`email-verify-${from}`, {
             message: 'success',
-            linkFe: process.env.LINK_FONTEND
-        })
+            linkFe: process.env.LINK_FONTEND,
+        });
     });
 
     socket.on('disconnect', () => {
         console.log('user disconnected');
     });
-})
+});
 export const handleEmit = (nameEmit, contentEmit) => {
-    io.emit(nameEmit, contentEmit)
-}
+    io.emit(nameEmit, contentEmit);
+};
 
 //graphql
 const serverQL = new ApolloServer({
     typeDefs,
-    resolvers
-})
-
+    resolvers,
+});
 
 //run server
-serverQL.start().then(res => {
+serverQL.start().then((res) => {
     serverQL.applyMiddleware({ app });
 
-    const port = process.env.PORT
+    const port = process.env.PORT;
     server.listen(port, () => {
         console.log('Runing server succeed!');
         console.log(`Server RestFull API at http://localhost:${port}/api`);
-        console.log(`Server GraphQL at http://localhost:${port}${serverQL.graphqlPath}`);
-    })
-})
-
-
-
+        console.log(
+            `Server GraphQL at http://localhost:${port}${serverQL.graphqlPath}`
+        );
+    });
+});
