@@ -33,7 +33,7 @@ app.use(
     cors({
         // exposedHeaders: ['authorization'],
         credentials: true,
-        origin: 'http://localhost:3000',
+        origin: process.env.LINK_FONTEND,
     })
 );
 
