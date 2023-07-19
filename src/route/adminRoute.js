@@ -34,7 +34,7 @@ let upload = multer({
 const initAdminRoute = (app) => {
 
     //admin api
-    router.get(routes.getAllTypeProduct, verifyAccessTokenAdmin, adminController.getAllTypeProduct)
+    router.get(routes.getAllTypeProduct, adminController.getAllTypeProduct)
     router.get(routes.getAllTrademark, verifyAccessTokenAdmin, adminController.getAllTrademark)
     router.get(routes.getListProductByPage, verifyAccessTokenAdmin, adminController.getListProductByPage)
     router.get(routes.getProductBySwapAndPage, verifyAccessTokenAdmin, adminController.getProductBySwapAndPage);
