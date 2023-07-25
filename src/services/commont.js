@@ -1,28 +1,26 @@
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
-import nodemailer from 'nodemailer'
+import nodemailer from 'nodemailer';
 require('dotenv').config();
-import jwt from 'jsonwebtoken'
-
+import jwt from 'jsonwebtoken';
 
 var salt = bcrypt.genSaltSync(10);
 
-
 const hashPassword = (password) => {
     return bcrypt.hashSync(password, salt);
-}
+};
 
 const comparePassword = (pass, passHash) => {
     return bcrypt.compareSync(pass, passHash);
-}
+};
 
 const randomString = () => {
     return uuidv4();
-}
+};
 
 const sendEmail = async (toEmail, title, contentHTML) => {
     let transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
+        host: 'smtp.gmail.com',
         port: 587,
         secure: false,
         auth: {
@@ -32,9 +30,8 @@ const sendEmail = async (toEmail, title, contentHTML) => {
         tls: {
             rejectUnauthorized: false,
             // minVersion: "TLSv1.2"
-        }
+        },
     });
-
 
     let info = await transporter.sendMail({
         from: `"TechStoreTvT ⚔ ⚓ 👻" <${process.env.EMAIL}>`,
@@ -42,17 +39,16 @@ const sendEmail = async (toEmail, title, contentHTML) => {
         subject: title,
         html: contentHTML,
     });
-}
+};
 
 const decodeToken = (token, primaryKey) => {
     try {
         var decoded = jwt.verify(token, primaryKey);
-        return decoded
+        return decoded;
     } catch (e) {
         return null;
     }
-}
-
+};
 
 const routes = {
     //app
@@ -72,7 +68,8 @@ const routes = {
     increaseViewBlogById: '/api/v1/increase-view-blog-by-id',
     getListShortVideo: '/api/v1/get-list-short-video',
     getListCommentShortVideoById: '/api/v1/get-list-comment-short-video-by-id',
-    getListProductHashTagByIdVideo: '/api/v1/get-list-product-hashtag-by-id-video',
+    getListProductHashTagByIdVideo:
+        '/api/v1/get-list-product-hashtag-by-id-video',
     getProductById: '/api/v1/get-product-by-id',
     getListBlogHome: '/api/v1/get-list-blog-home',
     getEventPromotionById: '/api/v1/get-event-promotion-by-id',
@@ -80,7 +77,7 @@ const routes = {
     getListEventPromotionHome: '/api/v1/get-list-event-promotion-home',
     getContentEventPromotionById: '/api/v1/get-content-event-promotin-by-id',
 
-
+    getSuggestProductMobile: '/api/v2/get-suggest-product-mobile',
 
     //admin
     getAllTypeProduct: '/api/get-all-type-product',
@@ -151,8 +148,6 @@ const routes = {
     getListStatusBillAdmin: '/api/v1/get-list-status-bill-admin',
     //end winform
 
-
-
     //user
     getUserLogin: '/api/get-user-login',
     getAddressUser: '/api/v1/get-address-user',
@@ -213,12 +208,14 @@ const routes = {
     deleteAddressUser: '/api/v1/delete-address-user',
     deleteVideoEvaluate: '/api/v2/delete-video-evaluate',
     deleteProductInCart: '/api/v1/delete-product-in-cart',
-    createNewEvaluateProductFailed: '/api/v2/create-new-evaluate-product-failed',
+    createNewEvaluateProductFailed:
+        '/api/v2/create-new-evaluate-product-failed',
     deleteBlogUserById: '/api/v1/delete-blog-user-by-id',
     deleteCommentBlogById: '/api/v1/delete-comment-blog-by-id',
     getListBlogByIdUser: '/api/v1/get-list-blog-by-id-user',
     saveBlogCollection: '/api/v1/save-blog-collection',
-    getListCollectionBlogUserByPage: '/api/v1/get-list-collection-blog-user-by-page',
+    getListCollectionBlogUserByPage:
+        '/api/v1/get-list-collection-blog-user-by-page',
     deleteCollectBlogById: '/api/v1/delete-collect-blog-by-id',
     createCommentShortVideo: '/api/v1/create-comment-short-video',
     deleteCommentShortVideoById: '/api/v1/delete-comment-shortvideo-by-id',
@@ -238,10 +235,7 @@ const routes = {
     sendEmailFromContact: '/api/v1/send-email-from-contact',
     createNewReportVideo: '/api/v1/create-new-report-video',
     createNewReportBlog: '/api/v1/create-new-report-blog',
-
-
-}
-
+};
 
 module.exports = {
     hashPassword,
@@ -249,5 +243,5 @@ module.exports = {
     sendEmail,
     comparePassword,
     decodeToken,
-    routes
-}
+    routes,
+};

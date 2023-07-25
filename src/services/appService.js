@@ -1,194 +1,225 @@
-import db from '../models'
-const { Op } = require("sequelize");
+import db from '../models';
+const { Op } = require('sequelize');
 require('dotenv').config();
 import FuzzySearch from 'fuzzy-search';
-import Fuse from 'fuse.js'
+import Fuse from 'fuse.js';
 import { v4 as uuidv4 } from 'uuid';
-import commont from '../services/commont'
+import commont from '../services/commont';
 
 const getProductPromotionHome = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            let date = new Date().getTime()
+            let date = new Date().getTime();
 
             let products = await db.product.findAll({
-                attributes: ['id', 'nameProduct', 'priceProduct', 'isSell', 'sold'],
+                attributes: [
+                    'id',
+                    'nameProduct',
+                    'priceProduct',
+                    'isSell',
+                    'sold',
+                ],
                 limit: 10,
                 include: [
                     {
-                        model: db.imageProduct, as: 'imageProduct-product',
+                        model: db.imageProduct,
+                        as: 'imageProduct-product',
                         attributes: {
-                            exclude: ['createdAt', 'updatedAt', 'id']
-                        }
+                            exclude: ['createdAt', 'updatedAt', 'id'],
+                        },
                     },
                     {
                         model: db.trademark,
                         attributes: {
-                            exclude: ['createdAt', 'updatedAt', 'id']
-                        }
+                            exclude: ['createdAt', 'updatedAt', 'id'],
+                        },
                     },
                     {
                         model: db.typeProduct,
                         attributes: {
-                            exclude: ['createdAt', 'updatedAt', 'id']
-                        }
+                            exclude: ['createdAt', 'updatedAt', 'id'],
+                        },
                     },
                     {
-                        model: db.classifyProduct, as: 'classifyProduct-product',
+                        model: db.classifyProduct,
+                        as: 'classifyProduct-product',
                         attributes: {
-                            exclude: ['createdAt', 'updatedAt']
-                        }
+                            exclude: ['createdAt', 'updatedAt'],
+                        },
                     },
                     {
                         model: db.promotionProduct,
                         attributes: {
-                            exclude: ['createdAt', 'updatedAt', 'id']
+                            exclude: ['createdAt', 'updatedAt', 'id'],
                         },
                         where: {
                             [Op.and]: [
                                 { numberPercent: { [Op.ne]: 0 } },
-                                { timePromotion: { [Op.gt]: date } }
-                            ]
-                        }
-                    }
+                                { timePromotion: { [Op.gt]: date } },
+                            ],
+                        },
+                    },
                 ],
                 order: [
                     ['id', 'ASC'],
-                    [{ model: db.imageProduct, as: 'imageProduct-product' }, 'STTImage', 'asc']
+                    [
+                        { model: db.imageProduct, as: 'imageProduct-product' },
+                        'STTImage',
+                        'asc',
+                    ],
                 ],
                 raw: false,
-                nest: true
+                nest: true,
             });
 
             let products2 = await db.product.findAll({
-                attributes: ['id', 'nameProduct', 'priceProduct', 'isSell', 'sold'],
+                attributes: [
+                    'id',
+                    'nameProduct',
+                    'priceProduct',
+                    'isSell',
+                    'sold',
+                ],
                 limit: 10 - products.length,
                 include: [
                     {
-                        model: db.imageProduct, as: 'imageProduct-product',
+                        model: db.imageProduct,
+                        as: 'imageProduct-product',
                         attributes: {
-                            exclude: ['createdAt', 'updatedAt', 'id']
-                        }
+                            exclude: ['createdAt', 'updatedAt', 'id'],
+                        },
                     },
                     {
                         model: db.trademark,
                         attributes: {
-                            exclude: ['createdAt', 'updatedAt', 'id']
-                        }
+                            exclude: ['createdAt', 'updatedAt', 'id'],
+                        },
                     },
                     {
                         model: db.typeProduct,
                         attributes: {
-                            exclude: ['createdAt', 'updatedAt', 'id']
-                        }
+                            exclude: ['createdAt', 'updatedAt', 'id'],
+                        },
                     },
                     {
-                        model: db.classifyProduct, as: 'classifyProduct-product',
+                        model: db.classifyProduct,
+                        as: 'classifyProduct-product',
                         attributes: {
-                            exclude: ['createdAt', 'updatedAt']
-                        }
+                            exclude: ['createdAt', 'updatedAt'],
+                        },
                     },
                     {
                         model: db.promotionProduct,
                         attributes: {
-                            exclude: ['createdAt', 'updatedAt', 'id']
+                            exclude: ['createdAt', 'updatedAt', 'id'],
                         },
                         where: {
                             [Op.or]: [
                                 { numberPercent: { [Op.eq]: 0 } },
-                                { timePromotion: { [Op.lte]: date } }
-                            ]
-                        }
-                    }
+                                { timePromotion: { [Op.lte]: date } },
+                            ],
+                        },
+                    },
                 ],
                 order: [
                     ['id', 'ASC'],
-                    [{ model: db.imageProduct, as: 'imageProduct-product' }, 'STTImage', 'asc']
+                    [
+                        { model: db.imageProduct, as: 'imageProduct-product' },
+                        'STTImage',
+                        'asc',
+                    ],
                 ],
                 raw: false,
-                nest: true
+                nest: true,
             });
 
-            products.concat(products2)
+            products.concat(products2);
 
             resolve({
                 errCode: 0,
                 count: products.length,
                 data: products,
-            })
-        }
-        catch (e) {
+            });
+        } catch (e) {
             reject(e);
         }
-    })
-}
+    });
+};
 
 const getTopSellProduct = () => {
     return new Promise(async (resolve, reject) => {
         try {
-
             let products = await db.product.findAll({
-                attributes: ['id', 'nameProduct', 'priceProduct', 'isSell', 'sold'],
+                attributes: [
+                    'id',
+                    'nameProduct',
+                    'priceProduct',
+                    'isSell',
+                    'sold',
+                ],
                 include: [
                     {
-                        model: db.imageProduct, as: 'imageProduct-product',
+                        model: db.imageProduct,
+                        as: 'imageProduct-product',
                         attributes: {
-                            exclude: ['createdAt', 'updatedAt', 'id']
-                        }
+                            exclude: ['createdAt', 'updatedAt', 'id'],
+                        },
                     },
                     {
                         model: db.trademark,
                         attributes: {
-                            exclude: ['createdAt', 'updatedAt', 'id']
-                        }
+                            exclude: ['createdAt', 'updatedAt', 'id'],
+                        },
                     },
                     {
                         model: db.typeProduct,
                         attributes: {
-                            exclude: ['createdAt', 'updatedAt', 'id']
-                        }
+                            exclude: ['createdAt', 'updatedAt', 'id'],
+                        },
                     },
                     {
-                        model: db.classifyProduct, as: 'classifyProduct-product',
+                        model: db.classifyProduct,
+                        as: 'classifyProduct-product',
                         attributes: {
-                            exclude: ['createdAt', 'updatedAt']
-                        }
+                            exclude: ['createdAt', 'updatedAt'],
+                        },
                     },
                     {
                         model: db.promotionProduct,
                         attributes: {
-                            exclude: ['createdAt', 'updatedAt', 'id']
+                            exclude: ['createdAt', 'updatedAt', 'id'],
                         },
-                    }
+                    },
                 ],
                 order: [
                     ['sold', 'DESC'],
-                    [{ model: db.imageProduct, as: 'imageProduct-product' }, 'STTImage', 'asc']
+                    [
+                        { model: db.imageProduct, as: 'imageProduct-product' },
+                        'STTImage',
+                        'asc',
+                    ],
                 ],
                 limit: 20,
                 raw: false,
-                nest: true
+                nest: true,
             });
 
             if (products && products.length > 0) {
                 resolve({
                     errCode: 0,
-                    data: products
-                })
-            }
-            else {
+                    data: products,
+                });
+            } else {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Không tìm thấy sản phẩm nào!'
-                })
+                    errMessage: 'Không tìm thấy sản phẩm nào!',
+                });
             }
-
-        }
-        catch (e) {
+        } catch (e) {
             reject(e);
         }
-    })
-}
+    });
+};
 
 const getNewCollectionProduct = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -196,148 +227,163 @@ const getNewCollectionProduct = (data) => {
             if (!data.typeProduct) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!'
-                })
-            }
-            else {
-
+                    errMessage: 'Missing required parameter!',
+                });
+            } else {
                 let products = await db.product.findAll({
-                    attributes: ['id', 'nameProduct', 'priceProduct', 'isSell', 'sold'],
+                    attributes: [
+                        'id',
+                        'nameProduct',
+                        'priceProduct',
+                        'isSell',
+                        'sold',
+                    ],
                     include: [
                         {
-                            model: db.imageProduct, as: 'imageProduct-product',
+                            model: db.imageProduct,
+                            as: 'imageProduct-product',
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'id']
+                                exclude: ['createdAt', 'updatedAt', 'id'],
                             },
-
                         },
                         {
                             model: db.trademark,
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'id']
-                            }
+                                exclude: ['createdAt', 'updatedAt', 'id'],
+                            },
                         },
                         {
                             model: db.typeProduct,
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'id']
+                                exclude: ['createdAt', 'updatedAt', 'id'],
                             },
                             where: {
-                                nameTypeProduct: data.typeProduct.toLowerCase()
-                            }
+                                nameTypeProduct: data.typeProduct.toLowerCase(),
+                            },
                         },
                         {
-                            model: db.classifyProduct, as: 'classifyProduct-product',
+                            model: db.classifyProduct,
+                            as: 'classifyProduct-product',
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt']
-                            }
+                                exclude: ['createdAt', 'updatedAt'],
+                            },
                         },
                         {
                             model: db.promotionProduct,
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'id']
+                                exclude: ['createdAt', 'updatedAt', 'id'],
                             },
-                        }
+                        },
                     ],
                     order: [
-                        [{ model: db.imageProduct, as: 'imageProduct-product' }, 'STTImage', 'asc']
+                        [
+                            {
+                                model: db.imageProduct,
+                                as: 'imageProduct-product',
+                            },
+                            'STTImage',
+                            'asc',
+                        ],
                     ],
                     limit: 10,
                     raw: false,
-                    nest: true
+                    nest: true,
                 });
 
                 if (products && products.length > 0) {
                     resolve({
                         errCode: 0,
-                        data: products
-                    })
-                }
-                else {
+                        data: products,
+                    });
+                } else {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Không tìm thấy sản phẩm nào!'
-                    })
+                        errMessage: 'Không tìm thấy sản phẩm nào!',
+                    });
                 }
             }
-
-        }
-        catch (e) {
+        } catch (e) {
             reject(e);
         }
-    })
-}
+    });
+};
 
 const getProductFlycam = () => {
     return new Promise(async (resolve, reject) => {
         try {
-
             let products = await db.product.findAll({
-                attributes: ['id', 'nameProduct', 'priceProduct', 'isSell', 'sold'],
+                attributes: [
+                    'id',
+                    'nameProduct',
+                    'priceProduct',
+                    'isSell',
+                    'sold',
+                ],
                 include: [
                     {
-                        model: db.imageProduct, as: 'imageProduct-product',
+                        model: db.imageProduct,
+                        as: 'imageProduct-product',
                         attributes: {
-                            exclude: ['createdAt', 'updatedAt', 'id']
+                            exclude: ['createdAt', 'updatedAt', 'id'],
                         },
-
                     },
                     {
                         model: db.trademark,
                         attributes: {
-                            exclude: ['createdAt', 'updatedAt', 'id']
-                        }
+                            exclude: ['createdAt', 'updatedAt', 'id'],
+                        },
                     },
                     {
                         model: db.typeProduct,
                         attributes: {
-                            exclude: ['createdAt', 'updatedAt', 'id']
+                            exclude: ['createdAt', 'updatedAt', 'id'],
                         },
                         where: {
-                            nameTypeProduct: 'flycam'
-                        }
+                            nameTypeProduct: 'flycam',
+                        },
                     },
                     {
-                        model: db.classifyProduct, as: 'classifyProduct-product',
+                        model: db.classifyProduct,
+                        as: 'classifyProduct-product',
                         attributes: {
-                            exclude: ['createdAt', 'updatedAt']
-                        }
+                            exclude: ['createdAt', 'updatedAt'],
+                        },
                     },
                     {
                         model: db.promotionProduct,
                         attributes: {
-                            exclude: ['createdAt', 'updatedAt', 'id']
+                            exclude: ['createdAt', 'updatedAt', 'id'],
                         },
-                    }
+                    },
                 ],
                 order: [
-                    [{ model: db.imageProduct, as: 'imageProduct-product' }, 'STTImage', 'asc']
+                    [
+                        { model: db.imageProduct, as: 'imageProduct-product' },
+                        'STTImage',
+                        'asc',
+                    ],
                 ],
                 limit: 24,
                 raw: false,
-                nest: true
+                nest: true,
             });
 
             if (products && products.length > 0) {
                 resolve({
                     errCode: 0,
-                    data: products
-                })
-            }
-            else {
+                    data: products,
+                });
+            } else {
                 resolve({
                     errCode: 2,
-                    errMessage: 'Không tìm thấy sản phẩm nào!'
-                })
+                    errMessage: 'Không tìm thấy sản phẩm nào!',
+                });
             }
-
-
-        }
-        catch (e) {
+        } catch (e) {
             reject(e);
         }
-    })
-}
+    });
+};
 
 const getListProductMayLike = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -345,179 +391,194 @@ const getListProductMayLike = (data) => {
             if (!data.nameTypeProduct || !data.id) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!'
-                })
-            }
-            else {
-
-                let arrType = data.nameTypeProduct.split(',')
+                    errMessage: 'Missing required parameter!',
+                });
+            } else {
+                let arrType = data.nameTypeProduct.split(',');
 
                 let products = await db.product.findAll({
-                    attributes: ['id', 'nameProduct', 'priceProduct', 'isSell', 'sold'],
+                    attributes: [
+                        'id',
+                        'nameProduct',
+                        'priceProduct',
+                        'isSell',
+                        'sold',
+                    ],
                     where: {
                         id: {
-                            [Op.ne]: data.id
-                        }
+                            [Op.ne]: data.id,
+                        },
                     },
                     include: [
                         {
-                            model: db.imageProduct, as: 'imageProduct-product',
+                            model: db.imageProduct,
+                            as: 'imageProduct-product',
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'id']
+                                exclude: ['createdAt', 'updatedAt', 'id'],
                             },
                         },
                         {
                             model: db.trademark,
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'id']
-                            }
+                                exclude: ['createdAt', 'updatedAt', 'id'],
+                            },
                         },
                         {
                             model: db.typeProduct,
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'id']
+                                exclude: ['createdAt', 'updatedAt', 'id'],
                             },
                             where: {
                                 nameTypeProduct: {
-                                    [Op.in]: arrType
-                                }
-                            }
+                                    [Op.in]: arrType,
+                                },
+                            },
                         },
                         {
-                            model: db.classifyProduct, as: 'classifyProduct-product',
+                            model: db.classifyProduct,
+                            as: 'classifyProduct-product',
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt']
-                            }
+                                exclude: ['createdAt', 'updatedAt'],
+                            },
                         },
                         {
                             model: db.promotionProduct,
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'id']
+                                exclude: ['createdAt', 'updatedAt', 'id'],
                             },
-                        }
+                        },
                     ],
                     order: [
-                        [{ model: db.imageProduct, as: 'imageProduct-product' }, 'STTImage', 'asc']
+                        [
+                            {
+                                model: db.imageProduct,
+                                as: 'imageProduct-product',
+                            },
+                            'STTImage',
+                            'asc',
+                        ],
                     ],
                     limit: 20,
                     raw: false,
-                    nest: true
+                    nest: true,
                 });
 
                 if (products && products.length > 0) {
                     resolve({
                         errCode: 0,
-                        data: products
-                    })
-                }
-                else {
+                        data: products,
+                    });
+                } else {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Không tìm thấy sản phẩm nào!'
-                    })
+                        errMessage: 'Không tìm thấy sản phẩm nào!',
+                    });
                 }
             }
-        }
-        catch (e) {
+        } catch (e) {
             reject(e);
         }
-    })
-}
+    });
+};
 
 const getEvaluateByIdProduct = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.idProduct || !data.fillter || !data.page || !data.offset) {
+            if (
+                !data.idProduct ||
+                !data.fillter ||
+                !data.page ||
+                !data.offset
+            ) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
-                    data
-                })
-            }
-            else {
+                    data,
+                });
+            } else {
                 let amount5star = await db.evaluateProduct.count({
                     where: {
                         idProduct: data.idProduct,
-                        starNumber: 5
-                    }
-                })
+                        starNumber: 5,
+                    },
+                });
                 let amount4star = await db.evaluateProduct.count({
                     where: {
                         idProduct: data.idProduct,
-                        starNumber: 4
-                    }
-                })
+                        starNumber: 4,
+                    },
+                });
                 let amount3star = await db.evaluateProduct.count({
                     where: {
                         idProduct: data.idProduct,
-                        starNumber: 3
-                    }
-                })
+                        starNumber: 3,
+                    },
+                });
                 let amount2star = await db.evaluateProduct.count({
                     where: {
                         idProduct: data.idProduct,
-                        starNumber: 2
-                    }
-                })
+                        starNumber: 2,
+                    },
+                });
                 let amount1star = await db.evaluateProduct.count({
                     where: {
                         idProduct: data.idProduct,
-                        starNumber: 1
-                    }
-                })
+                        starNumber: 1,
+                    },
+                });
 
                 let amountComment = await db.evaluateProduct.count({
                     where: {
                         idProduct: data.idProduct,
                         content: {
-                            [Op.ne]: ""
-                        }
-                    }
-                })
+                            [Op.ne]: '',
+                        },
+                    },
+                });
 
                 let evaluateProductArr = await db.evaluateProduct.findAll({
                     where: {
-                        idProduct: data.idProduct
+                        idProduct: data.idProduct,
                     },
-                })
-                let amountImage = 0
-                let amountVideo = 0
-                evaluateProductArr.forEach(async item => {
+                });
+                let amountImage = 0;
+                let amountVideo = 0;
+                evaluateProductArr.forEach(async (item) => {
                     let image = await db.imageEvaluateProduct.findOne({
                         where: {
-                            idEvaluateProduct: item.id
-                        }
-                    })
+                            idEvaluateProduct: item.id,
+                        },
+                    });
                     let video = await db.videoEvaluateProduct.findOne({
                         where: {
-                            idEvaluateProduct: item.id
-                        }
-                    })
-                    if (image) amountImage++
-                    if (video) amountVideo++
-                })
+                            idEvaluateProduct: item.id,
+                        },
+                    });
+                    if (image) amountImage++;
+                    if (video) amountVideo++;
+                });
 
                 let avgStarArrr = await db.evaluateProduct.findAll({
                     where: {
-                        idProduct: data.idProduct
-                    }
-                })
+                        idProduct: data.idProduct,
+                    },
+                });
 
-                let avgStar, totalStar = 0
-                avgStarArrr.forEach(item => {
-                    totalStar += item.starNumber
+                let avgStar,
+                    totalStar = 0;
+                avgStarArrr.forEach((item) => {
+                    totalStar += item.starNumber;
                 });
                 if (avgStarArrr.length === 0) {
-                    avgStar = 0
-                }
-                else {
-                    avgStar = totalStar / avgStarArrr.length
+                    avgStar = 0;
+                } else {
+                    avgStar = totalStar / avgStarArrr.length;
                 }
 
                 if (data.fillter === 'all') {
                     let evaluateProduct = await db.evaluateProduct.findAll({
                         where: {
-                            idProduct: data.idProduct
+                            idProduct: data.idProduct,
                         },
                         offset: (data.page - 1) * data.offset,
                         limit: data.offset,
@@ -525,10 +586,15 @@ const getEvaluateByIdProduct = (data) => {
                             {
                                 model: db.User,
                                 attributes: [
-                                    'firstName', 'lastName', 'typeAccount',
-                                    'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub',
-                                    'avatarUpdate'
-                                ]
+                                    'firstName',
+                                    'lastName',
+                                    'typeAccount',
+                                    'avatar',
+                                    'avatarGoogle',
+                                    'avatarFacebook',
+                                    'avatarGithub',
+                                    'avatarUpdate',
+                                ],
                             },
                             {
                                 model: db.detailBill,
@@ -537,27 +603,26 @@ const getEvaluateByIdProduct = (data) => {
                                     {
                                         model: db.classifyProduct,
                                         attributes: ['nameClassifyProduct'],
-                                    }
-                                ]
+                                    },
+                                ],
                             },
                             {
-                                model: db.imageEvaluateProduct
+                                model: db.imageEvaluateProduct,
                             },
                             {
-                                model: db.videoEvaluateProduct
-                            }
+                                model: db.videoEvaluateProduct,
+                            },
                         ],
                         order: [['createdAt', 'DESC']],
                         raw: false,
-                        nest: true
-                    })
+                        nest: true,
+                    });
 
                     let amountEvaluate = await db.evaluateProduct.count({
                         where: {
-                            idProduct: data.idProduct
+                            idProduct: data.idProduct,
                         },
-                    })
-
+                    });
 
                     resolve({
                         errCode: 0,
@@ -573,19 +638,18 @@ const getEvaluateByIdProduct = (data) => {
                         amountComment,
                         amountImage,
                         amountVideo,
-                        avgStar
-                    })
-
-
-                }
-
-                else if (data.fillter !== 'all' && data.fillter !== 'comment' && data.fillter !== 'video'
-                    && data.fillter !== 'image'
+                        avgStar,
+                    });
+                } else if (
+                    data.fillter !== 'all' &&
+                    data.fillter !== 'comment' &&
+                    data.fillter !== 'video' &&
+                    data.fillter !== 'image'
                 ) {
                     let evaluateProduct = await db.evaluateProduct.findAll({
                         where: {
                             idProduct: data.idProduct,
-                            starNumber: +data.fillter
+                            starNumber: +data.fillter,
                         },
                         offset: (data.page - 1) * data.offset,
                         limit: data.offset,
@@ -593,10 +657,15 @@ const getEvaluateByIdProduct = (data) => {
                             {
                                 model: db.User,
                                 attributes: [
-                                    'firstName', 'lastName', 'typeAccount',
-                                    'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub',
-                                    'avatarUpdate'
-                                ]
+                                    'firstName',
+                                    'lastName',
+                                    'typeAccount',
+                                    'avatar',
+                                    'avatarGoogle',
+                                    'avatarFacebook',
+                                    'avatarGithub',
+                                    'avatarUpdate',
+                                ],
                             },
                             {
                                 model: db.detailBill,
@@ -605,28 +674,27 @@ const getEvaluateByIdProduct = (data) => {
                                     {
                                         model: db.classifyProduct,
                                         attributes: ['nameClassifyProduct'],
-                                    }
-                                ]
+                                    },
+                                ],
                             },
                             {
-                                model: db.imageEvaluateProduct
+                                model: db.imageEvaluateProduct,
                             },
                             {
-                                model: db.videoEvaluateProduct
-                            }
+                                model: db.videoEvaluateProduct,
+                            },
                         ],
                         order: [['createdAt', 'DESC']],
                         raw: false,
-                        nest: true
-                    })
+                        nest: true,
+                    });
 
                     let amountEvaluate = await db.evaluateProduct.count({
                         where: {
                             idProduct: data.idProduct,
-                            starNumber: +data.fillter
+                            starNumber: +data.fillter,
                         },
-                    })
-
+                    });
 
                     resolve({
                         errCode: 0,
@@ -642,16 +710,15 @@ const getEvaluateByIdProduct = (data) => {
                         amountComment,
                         amountImage,
                         amountVideo,
-                        avgStar
-                    })
-                }
-                else if (data.fillter === 'comment') {
+                        avgStar,
+                    });
+                } else if (data.fillter === 'comment') {
                     let evaluateProduct = await db.evaluateProduct.findAll({
                         where: {
                             idProduct: data.idProduct,
                             content: {
-                                [Op.ne]: ''
-                            }
+                                [Op.ne]: '',
+                            },
                         },
                         offset: (data.page - 1) * data.offset,
                         limit: data.offset,
@@ -659,10 +726,15 @@ const getEvaluateByIdProduct = (data) => {
                             {
                                 model: db.User,
                                 attributes: [
-                                    'firstName', 'lastName', 'typeAccount',
-                                    'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub',
-                                    'avatarUpdate'
-                                ]
+                                    'firstName',
+                                    'lastName',
+                                    'typeAccount',
+                                    'avatar',
+                                    'avatarGoogle',
+                                    'avatarFacebook',
+                                    'avatarGithub',
+                                    'avatarUpdate',
+                                ],
                             },
                             {
                                 model: db.detailBill,
@@ -671,30 +743,29 @@ const getEvaluateByIdProduct = (data) => {
                                     {
                                         model: db.classifyProduct,
                                         attributes: ['nameClassifyProduct'],
-                                    }
-                                ]
+                                    },
+                                ],
                             },
                             {
-                                model: db.imageEvaluateProduct
+                                model: db.imageEvaluateProduct,
                             },
                             {
-                                model: db.videoEvaluateProduct
-                            }
+                                model: db.videoEvaluateProduct,
+                            },
                         ],
                         order: [['createdAt', 'DESC']],
                         raw: false,
-                        nest: true
-                    })
+                        nest: true,
+                    });
 
                     let amountEvaluate = await db.evaluateProduct.count({
                         where: {
                             idProduct: data.idProduct,
                             content: {
-                                [Op.ne]: ''
-                            }
+                                [Op.ne]: '',
+                            },
                         },
-                    })
-
+                    });
 
                     resolve({
                         errCode: 0,
@@ -710,10 +781,9 @@ const getEvaluateByIdProduct = (data) => {
                         amountComment,
                         amountImage,
                         amountVideo,
-                        avgStar
-                    })
-                }
-                else if (data.fillter === 'image') {
+                        avgStar,
+                    });
+                } else if (data.fillter === 'image') {
                     let evaluateProduct = await db.evaluateProduct.findAll({
                         where: {
                             idProduct: data.idProduct,
@@ -724,10 +794,15 @@ const getEvaluateByIdProduct = (data) => {
                             {
                                 model: db.User,
                                 attributes: [
-                                    'firstName', 'lastName', 'typeAccount',
-                                    'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub',
-                                    'avatarUpdate'
-                                ]
+                                    'firstName',
+                                    'lastName',
+                                    'typeAccount',
+                                    'avatar',
+                                    'avatarGoogle',
+                                    'avatarFacebook',
+                                    'avatarGithub',
+                                    'avatarUpdate',
+                                ],
                             },
                             {
                                 model: db.detailBill,
@@ -736,26 +811,25 @@ const getEvaluateByIdProduct = (data) => {
                                     {
                                         model: db.classifyProduct,
                                         attributes: ['nameClassifyProduct'],
-                                    }
-                                ]
+                                    },
+                                ],
                             },
                             {
                                 model: db.imageEvaluateProduct,
                                 where: {
                                     imagebase64: {
-                                        [Op.ne]: ''
-                                    }
-                                }
+                                        [Op.ne]: '',
+                                    },
+                                },
                             },
                             {
                                 model: db.videoEvaluateProduct,
-
-                            }
+                            },
                         ],
                         order: [['createdAt', 'DESC']],
                         raw: false,
-                        nest: true
-                    })
+                        nest: true,
+                    });
 
                     resolve({
                         errCode: 0,
@@ -771,10 +845,9 @@ const getEvaluateByIdProduct = (data) => {
                         amountComment,
                         amountImage,
                         amountVideo,
-                        avgStar
-                    })
-                }
-                else if (data.fillter === 'video') {
+                        avgStar,
+                    });
+                } else if (data.fillter === 'video') {
                     let evaluateProduct = await db.evaluateProduct.findAll({
                         where: {
                             idProduct: data.idProduct,
@@ -785,10 +858,15 @@ const getEvaluateByIdProduct = (data) => {
                             {
                                 model: db.User,
                                 attributes: [
-                                    'firstName', 'lastName', 'typeAccount',
-                                    'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub',
-                                    'avatarUpdate'
-                                ]
+                                    'firstName',
+                                    'lastName',
+                                    'typeAccount',
+                                    'avatar',
+                                    'avatarGoogle',
+                                    'avatarFacebook',
+                                    'avatarGithub',
+                                    'avatarUpdate',
+                                ],
                             },
                             {
                                 model: db.detailBill,
@@ -797,26 +875,25 @@ const getEvaluateByIdProduct = (data) => {
                                     {
                                         model: db.classifyProduct,
                                         attributes: ['nameClassifyProduct'],
-                                    }
-                                ]
+                                    },
+                                ],
                             },
                             {
                                 model: db.imageEvaluateProduct,
-
                             },
                             {
                                 model: db.videoEvaluateProduct,
                                 where: {
                                     videobase64: {
-                                        [Op.ne]: ''
-                                    }
-                                }
-                            }
+                                        [Op.ne]: '',
+                                    },
+                                },
+                            },
                         ],
                         order: [['createdAt', 'DESC']],
                         raw: false,
-                        nest: true
-                    })
+                        nest: true,
+                    });
 
                     resolve({
                         errCode: 0,
@@ -832,16 +909,15 @@ const getEvaluateByIdProduct = (data) => {
                         amountComment,
                         amountImage,
                         amountVideo,
-                        avgStar
-                    })
+                        avgStar,
+                    });
                 }
             }
-        }
-        catch (e) {
+        } catch (e) {
             reject(e);
         }
-    })
-}
+    });
+};
 
 const searchProduct = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -850,74 +926,74 @@ const searchProduct = (data) => {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
-                    data
-                })
-            }
-            else {
+                    data,
+                });
+            } else {
                 let whereTrademark = () => {
-                    if (!data.brand) return {}
-                    let arr = data.brand.split(',')
+                    if (!data.brand) return {};
+                    let arr = data.brand.split(',');
                     return {
                         nameTrademark: {
-                            [Op.or]: arr
-                        }
-                    }
-                }
+                            [Op.or]: arr,
+                        },
+                    };
+                };
 
                 let whereTypeProduct = () => {
-                    if (!data.facet) return {}
-                    let arr = data.facet.split(',')
+                    if (!data.facet) return {};
+                    let arr = data.facet.split(',');
                     return {
                         nameTypeProduct: {
-                            [Op.or]: arr
-                        }
-                    }
-                }
+                            [Op.or]: arr,
+                        },
+                    };
+                };
 
                 let whereStatus = () => {
-                    if (!data.status) return null
+                    if (!data.status) return null;
                     return {
-                        isSell: data.status === 'sell' ? 'true' : 'false'
-                    }
-                }
+                        isSell: data.status === 'sell' ? 'true' : 'false',
+                    };
+                };
 
                 let wherePrice = () => {
-                    if (!data.minP || !data.maxP) return {}
+                    if (!data.minP || !data.maxP) return {};
                     return {
                         priceClassify: {
-                            [Op.between]: [+data.minP, +data.maxP]
-                        }
-                    }
-                }
+                            [Op.between]: [+data.minP, +data.maxP],
+                        },
+                    };
+                };
 
                 let whereRating = () => {
-                    if (!data.rating) return null
+                    if (!data.rating) return null;
 
                     return {
                         starNumber: {
-                            [Op.gte]: +data.rating
-                        }
-                    }
-                }
+                            [Op.gte]: +data.rating,
+                        },
+                    };
+                };
 
-                let date = new Date().getTime()
+                let date = new Date().getTime();
                 let wherePromotion = () => {
-                    if (!data.promotion || data.promotion !== 'true') return null
+                    if (!data.promotion || data.promotion !== 'true')
+                        return null;
                     return {
                         [Op.and]: [
                             {
                                 numberPercent: {
-                                    [Op.gt]: 0
+                                    [Op.gt]: 0,
                                 },
                             },
                             {
                                 timePromotion: {
-                                    [Op.gt]: date
-                                }
-                            }
-                        ]
-                    }
-                }
+                                    [Op.gt]: date,
+                                },
+                            },
+                        ],
+                    };
+                };
 
                 // let arrOrder = () => {
                 //     if (!data.order) return null
@@ -931,11 +1007,24 @@ const searchProduct = (data) => {
                 //     }
                 // }
 
-                let arrOrder = [['nameProduct', 'asc'], ['stt', 'DESC'], ['isSell', 'DESC']]
-                let indexOrder = !data.order ? 0 : data.order === 'latest' ? 1 : data.order === 'selling' ? 2 : 0
+                let arrOrder = [
+                    ['nameProduct', 'asc'],
+                    ['stt', 'DESC'],
+                    ['isSell', 'DESC'],
+                ];
+                let indexOrder = !data.order
+                    ? 0
+                    : data.order === 'latest'
+                    ? 1
+                    : data.order === 'selling'
+                    ? 2
+                    : 0;
 
-
-                if (data.promotion && data.promotion === 'true' && !data.keyword) {
+                if (
+                    data.promotion &&
+                    data.promotion === 'true' &&
+                    !data.keyword
+                ) {
                     let listProducts = await db.product.findAll({
                         where: whereStatus(),
                         offset: (+data.page - 1) * +data.maxProduct,
@@ -943,67 +1032,84 @@ const searchProduct = (data) => {
                         include: [
                             {
                                 model: db.trademark,
-                                where: whereTrademark()
+                                where: whereTrademark(),
                             },
                             {
                                 model: db.typeProduct,
-                                where: whereTypeProduct()
+                                where: whereTypeProduct(),
                             },
                             {
-                                model: db.imageProduct, as: 'imageProduct-product'
+                                model: db.imageProduct,
+                                as: 'imageProduct-product',
                             },
                             {
-                                model: db.classifyProduct, as: 'classifyProduct-product',
+                                model: db.classifyProduct,
+                                as: 'classifyProduct-product',
                                 where: wherePrice(),
                             },
                             {
                                 model: db.promotionProduct,
-                                where: wherePromotion()
+                                where: wherePromotion(),
                             },
                             {
                                 model: db.evaluateProduct,
-                                where: whereRating()
-                            }
+                                where: whereRating(),
+                            },
                         ],
                         order: [
-                            [{ model: db.imageProduct, as: 'imageProduct-product' }, 'STTImage', 'asc'],
-                            [{ model: db.classifyProduct, as: 'classifyProduct-product' }, 'priceClassify', 'asc'],
-                            arrOrder[indexOrder]
+                            [
+                                {
+                                    model: db.imageProduct,
+                                    as: 'imageProduct-product',
+                                },
+                                'STTImage',
+                                'asc',
+                            ],
+                            [
+                                {
+                                    model: db.classifyProduct,
+                                    as: 'classifyProduct-product',
+                                },
+                                'priceClassify',
+                                'asc',
+                            ],
+                            arrOrder[indexOrder],
                         ],
                         raw: false,
-                        nest: true
-                    })
+                        nest: true,
+                    });
 
                     let count = await db.product.findAll({
                         where: whereStatus(),
                         include: [
                             {
                                 model: db.trademark,
-                                where: whereTrademark()
+                                where: whereTrademark(),
                             },
                             {
                                 model: db.typeProduct,
-                                where: whereTypeProduct()
+                                where: whereTypeProduct(),
                             },
                             // {
                             //     model: db.imageProduct, as: 'imageProduct-product'
                             // },
                             {
-                                model: db.classifyProduct, as: 'classifyProduct-product',
+                                model: db.classifyProduct,
+                                as: 'classifyProduct-product',
                                 where: wherePrice(),
                             },
                             {
                                 model: db.promotionProduct,
-                                where: wherePromotion()
+                                where: wherePromotion(),
                             },
                             {
                                 model: db.evaluateProduct,
-                                where: whereRating()
-                            }
+                                where: whereRating(),
+                            },
                         ],
                         raw: false,
-                        nest: true
-                    })
+                        nest: true,
+                    });
 
                     // console.log(listProducts.length);
                     // console.log('length', count.length);
@@ -1012,15 +1118,15 @@ const searchProduct = (data) => {
                         errCode: 0,
                         countProduct: count.length,
                         data: listProducts,
-                    })
-                    return
+                    });
+                    return;
                 }
                 if (!data.keyword) {
                     resolve({
                         errCode: -1,
-                        errMessage: 'Not found keyword'
-                    })
-                    return
+                        errMessage: 'Not found keyword',
+                    });
+                    return;
                 }
 
                 let listProducts = await db.product.findAll({
@@ -1030,90 +1136,104 @@ const searchProduct = (data) => {
                     include: [
                         {
                             model: db.trademark,
-                            where: whereTrademark()
+                            where: whereTrademark(),
                         },
                         {
                             model: db.typeProduct,
-                            where: whereTypeProduct()
+                            where: whereTypeProduct(),
                         },
                         {
-                            model: db.imageProduct, as: 'imageProduct-product'
+                            model: db.imageProduct,
+                            as: 'imageProduct-product',
                         },
                         {
-                            model: db.classifyProduct, as: 'classifyProduct-product',
+                            model: db.classifyProduct,
+                            as: 'classifyProduct-product',
                             where: wherePrice(),
                         },
                         {
                             model: db.promotionProduct,
-                            where: wherePromotion()
+                            where: wherePromotion(),
                         },
                         {
                             model: db.evaluateProduct,
-                            where: whereRating()
-                        }
+                            where: whereRating(),
+                        },
                     ],
                     order: [
-                        [{ model: db.imageProduct, as: 'imageProduct-product' }, 'STTImage', 'asc'],
-                        [{ model: db.classifyProduct, as: 'classifyProduct-product' }, 'priceClassify', 'asc'],
-                        arrOrder[indexOrder]
+                        [
+                            {
+                                model: db.imageProduct,
+                                as: 'imageProduct-product',
+                            },
+                            'STTImage',
+                            'asc',
+                        ],
+                        [
+                            {
+                                model: db.classifyProduct,
+                                as: 'classifyProduct-product',
+                            },
+                            'priceClassify',
+                            'asc',
+                        ],
+                        arrOrder[indexOrder],
                     ],
                     raw: false,
-                    nest: true
-                })
+                    nest: true,
+                });
                 // console.log('res1', listProducts);
 
                 const options = {
                     keys: [
-                        'nameProductEn', 'trademark.nameTrademarkEn', 'typeProduct.nameTypeProductEn'
-                    ]
+                        'nameProductEn',
+                        'trademark.nameTrademarkEn',
+                        'typeProduct.nameTypeProductEn',
+                    ],
                 };
 
                 const fuse = new Fuse(listProducts, options);
 
-
-
-                let key = data.keyword?.normalize('NFD')
+                let key = data.keyword
+                    ?.normalize('NFD')
                     .replace(/[\u0300-\u036f]/g, '')
-                    .replace(/đ/g, 'd').replace(/Đ/g, 'D');
+                    .replace(/đ/g, 'd')
+                    .replace(/Đ/g, 'D');
 
-                const result = fuse.search(key)
+                const result = fuse.search(key);
                 // console.log('res', result);
 
-                let start = (+data.page - 1) * data.maxProduct
-                let end = start + data.maxProduct
+                let start = (+data.page - 1) * data.maxProduct;
+                let end = start + data.maxProduct;
 
                 resolve({
                     errCode: 0,
                     countProduct: result.length,
                     data: result.slice(start, end),
-                })
-
+                });
             }
-        }
-        catch (e) {
+        } catch (e) {
             reject(e);
         }
-    })
-}
+    });
+};
 
 //test
 const GetListProduct = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let products = await db.product.findAll()
+            let products = await db.product.findAll();
 
-            resolve(products)
-        }
-        catch (e) {
+            resolve(products);
+        } catch (e) {
             reject(e);
         }
-    })
-}
+    });
+};
 
 const createProduct = () => {
     return new Promise(async (resolve, reject) => {
         try {
-
             // let product = await db.product.create({
             //     nameProduct: data.name,
             //     id: uuidv4(),
@@ -1126,14 +1246,13 @@ const createProduct = () => {
 
             resolve({
                 errCode: 0,
-                mess: 'đã thêm sản phẩm'
-            })
-        }
-        catch (e) {
+                mess: 'đã thêm sản phẩm',
+            });
+        } catch (e) {
             reject(e);
         }
-    })
-}
+    });
+};
 //end test
 
 const getListBlog = (data) => {
@@ -1143,187 +1262,277 @@ const getListBlog = (data) => {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
-                    data
-                })
-            }
-            else {
-                let date = new Date().getTime()
-                let arrIdBlogLike = []
+                    data,
+                });
+            } else {
+                let date = new Date().getTime();
+                let arrIdBlogLike = [];
 
                 let blogs = await db.blogs.findAll({
                     where: {
                         timePost: {
-                            [Op.lt]: date
+                            [Op.lt]: date,
                         },
                         editImage: {
-                            [Op.ne]: 'true'
+                            [Op.ne]: 'true',
                         },
                         editVideo: {
-                            [Op.ne]: 'true'
-                        }
+                            [Op.ne]: 'true',
+                        },
                     },
                     offset: (+data.page - 1) * data.maxCount,
                     limit: data.maxCount,
                     attributes: {
-                        exclude: ['createdAt', 'updatedAt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown', 'contentHTML']
+                        exclude: [
+                            'createdAt',
+                            'updatedAt',
+                            'viewBlog',
+                            'timePost',
+                            'timeBlog',
+                            'idUser',
+                            'contentMarkdown',
+                            'contentHTML',
+                        ],
                     },
                     include: [
                         {
                             model: db.imageBlogs,
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'stt', 'idCloudinary', 'idBlog', '']
-                            }
+                                exclude: [
+                                    'createdAt',
+                                    'updatedAt',
+                                    'stt',
+                                    'idCloudinary',
+                                    'idBlog',
+                                    '',
+                                ],
+                            },
                         },
                         {
                             model: db.videoBlogs,
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'stt', 'idBlog', '']
-                            }
+                                exclude: [
+                                    'createdAt',
+                                    'updatedAt',
+                                    'stt',
+                                    'idBlog',
+                                    '',
+                                ],
+                            },
                         },
                         {
                             model: db.User,
                             attributes: {
                                 exclude: [
-                                    'updatedAt', 'statusUser', 'sdt', 'pass', 'keyVerify', 'idGoogle', 'idGithub', 'idFacebook', 'email', 'createdAt', 'birtday', 'gender'
-                                ]
+                                    'updatedAt',
+                                    'statusUser',
+                                    'sdt',
+                                    'pass',
+                                    'keyVerify',
+                                    'idGoogle',
+                                    'idGithub',
+                                    'idFacebook',
+                                    'email',
+                                    'createdAt',
+                                    'birtday',
+                                    'gender',
+                                ],
                             },
                             where: {
                                 statusUser: {
-                                    [Op.ne]: 'false'
-                                }
+                                    [Op.ne]: 'false',
+                                },
                             },
-
                         },
                         {
-                            model: db.blogShares, as: 'blogs-blogShares-parent',
+                            model: db.blogShares,
+                            as: 'blogs-blogShares-parent',
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'stt', 'idBlogShare', 'idProduct', 'idBlog']
+                                exclude: [
+                                    'createdAt',
+                                    'updatedAt',
+                                    'stt',
+                                    'idBlogShare',
+                                    'idProduct',
+                                    'idBlog',
+                                ],
                             },
                             include: [
                                 {
                                     model: db.product,
                                     attributes: {
-                                        exclude: ['createdAt', 'updatedAt', 'stt', 'sold', 'priceProduct', 'nameProductEn', 'isSell', 'idTypeProduct', 'idTrademark', 'contentMarkdown', 'contentHTML']
+                                        exclude: [
+                                            'createdAt',
+                                            'updatedAt',
+                                            'stt',
+                                            'sold',
+                                            'priceProduct',
+                                            'nameProductEn',
+                                            'isSell',
+                                            'idTypeProduct',
+                                            'idTrademark',
+                                            'contentMarkdown',
+                                            'contentHTML',
+                                        ],
                                     },
                                     include: [
                                         {
-                                            model: db.imageProduct, as: 'imageProduct-product',
-                                        }
-                                    ]
+                                            model: db.imageProduct,
+                                            as: 'imageProduct-product',
+                                        },
+                                    ],
                                 },
                                 {
-                                    model: db.blogs, as: 'blogs-blogShares-child',
+                                    model: db.blogs,
+                                    as: 'blogs-blogShares-child',
                                     attributes: {
-                                        exclude: ['createdAt', 'updatedAt', 'stt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
+                                        exclude: [
+                                            'createdAt',
+                                            'updatedAt',
+                                            'stt',
+                                            'viewBlog',
+                                            'timePost',
+                                            'timeBlog',
+                                            'idUser',
+                                            'contentMarkdown',
+                                        ],
                                     },
-                                }
-                            ]
+                                },
+                            ],
                         },
-
-
                     ],
                     order: [['stt', 'DESC']],
                     raw: false,
-                    nest: true
-                })
+                    nest: true,
+                });
 
                 let countPage = await db.blogs.count({
                     where: {
                         timePost: {
-                            [Op.lt]: date
+                            [Op.lt]: date,
                         },
                         editImage: 'false',
-                        editVideo: 'false'
+                        editVideo: 'false',
                     },
                     include: [
                         {
                             model: db.User,
                             attributes: {
                                 exclude: [
-                                    'updatedAt', 'statusUser', 'sdt', 'pass', 'keyVerify', 'idGoogle', 'idGithub', 'idFacebook', 'email', 'createdAt', 'birtday', 'gender'
-                                ]
+                                    'updatedAt',
+                                    'statusUser',
+                                    'sdt',
+                                    'pass',
+                                    'keyVerify',
+                                    'idGoogle',
+                                    'idGithub',
+                                    'idFacebook',
+                                    'email',
+                                    'createdAt',
+                                    'birtday',
+                                    'gender',
+                                ],
                             },
                             where: {
                                 statusUser: {
-                                    [Op.ne]: 'false'
-                                }
+                                    [Op.ne]: 'false',
+                                },
                             },
-
                         },
                     ],
-                })
-
+                });
 
                 if (data.accessToken) {
-                    let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                    let decode = commont.decodeToken(
+                        data.accessToken,
+                        process.env.ACCESS_TOKEN_SECRET
+                    );
                     if (decode !== null) {
-                        let idUser = decode.id
-                        let listIdBlog = []
+                        let idUser = decode.id;
+                        let listIdBlog = [];
 
                         let blogArr = await db.blogs.findAll({
                             where: {
                                 timePost: {
-                                    [Op.lt]: date
-                                }
+                                    [Op.lt]: date,
+                                },
                             },
                             offset: (data.page - 1) * data.maxCount,
                             limit: data.maxCount,
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
+                                exclude: [
+                                    'createdAt',
+                                    'updatedAt',
+                                    'viewBlog',
+                                    'timePost',
+                                    'timeBlog',
+                                    'idUser',
+                                    'contentMarkdown',
+                                ],
                             },
                             include: [
-
                                 {
                                     model: db.User,
                                     attributes: {
                                         exclude: [
-                                            'updatedAt', 'statusUser', 'sdt', 'pass', 'keyVerify', 'idGoogle', 'idGithub', 'idFacebook', 'id', 'email', 'createdAt', 'birtday', 'gender'
-                                        ]
+                                            'updatedAt',
+                                            'statusUser',
+                                            'sdt',
+                                            'pass',
+                                            'keyVerify',
+                                            'idGoogle',
+                                            'idGithub',
+                                            'idFacebook',
+                                            'id',
+                                            'email',
+                                            'createdAt',
+                                            'birtday',
+                                            'gender',
+                                        ],
                                     },
                                     where: {
                                         statusUser: {
-                                            [Op.ne]: 'false'
-                                        }
+                                            [Op.ne]: 'false',
+                                        },
                                     },
                                 },
                             ],
                             order: [['stt', 'DESC']],
                             raw: false,
-                            nest: true
-                        })
+                            nest: true,
+                        });
 
                         blogArr.forEach((item, index) => {
-
-                            let idBlog = { ...item }.dataValues.id
-                            listIdBlog.push(idBlog)
-                        })
+                            let idBlog = { ...item }.dataValues.id;
+                            listIdBlog.push(idBlog);
+                        });
                         let likeBlog = await db.likeBlog.findAll({
                             where: {
                                 idUser,
                                 idBlog: {
-                                    [Op.in]: listIdBlog
-                                }
+                                    [Op.in]: listIdBlog,
+                                },
                             },
-                            attributes: ['idBlog']
-                        })
+                            attributes: ['idBlog'],
+                        });
 
-                        let listIdBlogCollection = await db.collectionBlogs.findAll({
-                            where: {
-                                idUser: decode.id
-                            },
-                            attributes: ['idBlog']
-                        })
+                        let listIdBlogCollection =
+                            await db.collectionBlogs.findAll({
+                                where: {
+                                    idUser: decode.id,
+                                },
+                                attributes: ['idBlog'],
+                            });
 
                         resolve({
                             errCode: 0,
                             data: blogs,
                             countPage,
                             arrIdBlogLike: likeBlog,
-                            listIdBlogCollection
-                        })
-                        return
+                            listIdBlogCollection,
+                        });
+                        return;
                     }
-
                 }
 
                 resolve({
@@ -1331,39 +1540,31 @@ const getListBlog = (data) => {
                     data: blogs,
                     countPage,
                     arrIdBlogLike,
-                    listIdBlogCollection: []
-                })
-
+                    listIdBlogCollection: [],
+                });
             }
-        }
-        catch (e) {
+        } catch (e) {
             reject(e);
         }
-    })
-}
+    });
+};
 
 const getListHashTag = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-
-
             let listProducts = await db.product.findAll({
-                attributes: ['id', 'nameProduct']
-            })
-
+                attributes: ['id', 'nameProduct'],
+            });
 
             resolve({
                 errCode: 0,
-                data: listProducts
-            })
-
-
-        }
-        catch (e) {
+                data: listProducts,
+            });
+        } catch (e) {
             reject(e);
         }
-    })
-}
+    });
+};
 
 const getBlogShareProduct = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -1372,70 +1573,104 @@ const getBlogShareProduct = (data) => {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
-                    data
-                })
-            }
-            else {
+                    data,
+                });
+            } else {
                 let blogs = await db.blogs.findOne({
                     where: {
-                        id: data.idBlog
+                        id: data.idBlog,
                     },
                     attributes: {
-                        exclude: ['updatedAt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
+                        exclude: [
+                            'updatedAt',
+                            'viewBlog',
+                            'timePost',
+                            'timeBlog',
+                            'idUser',
+                            'contentMarkdown',
+                        ],
                     },
                     include: [
                         {
                             model: db.User,
                             attributes: {
                                 exclude: [
-                                    'updatedAt', 'statusUser', 'sdt', 'pass', 'keyVerify', 'idGoogle', 'idGithub', 'idFacebook', 'email', 'createdAt', 'birtday', 'gender'
-                                ]
+                                    'updatedAt',
+                                    'statusUser',
+                                    'sdt',
+                                    'pass',
+                                    'keyVerify',
+                                    'idGoogle',
+                                    'idGithub',
+                                    'idFacebook',
+                                    'email',
+                                    'createdAt',
+                                    'birtday',
+                                    'gender',
+                                ],
                             },
                             where: {
                                 statusUser: {
-                                    [Op.ne]: 'false'
-                                }
-                            }
+                                    [Op.ne]: 'false',
+                                },
+                            },
                         },
                         {
-                            model: db.blogShares, as: 'blogs-blogShares-parent',
+                            model: db.blogShares,
+                            as: 'blogs-blogShares-parent',
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'stt', 'idBlogShare', 'idProduct', 'idBlog']
+                                exclude: [
+                                    'createdAt',
+                                    'updatedAt',
+                                    'stt',
+                                    'idBlogShare',
+                                    'idProduct',
+                                    'idBlog',
+                                ],
                             },
                             include: [
                                 {
                                     model: db.product,
                                     attributes: {
-                                        exclude: ['createdAt', 'updatedAt', 'stt', 'sold', 'priceProduct', 'nameProductEn', 'isSell', 'idTypeProduct', 'idTrademark', 'contentMarkdown', 'contentHTML']
+                                        exclude: [
+                                            'createdAt',
+                                            'updatedAt',
+                                            'stt',
+                                            'sold',
+                                            'priceProduct',
+                                            'nameProductEn',
+                                            'isSell',
+                                            'idTypeProduct',
+                                            'idTrademark',
+                                            'contentMarkdown',
+                                            'contentHTML',
+                                        ],
                                     },
                                     include: [
                                         {
-                                            model: db.imageProduct, as: 'imageProduct-product',
-                                        }
-                                    ]
+                                            model: db.imageProduct,
+                                            as: 'imageProduct-product',
+                                        },
+                                    ],
                                 },
-                            ]
-                        }
-
+                            ],
+                        },
                     ],
                     order: [['stt', 'DESC']],
                     raw: false,
-                    nest: true
-                })
-
+                    nest: true,
+                });
 
                 resolve({
                     errCode: 0,
                     data: blogs,
-                })
-
+                });
             }
-        }
-        catch (e) {
+        } catch (e) {
             reject(e);
         }
-    })
-}
+    });
+};
 
 const getBlogShareDefault = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -1444,61 +1679,88 @@ const getBlogShareDefault = (data) => {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
-                    data
-                })
-            }
-            else {
+                    data,
+                });
+            } else {
                 let blogs = await db.blogs.findOne({
                     where: {
-                        id: data.idBlog
+                        id: data.idBlog,
                     },
                     attributes: {
-                        exclude: ['updatedAt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
+                        exclude: [
+                            'updatedAt',
+                            'viewBlog',
+                            'timePost',
+                            'timeBlog',
+                            'idUser',
+                            'contentMarkdown',
+                        ],
                     },
                     include: [
                         {
                             model: db.User,
                             attributes: {
                                 exclude: [
-                                    'updatedAt', 'statusUser', 'sdt', 'pass', 'keyVerify', 'idGoogle', 'idGithub', 'idFacebook', 'email', 'createdAt', 'birtday', 'gender'
-                                ]
+                                    'updatedAt',
+                                    'statusUser',
+                                    'sdt',
+                                    'pass',
+                                    'keyVerify',
+                                    'idGoogle',
+                                    'idGithub',
+                                    'idFacebook',
+                                    'email',
+                                    'createdAt',
+                                    'birtday',
+                                    'gender',
+                                ],
                             },
                             where: {
                                 statusUser: {
-                                    [Op.ne]: 'false'
-                                }
-                            }
+                                    [Op.ne]: 'false',
+                                },
+                            },
                         },
                         {
                             model: db.imageBlogs,
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'stt', 'idCloudinary', 'idBlog', '']
-                            }
+                                exclude: [
+                                    'createdAt',
+                                    'updatedAt',
+                                    'stt',
+                                    'idCloudinary',
+                                    'idBlog',
+                                    '',
+                                ],
+                            },
                         },
                         {
                             model: db.videoBlogs,
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'stt', 'idBlog', '']
-                            }
+                                exclude: [
+                                    'createdAt',
+                                    'updatedAt',
+                                    'stt',
+                                    'idBlog',
+                                    '',
+                                ],
+                            },
                         },
                     ],
                     raw: false,
-                    nest: true
-                })
-
+                    nest: true,
+                });
 
                 resolve({
                     errCode: 0,
                     data: blogs,
-                })
-
+                });
             }
-        }
-        catch (e) {
+        } catch (e) {
             reject(e);
         }
-    })
-}
+    });
+};
 
 const getBlogById = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -1507,80 +1769,141 @@ const getBlogById = (data) => {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
-                    data
-                })
-            }
-            else {
-                let date = new Date().getTime()
+                    data,
+                });
+            } else {
+                let date = new Date().getTime();
                 let blogs = await db.blogs.findOne({
                     where: {
                         id: data.idBlog,
                         timePost: {
-                            [Op.lt]: date
-                        }
+                            [Op.lt]: date,
+                        },
                     },
                     attributes: {
-                        exclude: ['updatedAt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
+                        exclude: [
+                            'updatedAt',
+                            'viewBlog',
+                            'timePost',
+                            'timeBlog',
+                            'idUser',
+                            'contentMarkdown',
+                        ],
                     },
                     include: [
                         {
                             model: db.User,
                             attributes: {
                                 exclude: [
-                                    'updatedAt', 'statusUser', 'sdt', 'pass', 'keyVerify', 'idGoogle', 'idGithub', 'idFacebook', 'email', 'createdAt', 'birtday', 'gender'
-                                ]
+                                    'updatedAt',
+                                    'statusUser',
+                                    'sdt',
+                                    'pass',
+                                    'keyVerify',
+                                    'idGoogle',
+                                    'idGithub',
+                                    'idFacebook',
+                                    'email',
+                                    'createdAt',
+                                    'birtday',
+                                    'gender',
+                                ],
                             },
                             where: {
                                 statusUser: {
-                                    [Op.ne]: 'false'
-                                }
-                            }
+                                    [Op.ne]: 'false',
+                                },
+                            },
                         },
                         {
                             model: db.imageBlogs,
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'stt', 'idCloudinary', 'idBlog', '']
-                            }
+                                exclude: [
+                                    'createdAt',
+                                    'updatedAt',
+                                    'stt',
+                                    'idCloudinary',
+                                    'idBlog',
+                                    '',
+                                ],
+                            },
                         },
                         {
                             model: db.videoBlogs,
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'stt', 'idBlog', '']
-                            }
+                                exclude: [
+                                    'createdAt',
+                                    'updatedAt',
+                                    'stt',
+                                    'idBlog',
+                                    '',
+                                ],
+                            },
                         },
                         {
-                            model: db.blogShares, as: 'blogs-blogShares-parent',
+                            model: db.blogShares,
+                            as: 'blogs-blogShares-parent',
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'stt', 'idBlogShare', 'idProduct', 'idBlog']
+                                exclude: [
+                                    'createdAt',
+                                    'updatedAt',
+                                    'stt',
+                                    'idBlogShare',
+                                    'idProduct',
+                                    'idBlog',
+                                ],
                             },
                             include: [
                                 {
                                     model: db.product,
                                     attributes: {
-                                        exclude: ['createdAt', 'updatedAt', 'stt', 'sold', 'priceProduct', 'nameProductEn', 'isSell', 'idTypeProduct', 'idTrademark', 'contentMarkdown', 'contentHTML']
+                                        exclude: [
+                                            'createdAt',
+                                            'updatedAt',
+                                            'stt',
+                                            'sold',
+                                            'priceProduct',
+                                            'nameProductEn',
+                                            'isSell',
+                                            'idTypeProduct',
+                                            'idTrademark',
+                                            'contentMarkdown',
+                                            'contentHTML',
+                                        ],
                                     },
                                     include: [
                                         {
-                                            model: db.imageProduct, as: 'imageProduct-product',
-                                        }
-                                    ]
+                                            model: db.imageProduct,
+                                            as: 'imageProduct-product',
+                                        },
+                                    ],
                                 },
                                 {
-                                    model: db.blogs, as: 'blogs-blogShares-child',
+                                    model: db.blogs,
+                                    as: 'blogs-blogShares-child',
                                     attributes: {
-                                        exclude: ['createdAt', 'updatedAt', 'stt', 'viewBlog', 'timePost', 'timeBlog', 'idUser', 'contentMarkdown']
+                                        exclude: [
+                                            'createdAt',
+                                            'updatedAt',
+                                            'stt',
+                                            'viewBlog',
+                                            'timePost',
+                                            'timeBlog',
+                                            'idUser',
+                                            'contentMarkdown',
+                                        ],
                                     },
-                                }
-                            ]
-                        }
+                                },
+                            ],
+                        },
                     ],
                     raw: false,
-                    nest: true
-                })
+                    nest: true,
+                });
 
                 if (blogs) {
-                    let checkLike = false
-                    let checkCollection = false
+                    let checkLike = false;
+                    let checkCollection = false;
 
                     // if (data.accessToken) {
                     //     let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
@@ -1608,23 +1931,20 @@ const getBlogById = (data) => {
                         errCode: 0,
                         data: blogs,
                         checkLike,
-                        checkCollection
-                    })
-                }
-                else {
+                        checkCollection,
+                    });
+                } else {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Not found'
-                    })
+                        errMessage: 'Not found',
+                    });
                 }
-
             }
-        }
-        catch (e) {
+        } catch (e) {
             reject(e);
         }
-    })
-}
+    });
+};
 
 const getCommentBlogByIdBlog = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -1633,13 +1953,12 @@ const getCommentBlogByIdBlog = (data) => {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
-                    data
-                })
-            }
-            else {
+                    data,
+                });
+            } else {
                 let commentBlogs = await db.commentBlog.findAll({
                     where: {
-                        idBlog: data.idBlog
+                        idBlog: data.idBlog,
                     },
                     limit: 20,
                     offset: (+data.page - 1) * 20,
@@ -1648,34 +1967,33 @@ const getCommentBlogByIdBlog = (data) => {
                             model: db.User,
                             where: {
                                 statusUser: {
-                                    [Op.ne]: 'false'
-                                }
-                            }
-                        }
+                                    [Op.ne]: 'false',
+                                },
+                            },
+                        },
                     ],
                     order: [['stt', 'DESC']],
                     raw: false,
-                    nest: true
-                })
+                    nest: true,
+                });
 
                 let count = await db.commentBlog.count({
                     where: {
-                        idBlog: data.idBlog
+                        idBlog: data.idBlog,
                     },
                     include: [
                         {
                             model: db.User,
                             where: {
                                 statusUser: {
-                                    [Op.ne]: 'false'
-                                }
-                            }
-                        }
+                                    [Op.ne]: 'false',
+                                },
+                            },
+                        },
                     ],
                     raw: false,
-                    nest: true
-                })
-
+                    nest: true,
+                });
 
                 // if (data.accessToken) {
                 //     let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
@@ -1690,20 +2008,17 @@ const getCommentBlogByIdBlog = (data) => {
                 //     }
                 // }
 
-
                 resolve({
                     errCode: 0,
                     data: commentBlogs,
-                    count
-                })
-
+                    count,
+                });
             }
-        }
-        catch (e) {
+        } catch (e) {
             reject(e);
         }
-    })
-}
+    });
+};
 
 const increaseViewBlogById = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -1712,49 +2027,50 @@ const increaseViewBlogById = (data) => {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
-                    data
-                })
-            }
-            else {
+                    data,
+                });
+            } else {
                 let blog = await db.blogs.findOne({
                     where: {
-                        id: data.idBlog
+                        id: data.idBlog,
                     },
-                    raw: false
-                })
+                    raw: false,
+                });
 
                 if (blog) {
-                    blog.viewBlog = blog.viewBlog + 1
-                    await blog.save()
+                    blog.viewBlog = blog.viewBlog + 1;
+                    await blog.save();
                 }
-
 
                 resolve({
                     errCode: 0,
-                })
-
+                });
             }
-        }
-        catch (e) {
+        } catch (e) {
             reject(e);
         }
-    })
-}
+    });
+};
 
 const getListShortVideo = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-
             //Không có truyền tham số
             if (!data._isv && !data.listIdVideo) {
                 let listVideo = await db.shortVideos.findAll({
                     where: {
                         scope: 'public',
                         loadImage: 'true',
-                        loadVideo: 'true'
+                        loadVideo: 'true',
                     },
-                    attributes: ['id', 'idDriveVideo', 'urlImage', 'content', 'scope',
-                        'countLike', 'countComment'
+                    attributes: [
+                        'id',
+                        'idDriveVideo',
+                        'urlImage',
+                        'content',
+                        'scope',
+                        'countLike',
+                        'countComment',
                     ],
                     include: [
                         {
@@ -1763,45 +2079,61 @@ const getListShortVideo = (data) => {
                             include: [
                                 {
                                     model: db.product,
-                                    attributes: ['id', 'nameProduct']
-                                }
-                            ]
+                                    attributes: ['id', 'nameProduct'],
+                                },
+                            ],
                         },
                         {
                             model: db.User,
-                            attributes: ['id', 'firstName', 'lastName', 'idTypeUser', 'typeAccount',
-                                'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub', 'avatarUpdate',
-                                'statusUser'
+                            attributes: [
+                                'id',
+                                'firstName',
+                                'lastName',
+                                'idTypeUser',
+                                'typeAccount',
+                                'avatar',
+                                'avatarGoogle',
+                                'avatarFacebook',
+                                'avatarGithub',
+                                'avatarUpdate',
+                                'statusUser',
                             ],
                             where: {
                                 statusUser: {
-                                    [Op.ne]: 'false'
-                                }
-                            }
-                        }
+                                    [Op.ne]: 'false',
+                                },
+                            },
+                        },
                     ],
                     raw: false,
                     nest: true,
                     limit: 5,
-                    order: db.sequelize.random()
-                })
+                    order: db.sequelize.random(),
+                });
 
                 resolve({
                     errCode: 0,
-                    data: listVideo
-                })
-            }
-            else if (!data._isv && data.listIdVideo) {
+                    data: listVideo,
+                });
+            } else if (!data._isv && data.listIdVideo) {
                 let listVideo = await db.shortVideos.findAll({
                     where: {
                         id: {
-                            [Op.notIn]: data.listIdVideo
+                            [Op.notIn]: data.listIdVideo,
                         },
                         scope: 'public',
                         loadImage: 'true',
-                        loadVideo: 'true'
+                        loadVideo: 'true',
                     },
-                    attributes: ['id', 'idDriveVideo', 'urlImage', 'content', 'scope', 'countLike', 'countComment'],
+                    attributes: [
+                        'id',
+                        'idDriveVideo',
+                        'urlImage',
+                        'content',
+                        'scope',
+                        'countLike',
+                        'countComment',
+                    ],
                     include: [
                         {
                             model: db.hashTagVideos,
@@ -1809,43 +2141,59 @@ const getListShortVideo = (data) => {
                             include: [
                                 {
                                     model: db.product,
-                                    attributes: ['id', 'nameProduct']
-                                }
-                            ]
+                                    attributes: ['id', 'nameProduct'],
+                                },
+                            ],
                         },
                         {
                             model: db.User,
-                            attributes: ['id', 'firstName', 'lastName', 'idTypeUser', 'typeAccount',
-                                'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub', 'avatarUpdate',
-                                'statusUser'
+                            attributes: [
+                                'id',
+                                'firstName',
+                                'lastName',
+                                'idTypeUser',
+                                'typeAccount',
+                                'avatar',
+                                'avatarGoogle',
+                                'avatarFacebook',
+                                'avatarGithub',
+                                'avatarUpdate',
+                                'statusUser',
                             ],
                             where: {
                                 statusUser: {
-                                    [Op.ne]: 'false'
-                                }
-                            }
-                        }
+                                    [Op.ne]: 'false',
+                                },
+                            },
+                        },
                     ],
                     raw: false,
                     nest: true,
                     limit: 5,
-                    order: db.sequelize.random()
-                })
+                    order: db.sequelize.random(),
+                });
 
                 resolve({
                     errCode: 0,
-                    data: listVideo
-                })
-            }
-            else if (data._isv) {
+                    data: listVideo,
+                });
+            } else if (data._isv) {
                 let listVideo = await db.shortVideos.findOne({
                     where: {
                         id: data._isv,
                         scope: 'public',
                         loadImage: 'true',
-                        loadVideo: 'true'
+                        loadVideo: 'true',
                     },
-                    attributes: ['id', 'idDriveVideo', 'urlImage', 'content', 'scope', 'countLike', 'countComment'],
+                    attributes: [
+                        'id',
+                        'idDriveVideo',
+                        'urlImage',
+                        'content',
+                        'scope',
+                        'countLike',
+                        'countComment',
+                    ],
                     include: [
                         {
                             model: db.hashTagVideos,
@@ -1853,49 +2201,55 @@ const getListShortVideo = (data) => {
                             include: [
                                 {
                                     model: db.product,
-                                    attributes: ['id', 'nameProduct']
-                                }
-                            ]
+                                    attributes: ['id', 'nameProduct'],
+                                },
+                            ],
                         },
                         {
                             model: db.User,
-                            attributes: ['id', 'firstName', 'lastName', 'idTypeUser', 'typeAccount',
-                                'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub', 'avatarUpdate',
-                                'statusUser'
+                            attributes: [
+                                'id',
+                                'firstName',
+                                'lastName',
+                                'idTypeUser',
+                                'typeAccount',
+                                'avatar',
+                                'avatarGoogle',
+                                'avatarFacebook',
+                                'avatarGithub',
+                                'avatarUpdate',
+                                'statusUser',
                             ],
                             where: {
                                 statusUser: {
-                                    [Op.ne]: 'false'
-                                }
-                            }
-                        }
+                                    [Op.ne]: 'false',
+                                },
+                            },
+                        },
                     ],
                     raw: false,
                     nest: true,
                     // limit: 5,
                     // order: db.sequelize.random()
-                })
+                });
 
                 if (!listVideo) {
                     resolve({
                         errCode: 1,
-                    })
-                    return
+                    });
+                    return;
                 }
 
                 resolve({
                     errCode: 0,
-                    data: listVideo
-                })
+                    data: listVideo,
+                });
             }
-
-
-        }
-        catch (e) {
+        } catch (e) {
             reject(e);
         }
-    })
-}
+    });
+};
 
 const getListCommentShortVideoById = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -1904,14 +2258,12 @@ const getListCommentShortVideoById = (data) => {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
-                    data
-                })
-            }
-            else {
-
+                    data,
+                });
+            } else {
                 let listComments = await db.commentShortVideos.findAll({
                     where: {
-                        idShortVideo: data.idShortVideo
+                        idShortVideo: data.idShortVideo,
                     },
                     limit: 20,
                     offset: data.offset,
@@ -1919,63 +2271,81 @@ const getListCommentShortVideoById = (data) => {
                     include: [
                         {
                             model: db.User,
-                            attributes: ['id', 'firstName', 'lastName', 'idTypeUser', 'typeAccount',
-                                'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub', 'avatarUpdate',
-                                'statusUser'
+                            attributes: [
+                                'id',
+                                'firstName',
+                                'lastName',
+                                'idTypeUser',
+                                'typeAccount',
+                                'avatar',
+                                'avatarGoogle',
+                                'avatarFacebook',
+                                'avatarGithub',
+                                'avatarUpdate',
+                                'statusUser',
                             ],
                             where: {
                                 statusUser: {
-                                    [Op.ne]: 'false'
-                                }
-                            }
-                        }
+                                    [Op.ne]: 'false',
+                                },
+                            },
+                        },
                     ],
                     order: [['stt', 'DESC']],
                     raw: false,
-                    nest: true
-                })
+                    nest: true,
+                });
 
                 let count = await db.commentShortVideos.count({
                     where: {
-                        idShortVideo: data.idShortVideo
+                        idShortVideo: data.idShortVideo,
                     },
                     include: [
                         {
                             model: db.User,
                             where: {
                                 statusUser: {
-                                    [Op.ne]: 'false'
-                                }
-                            }
-                        }
+                                    [Op.ne]: 'false',
+                                },
+                            },
+                        },
                     ],
                     raw: false,
-                    nest: true
-                })
+                    nest: true,
+                });
 
-
-                let idUser, User
+                let idUser, User;
                 if (data.accessToken) {
-                    let decode = commont.decodeToken(data.accessToken, process.env.ACCESS_TOKEN_SECRET)
+                    let decode = commont.decodeToken(
+                        data.accessToken,
+                        process.env.ACCESS_TOKEN_SECRET
+                    );
                     if (decode !== null) {
-
-
                         let user = await db.User.findOne({
                             where: {
                                 id: decode.id,
                                 statusUser: {
-                                    [Op.ne]: 'false'
-                                }
+                                    [Op.ne]: 'false',
+                                },
                             },
-                            attributes: ['id', 'firstName', 'lastName', 'idTypeUser', 'typeAccount',
-                                'avatar', 'avatarGoogle', 'avatarFacebook', 'avatarGithub', 'avatarUpdate',
-                                'statusUser'
+                            attributes: [
+                                'id',
+                                'firstName',
+                                'lastName',
+                                'idTypeUser',
+                                'typeAccount',
+                                'avatar',
+                                'avatarGoogle',
+                                'avatarFacebook',
+                                'avatarGithub',
+                                'avatarUpdate',
+                                'statusUser',
                             ],
-                        })
+                        });
 
                         if (user) {
-                            idUser = decode.id
-                            User = user
+                            idUser = decode.id;
+                            User = user;
                         }
                     }
                 }
@@ -1985,15 +2355,14 @@ const getListCommentShortVideoById = (data) => {
                     data: listComments,
                     idUser,
                     count,
-                    User
-                })
+                    User,
+                });
             }
-        }
-        catch (e) {
+        } catch (e) {
             reject(e);
         }
-    })
-}
+    });
+};
 
 const getListProductHashTagByIdVideo = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -2002,13 +2371,12 @@ const getListProductHashTagByIdVideo = (data) => {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
-                    data
-                })
-            }
-            else {
+                    data,
+                });
+            } else {
                 let video = await db.shortVideos.findOne({
                     where: {
-                        id: data.idShortVideo
+                        id: data.idShortVideo,
                     },
                     attributes: ['id'],
                     include: [
@@ -2018,28 +2386,48 @@ const getListProductHashTagByIdVideo = (data) => {
                             include: [
                                 {
                                     model: db.product,
-                                    attributes: ['id', 'nameProduct', 'priceProduct', 'isSell', 'sold'],
+                                    attributes: [
+                                        'id',
+                                        'nameProduct',
+                                        'priceProduct',
+                                        'isSell',
+                                        'sold',
+                                    ],
                                     include: [
                                         {
-                                            model: db.imageProduct, as: 'imageProduct-product',
+                                            model: db.imageProduct,
+                                            as: 'imageProduct-product',
                                             attributes: {
-                                                exclude: ['createdAt', 'updatedAt', 'id']
+                                                exclude: [
+                                                    'createdAt',
+                                                    'updatedAt',
+                                                    'id',
+                                                ],
                                             },
                                         },
                                         {
                                             model: db.trademark,
                                             attributes: {
-                                                exclude: ['createdAt', 'updatedAt', 'id']
-                                            }
+                                                exclude: [
+                                                    'createdAt',
+                                                    'updatedAt',
+                                                    'id',
+                                                ],
+                                            },
                                         },
                                         {
                                             model: db.typeProduct,
                                             attributes: {
-                                                exclude: ['createdAt', 'updatedAt', 'id']
+                                                exclude: [
+                                                    'createdAt',
+                                                    'updatedAt',
+                                                    'id',
+                                                ],
                                             },
                                         },
                                         {
-                                            model: db.classifyProduct, as: 'classifyProduct-product',
+                                            model: db.classifyProduct,
+                                            as: 'classifyProduct-product',
                                             // attributes: {
                                             //     exclude: ['createdAt', 'updatedAt', 'id']
                                             // }
@@ -2047,34 +2435,42 @@ const getListProductHashTagByIdVideo = (data) => {
                                         {
                                             model: db.promotionProduct,
                                             attributes: {
-                                                exclude: ['createdAt', 'updatedAt', 'id']
+                                                exclude: [
+                                                    'createdAt',
+                                                    'updatedAt',
+                                                    'id',
+                                                ],
                                             },
-                                        }
+                                        },
                                     ],
                                     order: [
-                                        [{ model: db.imageProduct, as: 'imageProduct-product' }, 'STTImage', 'asc']
+                                        [
+                                            {
+                                                model: db.imageProduct,
+                                                as: 'imageProduct-product',
+                                            },
+                                            'STTImage',
+                                            'asc',
+                                        ],
                                     ],
-
-                                }
-                            ]
-                        }
+                                },
+                            ],
+                        },
                     ],
                     raw: false,
-                    nest: true
-                })
+                    nest: true,
+                });
 
                 resolve({
                     errCode: 0,
-                    data: video
-                })
-
+                    data: video,
+                });
             }
-        }
-        catch (e) {
+        } catch (e) {
             reject(e);
         }
-    })
-}
+    });
+};
 
 const getProductById = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -2083,100 +2479,112 @@ const getProductById = (data) => {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
-                    data
-                })
-            }
-            else {
+                    data,
+                });
+            } else {
                 let product = await db.product.findOne({
                     where: {
-                        id: data.idProduct
+                        id: data.idProduct,
                     },
-                    attributes: ['id', 'nameProduct', 'priceProduct', 'isSell', 'sold', 'contentHTML'],
+                    attributes: [
+                        'id',
+                        'nameProduct',
+                        'priceProduct',
+                        'isSell',
+                        'sold',
+                        'contentHTML',
+                    ],
                     limit: 10,
                     include: [
                         {
-                            model: db.imageProduct, as: 'imageProduct-product',
+                            model: db.imageProduct,
+                            as: 'imageProduct-product',
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'id']
-                            }
+                                exclude: ['createdAt', 'updatedAt', 'id'],
+                            },
                         },
                         {
                             model: db.trademark,
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'id']
-                            }
+                                exclude: ['createdAt', 'updatedAt', 'id'],
+                            },
                         },
                         {
                             model: db.typeProduct,
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'id']
-                            }
+                                exclude: ['createdAt', 'updatedAt', 'id'],
+                            },
                         },
                         {
-                            model: db.classifyProduct, as: 'classifyProduct-product',
+                            model: db.classifyProduct,
+                            as: 'classifyProduct-product',
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt']
-                            }
+                                exclude: ['createdAt', 'updatedAt'],
+                            },
                         },
                         {
                             model: db.promotionProduct,
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt', 'id']
+                                exclude: ['createdAt', 'updatedAt', 'id'],
                             },
-                        }
+                        },
                     ],
                     order: [
                         // ['id', 'ASC'],
-                        [{ model: db.imageProduct, as: 'imageProduct-product' }, 'STTImage', 'asc']
+                        [
+                            {
+                                model: db.imageProduct,
+                                as: 'imageProduct-product',
+                            },
+                            'STTImage',
+                            'asc',
+                        ],
                     ],
                     raw: false,
-                    nest: true
+                    nest: true,
                 });
 
                 if (product) {
-                    let totalEvaluate = await db.evaluateProduct.sum('starNumber', {
-                        where: {
-                            idProduct: data.idProduct
-                        }
-                    }) || 0
+                    let totalEvaluate =
+                        (await db.evaluateProduct.sum('starNumber', {
+                            where: {
+                                idProduct: data.idProduct,
+                            },
+                        })) || 0;
                     let countEvaluate = await db.evaluateProduct.count({
                         where: {
-                            idProduct: data.idProduct
-                        }
-                    })
+                            idProduct: data.idProduct,
+                        },
+                    });
 
                     resolve({
                         errCode: 0,
                         data: product,
                         countEvaluate: countEvaluate,
-                        persentElevate: totalEvaluate / countEvaluate
-                    })
-                    return
-                }
-                else {
+                        persentElevate: totalEvaluate / countEvaluate,
+                    });
+                    return;
+                } else {
                     resolve({
                         errCode: 0,
-                        data: []
-                    })
+                        data: [],
+                    });
                 }
-
             }
-        }
-        catch (e) {
+        } catch (e) {
             reject(e);
         }
-    })
-}
+    });
+};
 
 const getListBlogHome = () => {
     return new Promise(async (resolve, reject) => {
         try {
-
             // let date = new Date().getTime()
 
             let blogs = await db.blogs.findAll({
                 where: {
-                    typeBlog: 'default'
+                    typeBlog: 'default',
                 },
 
                 include: [
@@ -2184,35 +2592,32 @@ const getListBlogHome = () => {
                         model: db.User,
                         where: {
                             statusUser: {
-                                [Op.ne]: 'false'
-                            }
-                        }
+                                [Op.ne]: 'false',
+                            },
+                        },
                     },
                     {
                         model: db.imageBlogs,
                         limit: 1,
-                        order: [['stt', 'asc']]
-                    }
+                        order: [['stt', 'asc']],
+                    },
                 ],
                 order: [['createdAt', 'DESC']],
                 limit: 5,
                 raw: false,
-                nest: true
-            })
+                nest: true,
+            });
             // console.log(blogs);
 
             resolve({
                 errCode: 0,
-                data: blogs
-            })
-
-
-        }
-        catch (e) {
+                data: blogs,
+            });
+        } catch (e) {
             reject(e);
         }
-    })
-}
+    });
+};
 
 const getEventPromotionById = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -2221,23 +2626,22 @@ const getEventPromotionById = (data) => {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
-                    data
-                })
-            }
-            else {
-                let date = new Date().getTime()
+                    data,
+                });
+            } else {
+                let date = new Date().getTime();
                 let eventPromotion = await db.eventPromotions.findOne({
                     where: {
                         id: data.idEventPromotion,
                         timeStart: {
-                            [Op.lt]: date
+                            [Op.lt]: date,
                         },
                         timeEnd: {
-                            [Op.gt]: date
-                        }
+                            [Op.gt]: date,
+                        },
                     },
                     attributes: {
-                        exclude: ['firstContent', 'lastContent']
+                        exclude: ['firstContent', 'lastContent'],
                     },
                     include: [
                         {
@@ -2245,118 +2649,139 @@ const getEventPromotionById = (data) => {
                             include: [
                                 {
                                     model: db.product,
-                                    attributes: ['id', 'nameProduct', 'priceProduct', 'isSell', 'sold', 'contentHTML'],
+                                    attributes: [
+                                        'id',
+                                        'nameProduct',
+                                        'priceProduct',
+                                        'isSell',
+                                        'sold',
+                                        'contentHTML',
+                                    ],
                                     include: [
                                         {
-                                            model: db.imageProduct, as: 'imageProduct-product',
+                                            model: db.imageProduct,
+                                            as: 'imageProduct-product',
                                             attributes: {
-                                                exclude: ['createdAt', 'updatedAt', 'id']
-                                            }
+                                                exclude: [
+                                                    'createdAt',
+                                                    'updatedAt',
+                                                    'id',
+                                                ],
+                                            },
                                         },
                                         {
                                             model: db.trademark,
                                             attributes: {
-                                                exclude: ['createdAt', 'updatedAt', 'id']
-                                            }
+                                                exclude: [
+                                                    'createdAt',
+                                                    'updatedAt',
+                                                    'id',
+                                                ],
+                                            },
                                         },
                                         {
                                             model: db.typeProduct,
                                             attributes: {
-                                                exclude: ['createdAt', 'updatedAt', 'id']
-                                            }
+                                                exclude: [
+                                                    'createdAt',
+                                                    'updatedAt',
+                                                    'id',
+                                                ],
+                                            },
                                         },
                                         {
-                                            model: db.classifyProduct, as: 'classifyProduct-product',
+                                            model: db.classifyProduct,
+                                            as: 'classifyProduct-product',
                                             attributes: {
-                                                exclude: ['createdAt', 'updatedAt']
-                                            }
+                                                exclude: [
+                                                    'createdAt',
+                                                    'updatedAt',
+                                                ],
+                                            },
                                         },
                                         {
                                             model: db.promotionProduct,
                                             attributes: {
-                                                exclude: ['createdAt', 'updatedAt', 'id']
+                                                exclude: [
+                                                    'createdAt',
+                                                    'updatedAt',
+                                                    'id',
+                                                ],
                                             },
-                                        }
+                                        },
                                     ],
                                     order: [
                                         ['id', 'ASC'],
-                                        [{ model: db.imageProduct, as: 'imageProduct-product' }, 'STTImage', 'asc']
+                                        [
+                                            {
+                                                model: db.imageProduct,
+                                                as: 'imageProduct-product',
+                                            },
+                                            'STTImage',
+                                            'asc',
+                                        ],
                                     ],
-                                }
+                                },
                             ],
                             limit: 30,
-                            offset: (+data.page - 1) * 30
-                        }
+                            offset: (+data.page - 1) * 30,
+                        },
                     ],
                     raw: false,
-                    nest: true
-                })
+                    nest: true,
+                });
 
                 if (eventPromotion) {
-
                     let count = await db.productEvents.count({
                         where: {
-                            idEventPromotion: data.idEventPromotion
-                        }
-                    })
-
+                            idEventPromotion: data.idEventPromotion,
+                        },
+                    });
 
                     resolve({
                         errCode: 0,
                         data: eventPromotion,
-                        count
-                    })
-                }
-                else {
+                        count,
+                    });
+                } else {
                     resolve({
                         errCode: 2,
                         errMessage: 'Sự kiện chưa bắt đầu hoặc đã kết thúc!',
-                    })
+                    });
                 }
-
-
             }
-        }
-        catch (e) {
+        } catch (e) {
             reject(e);
         }
-    })
-}
+    });
+};
 
 const getListEventPromotionHome = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-
-
-            let date = new Date().getTime()
+            let date = new Date().getTime();
             let eventPromotion = await db.eventPromotions.findAll({
                 where: {
                     timeStart: {
-                        [Op.lt]: date
+                        [Op.lt]: date,
                     },
                     timeEnd: {
-                        [Op.gt]: date
-                    }
+                        [Op.gt]: date,
+                    },
                 },
                 attributes: ['id', 'cover'],
-                order: [['stt', 'DESC']]
-
-            })
-
+                order: [['stt', 'DESC']],
+            });
 
             resolve({
                 errCode: 0,
-                data: eventPromotion
-            })
-
-
-        }
-        catch (e) {
+                data: eventPromotion,
+            });
+        } catch (e) {
             reject(e);
         }
-    })
-}
-
+    });
+};
 
 const getContentEventPromotionById = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -2365,48 +2790,59 @@ const getContentEventPromotionById = (data) => {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
-                    data
-                })
-            }
-            else {
-                let date = new Date().getTime()
+                    data,
+                });
+            } else {
+                let date = new Date().getTime();
                 let eventPromotion = await db.eventPromotions.findOne({
                     where: {
                         id: data.idEventPromotion,
                         timeStart: {
-                            [Op.lt]: date
+                            [Op.lt]: date,
                         },
                         timeEnd: {
-                            [Op.gt]: date
-                        }
+                            [Op.gt]: date,
+                        },
                     },
                     attributes: ['firstContent', 'lastContent'],
-                })
+                });
 
                 if (eventPromotion) {
-
                     resolve({
                         errCode: 0,
                         data: eventPromotion,
-                    })
-                }
-                else {
+                    });
+                } else {
                     resolve({
                         errCode: 2,
                         errMessage: 'Sự kiện chưa bắt đầu hoặc đã kết thúc!',
-                    })
+                    });
                 }
-
-
             }
-        }
-        catch (e) {
+        } catch (e) {
             reject(e);
         }
-    })
-}
+    });
+};
 
+const getSuggestProductMobile = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            console.log('vao');
+            let products = await db.product.findAll({
+                limit: 10,
+                order: db.sequelize.random(),
+            });
 
+            resolve({
+                errCode: 0,
+                data: products,
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
 
 module.exports = {
     getProductPromotionHome,
@@ -2432,6 +2868,6 @@ module.exports = {
     getListBlogHome,
     getEventPromotionById,
     getListEventPromotionHome,
-    getContentEventPromotionById
-
-}
+    getContentEventPromotionById,
+    getSuggestProductMobile,
+};
