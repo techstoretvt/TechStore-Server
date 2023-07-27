@@ -2851,6 +2851,8 @@ const getSuggestProductMobile = (data) => {
                         'nameProductEn',
                         'idTypeProduct',
                         'stt',
+                        'idTrademark',
+                        'isSell',
                     ],
                 },
                 include: [
