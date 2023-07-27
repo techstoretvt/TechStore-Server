@@ -2870,6 +2870,12 @@ const getSuggestProductMobile = (data) => {
                         attributes: ['imagebase64'],
                         limit: 1,
                     },
+                    {
+                        model: db.classifyProduct,
+                        as: 'classifyProduct-product',
+                        attributes: ['nameClassifyProduct', 'priceClassify'],
+                        limit: 1,
+                    },
                 ],
                 order: db.sequelize.random(),
                 raw: false,
