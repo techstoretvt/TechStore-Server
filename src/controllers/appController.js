@@ -259,7 +259,7 @@ const getContentEventPromotionById = async (req, res, next) => {
 
 const getSuggestProductMobile = async (req, res, next) => {
     try {
-        let data = await appService.getSuggestProductMobile();
+        let data = await appService.getSuggestProductMobile(req.query);
         return res.status(200).json(data);
     } catch (e) {
         next(e);

@@ -2825,13 +2825,53 @@ const getContentEventPromotionById = (data) => {
     });
 };
 
-const getSuggestProductMobile = () => {
+const getSuggestProductMobile = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
             console.log('vao');
+
+            let discard = data.discard;
+            let limit = data.limit || 10;
+            if (typeof discard !== 'array' || !discard) discard = [];
+
             let products = await db.product.findAll({
-                limit: 10,
+                where: {
+                    isSell: 'true',
+                    id: {
+                        [Op.notIn]: discard,
+                    },
+                },
+                limit: limit,
+                attributes: {
+                    exclude: [
+                        'createdAt',
+                        'updatedAt',
+                        'contentHTML',
+                        'contentMarkdown',
+                        'nameProductEn',
+                        'idTypeProduct',
+                        'stt',
+                    ],
+                },
+                include: [
+                    {
+                        model: db.trademark,
+                        attributes: ['nameTrademark'],
+                    },
+                    {
+                        model: db.promotionProduct,
+                        attributes: ['timePromotion', 'numberPercent'],
+                    },
+                    {
+                        model: db.imageProduct,
+                        as: 'imageProduct-product',
+                        attributes: ['imagebase64'],
+                        limit: 1,
+                    },
+                ],
                 order: db.sequelize.random(),
+                raw: false,
+                nest: true,
             });
 
             resolve({
