@@ -5,6 +5,7 @@ import FuzzySearch from 'fuzzy-search';
 import Fuse from 'fuse.js';
 import { v4 as uuidv4 } from 'uuid';
 import commont from '../services/commont';
+const createError = require('http-errors');
 
 const getProductPromotionHome = () => {
     return new Promise(async (resolve, reject) => {
@@ -2829,6 +2830,7 @@ const getSuggestProductMobile = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
             console.log('vao');
+            throw createError.InternalServerError();
 
             let discard = data.discard;
             let limit = data.limit || 10;
