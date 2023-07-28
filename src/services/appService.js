@@ -2829,8 +2829,8 @@ const getContentEventPromotionById = (data) => {
 const getSuggestProductMobile = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            console.log('vao');
-            throw createError.InternalServerError();
+            // console.log('vao');
+            // throw createError.InternalServerError();
 
             let discard = data.discard;
             let limit = data.limit || 10;
