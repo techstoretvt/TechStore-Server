@@ -221,7 +221,7 @@ const addTypeProduct = (data) => {
     })
 }
 
-const getAllTypeProduct = (payload) => {
+const getAllTypeProduct = () => {
     return new Promise(async (resolve, reject) => {
         try {
             let typeProducts = await db.typeProduct.findAll({

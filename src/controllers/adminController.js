@@ -1,42 +1,39 @@
-import adminService from '../services/adminService'
+import adminService from '../services/adminService';
 
 const addTypeProduct = async (req, res, next) => {
     try {
         let data = await adminService.addTypeProduct({
             file: req.file,
             query: req.query,
-        })
+        });
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getAllTypeProduct = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getAllTypeProduct(req.payload)
+        let data = await adminService.getAllTypeProduct();
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const deleteTypeProduct = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.deleteTypeProduct(req.body)
+        let data = await adminService.deleteTypeProduct(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const updateTypeProductById = async (req, res, next) => {
     try {
@@ -45,757 +42,698 @@ const updateTypeProductById = async (req, res, next) => {
         let data = await adminService.updateTypeProductById({
             file: req.file,
             query: req.query,
-        })
+        });
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const addTrademark = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.addTrademark(req.body)
+        let data = await adminService.addTrademark(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getAllTrademark = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getAllTrademark(req.query)
+        let data = await adminService.getAllTrademark(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const deleteTrademarkById = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.deleteTrademarkById(req.body)
+        let data = await adminService.deleteTrademarkById(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 const updateTrademarkById = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.updateTrademarkById(req.body)
+        let data = await adminService.updateTrademarkById(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const createNewProduct = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.createNewProduct(req.body)
+        let data = await adminService.createNewProduct(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const cloudinaryUpload = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.cloudinaryUpload({
             files: req.files,
-            query: req.query
-        })
+            query: req.query,
+        });
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getListProductByPage = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getListProductByPage(req.query)
+        let data = await adminService.getListProductByPage(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const blockProduct = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.blockProduct(req.body)
+        let data = await adminService.blockProduct(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const editProductById = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.editProductById(req.body)
+        let data = await adminService.editProductById(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const editImageProduct = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.editImageProduct({
             file: req.file,
-            query: req.query
-        })
+            query: req.query,
+        });
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const swapImageProduct = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.swapImageProduct(req.body)
+        let data = await adminService.swapImageProduct(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getProductBySwapAndPage = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getProductBySwapAndPage(req.query)
+        let data = await adminService.getProductBySwapAndPage(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const addPromotionByIdProduct = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.addPromotionByIdProduct(req.body)
+        let data = await adminService.addPromotionByIdProduct(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const testApi = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.testApi()
+        let data = await adminService.testApi();
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const deleteErrorProduct = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.deleteErrorProduct(req.body)
+        let data = await adminService.deleteErrorProduct(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const confirmBillById = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.confirmBillById(req.body)
+        let data = await adminService.confirmBillById(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const cancelBillById = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.cancelBillById(req.body)
+        let data = await adminService.cancelBillById(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const createNewKeyWord = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.createNewKeyWord(req.body)
+        let data = await adminService.createNewKeyWord(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const createNotify_noimage = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.createNotify_noimage(req.body)
+        let data = await adminService.createNotify_noimage(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const createNotify_image = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.createNotify_image({
             file: req.file,
-            query: req.query
-        })
+            query: req.query,
+        });
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const CheckLoginAdminAccessToken = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.CheckLoginAdminAccessToken(req.body)
+        let data = await adminService.CheckLoginAdminAccessToken(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const createNewUserAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.createNewUserAdmin(req.body)
+        let data = await adminService.createNewUserAdmin(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getListUserAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getListUserAdmin(req.query)
+        let data = await adminService.getListUserAdmin(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const lockUserAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.lockUserAdmin(req.body)
+        let data = await adminService.lockUserAdmin(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 const createEventPromotion = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.createEventPromotion(req.body)
+        let data = await adminService.createEventPromotion(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const upLoadImageCoverPromotion = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.upLoadImageCoverPromotion({ file: req.file, query: req.query })
+        let data = await adminService.upLoadImageCoverPromotion({
+            file: req.file,
+            query: req.query,
+        });
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getListEventPromotion = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getListEventPromotion()
+        let data = await adminService.getListEventPromotion();
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const editEventPromotion = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.editEventPromotion(req.body)
+        let data = await adminService.editEventPromotion(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getListBillByTypeAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getListBillByTypeAdmin(req.query)
+        let data = await adminService.getListBillByTypeAdmin(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const updateStatusBillAdminWeb = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.updateStatusBillAdminWeb(req.body)
+        let data = await adminService.updateStatusBillAdminWeb(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getListVideoAdminByPage = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getListVideoAdminByPage(req.query)
+        let data = await adminService.getListVideoAdminByPage(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const deleteShortVideoAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.deleteShortVideoAdmin(req.body)
+        let data = await adminService.deleteShortVideoAdmin(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getListReportAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getListReportAdmin(req.query)
+        let data = await adminService.getListReportAdmin(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const skipReportVideoAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.skipReportVideoAdmin(req.body)
+        let data = await adminService.skipReportVideoAdmin(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getListBlogAdminByPage = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getListBlogAdminByPage(req.query)
+        let data = await adminService.getListBlogAdminByPage(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const deleteBlogAdminById = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.deleteBlogAdminById(req.body)
+        let data = await adminService.deleteBlogAdminById(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getListReportBlogAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getListReportBlogAdmin(req.query)
+        let data = await adminService.getListReportBlogAdmin(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const skipReportBlogAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.skipReportBlogAdmin(req.body)
+        let data = await adminService.skipReportBlogAdmin(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getStatisticalAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getStatisticalAdmin(req.query)
+        let data = await adminService.getStatisticalAdmin(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const StatisticalEvaluateAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.StatisticalEvaluateAdmin(req.query)
+        let data = await adminService.StatisticalEvaluateAdmin(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getStatisticalSale = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getStatisticalSale(req.query)
+        let data = await adminService.getStatisticalSale(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getListKeyWordAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getListKeyWordAdmin(req.query)
+        let data = await adminService.getListKeyWordAdmin(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const editKeyWordSearchAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.editKeyWordSearchAdmin(req.body)
+        let data = await adminService.editKeyWordSearchAdmin(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const deleteKeyWordAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.deleteKeyWordAdmin(req.body)
+        let data = await adminService.deleteKeyWordAdmin(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getListUserTypeAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getListUserTypeAdmin(req.query)
+        let data = await adminService.getListUserTypeAdmin(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const deleteEventPromotionAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.deleteEventPromotionAdmin(req.body)
+        let data = await adminService.deleteEventPromotionAdmin(req.body);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getCountBillOfMonth = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getCountBillOfMonth(req.query)
+        let data = await adminService.getCountBillOfMonth(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getMoneyOfMonth = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getMoneyOfMonth(req.query)
+        let data = await adminService.getMoneyOfMonth(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getDetailBillByIdAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getDetailBillByIdAdmin(req.query)
+        let data = await adminService.getDetailBillByIdAdmin(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getInventoryByTypeProduct = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getInventoryByTypeProduct(req.query)
+        let data = await adminService.getInventoryByTypeProduct(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const adminLogin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.adminLogin(req.body, req.headers)
+        let data = await adminService.adminLogin(req.body, req.headers);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const checkLoginWithAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.checkLoginWithAdmin(req.body, req.payload)
+        let data = await adminService.checkLoginWithAdmin(
+            req.body,
+            req.payload
+        );
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
-
-
-
+};
 
 //winform
 const getListBillNoConfirm = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getListBillNoConfirm()
+        let data = await adminService.getListBillNoConfirm();
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getDetailBillAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getDetailBillAdmin(req.query)
+        let data = await adminService.getDetailBillAdmin(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getListImageProductAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getListImageProductAdmin(req.query)
+        let data = await adminService.getListImageProductAdmin(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getInfoProductAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getInfoProductAdmin(req.query)
+        let data = await adminService.getInfoProductAdmin(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getClassifyProductAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getClassifyProductAdmin(req.query)
+        let data = await adminService.getClassifyProductAdmin(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getAddressBillAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getAddressBillAdmin(req.query)
+        let data = await adminService.getAddressBillAdmin(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const confirmBillAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.confirmBillAdmin(req.query)
+        let data = await adminService.confirmBillAdmin(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const updateStatusBillAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.updateStatusBillAdmin(req.query)
+        let data = await adminService.updateStatusBillAdmin(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 const getListStatusBillAdmin = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.getListStatusBillAdmin(req.query)
+        let data = await adminService.getListStatusBillAdmin(req.query);
 
-        return res.status(200).json(data)
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
     }
-    catch (e) {
-        next(e)
-    }
-}
+};
 
 //end winform
 
@@ -866,6 +804,6 @@ module.exports = {
     getAddressBillAdmin,
     confirmBillAdmin,
     updateStatusBillAdmin,
-    getListStatusBillAdmin
+    getListStatusBillAdmin,
     //end winform
-}
+};
