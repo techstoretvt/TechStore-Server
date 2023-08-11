@@ -485,6 +485,7 @@ const getListProductMayLike = (data) => {
 const getEvaluateByIdProduct = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
+            //data.fillter ís [1,2,3,4,5,all,image,video,comment]
             if (
                 !data.idProduct ||
                 !data.fillter ||
