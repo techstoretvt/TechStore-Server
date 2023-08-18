@@ -33,7 +33,7 @@ app.use(
     cors({
         // exposedHeaders: ['authorization'],
         credentials: true,
-        origin: process.env.LINK_FONTEND,
+        origin: [process.env.LINK_FONTEND, process.env.LINK_ADMIN],
     })
 );
 
