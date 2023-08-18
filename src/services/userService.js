@@ -6488,7 +6488,7 @@ const getDetailBillById = (data, payload) => {
                 let bill = await db.bill.findOne({
                     where: {
                         idUser: payload.id,
-                        id: data.id,
+                        id: data.idBill,
                     },
                     include: [
                         {
