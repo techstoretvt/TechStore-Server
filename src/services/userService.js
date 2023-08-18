@@ -6475,6 +6475,65 @@ const createNewReportBlog = (data, payload) => {
     });
 };
 
+const getDetailBillById = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idBill) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data,
+                });
+            } else {
+                let bill = await db.bill.findOne({
+                    where: {
+                        idUser: payload.id,
+                        id: data.id,
+                    },
+                    include: [
+                        {
+                            model: db.detailBill,
+                            include: [
+                                {
+                                    model: db.product,
+                                    include: [
+                                        {
+                                            model: db.imageProduct,
+                                            as: 'imageProduct-product',
+                                        },
+                                        { model: db.promotionProduct },
+                                    ],
+                                },
+                                {
+                                    model: db.classifyProduct,
+                                },
+                            ],
+                        },
+                        {
+                            model: db.statusBills,
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt'],
+                            },
+                        },
+                        {
+                            model: db.addressUser,
+                        },
+                    ],
+                    raw: false,
+                    nest: true,
+                });
+
+                resolve({
+                    errCode: 0,
+                    data: bill,
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -6561,4 +6620,5 @@ module.exports = {
     sendEmailFromContact,
     createNewReportVideo,
     createNewReportBlog,
+    getDetailBillById,
 };

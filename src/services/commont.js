@@ -235,6 +235,7 @@ const routes = {
     sendEmailFromContact: '/api/v1/send-email-from-contact',
     createNewReportVideo: '/api/v1/create-new-report-video',
     createNewReportBlog: '/api/v1/create-new-report-blog',
+    getDetailBillById: '/api/v2/get-detail-bill-by-id',
 };
 
 module.exports = {
