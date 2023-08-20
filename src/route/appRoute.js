@@ -94,6 +94,10 @@ const initAppRoute = (app) => {
         routes.getSuggestProductMobile,
         appController.getSuggestProductMobile
     );
+    router.get(
+        routes.getListBlogForyouMobile,
+        appController.getListBlogForyouMobile
+    );
 
     router.put(routes.increaseViewBlogById, appController.increaseViewBlogById);
 

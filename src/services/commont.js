@@ -78,6 +78,7 @@ const routes = {
     getContentEventPromotionById: '/api/v1/get-content-event-promotin-by-id',
 
     getSuggestProductMobile: '/api/v2/get-suggest-product-mobile',
+    getListBlogForyouMobile: '/api/v2/gwt-list-blog-for-you-mobile',
 
     //admin
     getAllTypeProduct: '/api/get-all-type-product',

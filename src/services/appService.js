@@ -1399,6 +1399,27 @@ const getListBlog = (data) => {
                                             'contentMarkdown',
                                         ],
                                     },
+                                    include: [
+                                        {
+                                            model: db.User,
+                                            // attributes: {
+                                            //     exclude: [
+                                            //         'updatedAt',
+                                            //         'statusUser',
+                                            //         'sdt',
+                                            //         'pass',
+                                            //         'keyVerify',
+                                            //         'idGoogle',
+                                            //         'idGithub',
+                                            //         'idFacebook',
+                                            //         'email',
+                                            //         'createdAt',
+                                            //         'birtday',
+                                            //         'gender',
+                                            //     ],
+                                            // },
+                                        },
+                                    ],
                                 },
                             ],
                         },
@@ -2895,6 +2916,18 @@ const getSuggestProductMobile = (data) => {
     });
 };
 
+const getListBlogForyouMobile = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            resolve({
+                errCode: 0,
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 module.exports = {
     getProductPromotionHome,
     getTopSellProduct,
@@ -2921,4 +2954,5 @@ module.exports = {
     getListEventPromotionHome,
     getContentEventPromotionById,
     getSuggestProductMobile,
+    getListBlogForyouMobile,
 };
