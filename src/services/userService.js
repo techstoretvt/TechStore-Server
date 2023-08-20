@@ -6563,6 +6563,8 @@ const getDetailBillById = (data, payload) => {
                             model: db.classifyProduct,
                         },
                     ],
+                    raw: false,
+                    nest: true,
                 });
 
                 resolve({
