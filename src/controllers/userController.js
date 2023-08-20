@@ -1024,9 +1024,9 @@ const createNewReportBlog = async (req, res, next) => {
     }
 };
 
-const getDetailBillById = async (req, res, next) => {
+const getBillById = async (req, res, next) => {
     try {
-        let data = await userService.getDetailBillById(req.query, req.payload);
+        let data = await userService.getBillById(req.query, req.payload);
 
         return res.status(200).json(data);
     } catch (e) {
@@ -1122,5 +1122,5 @@ module.exports = {
     sendEmailFromContact,
     createNewReportVideo,
     createNewReportBlog,
-    getDetailBillById,
+    getBillById,
 };

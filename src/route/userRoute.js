@@ -123,9 +123,9 @@ const initUserRoute = (app) => {
         userController.getListNotifyByType
     );
     router.get(
-        routes.getDetailBillById,
+        routes.getBillById,
         verifyAccessToken,
-        userController.getDetailBillById
+        userController.getBillById
     );
 
     router.post(routes.CreateUser, userController.CreateUser);

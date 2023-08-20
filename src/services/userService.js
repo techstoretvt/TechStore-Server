@@ -6475,7 +6475,7 @@ const createNewReportBlog = (data, payload) => {
     });
 };
 
-const getDetailBillById = (data, payload) => {
+const getBillById = (data, payload) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.idBill) {
@@ -6620,5 +6620,5 @@ module.exports = {
     sendEmailFromContact,
     createNewReportVideo,
     createNewReportBlog,
-    getDetailBillById,
+    getBillById,
 };
