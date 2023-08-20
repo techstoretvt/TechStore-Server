@@ -1402,22 +1402,9 @@ const getListBlog = (data) => {
                                     include: [
                                         {
                                             model: db.User,
-                                            // attributes: {
-                                            //     exclude: [
-                                            //         'updatedAt',
-                                            //         'statusUser',
-                                            //         'sdt',
-                                            //         'pass',
-                                            //         'keyVerify',
-                                            //         'idGoogle',
-                                            //         'idGithub',
-                                            //         'idFacebook',
-                                            //         'email',
-                                            //         'createdAt',
-                                            //         'birtday',
-                                            //         'gender',
-                                            //     ],
-                                            // },
+                                        },
+                                        {
+                                            model: db.imageBlogs,
                                         },
                                     ],
                                 },
