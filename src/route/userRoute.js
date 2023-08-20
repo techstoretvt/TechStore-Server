@@ -127,6 +127,11 @@ const initUserRoute = (app) => {
         verifyAccessToken,
         userController.getBillById
     );
+    router.get(
+        routes.getDetailBillById,
+        verifyAccessToken,
+        userController.getDetailBillById
+    );
 
     router.post(routes.CreateUser, userController.CreateUser);
     router.post(routes.verifyCreateUser, userController.verifyCreateUser);

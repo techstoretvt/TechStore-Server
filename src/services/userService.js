@@ -6534,6 +6534,48 @@ const getBillById = (data, payload) => {
     });
 };
 
+const getDetailBillById = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idDetailBill) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data,
+                });
+            } else {
+                let detailBill = await db.detailBill.findOne({
+                    where: {
+                        id: data.idDetailBill,
+                    },
+                    include: [
+                        {
+                            model: db.product,
+                            include: [
+                                {
+                                    model: db.imageProduct,
+                                    as: 'imageProduct-product',
+                                },
+                                { model: db.promotionProduct },
+                            ],
+                        },
+                        {
+                            model: db.classifyProduct,
+                        },
+                    ],
+                });
+
+                resolve({
+                    errCode: 0,
+                    data: detailBill,
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -6621,4 +6663,5 @@ module.exports = {
     createNewReportVideo,
     createNewReportBlog,
     getBillById,
+    getDetailBillById,
 };

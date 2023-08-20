@@ -236,6 +236,7 @@ const routes = {
     createNewReportVideo: '/api/v1/create-new-report-video',
     createNewReportBlog: '/api/v1/create-new-report-blog',
     getBillById: '/api/v2/get-detail-bill-by-id',
+    getDetailBillById: '/api/v2/get-detail-bill-by-id-2',
 };
 
 module.exports = {
