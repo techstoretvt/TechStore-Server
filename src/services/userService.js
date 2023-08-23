@@ -6672,30 +6672,27 @@ const verifyCodeForCreateUserMobile = (data) => {
                     data,
                 });
             } else {
-                let user = await db.user.findOne({
+                let user = await db.User.findOne({
                     where: {
                         email: data.email,
                         keyVerify: data.code,
                     },
-                    raw:false
+                    raw: false,
                 });
 
-                if(!user) {
+                if (!user) {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Not found user'
+                        errMessage: 'Not found user',
                     });
-                }
-                else {
-                    user.statusUser = 'true'
-                    await user.save()
+                } else {
+                    user.statusUser = 'true';
+                    await user.save();
 
                     resolve({
                         errCode: 0,
                     });
                 }
-
-               
             }
         } catch (e) {
             reject(e);
