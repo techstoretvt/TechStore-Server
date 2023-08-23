@@ -2925,7 +2925,7 @@ const getListKeywordSearchMobile = (data) => {
                     data,
                 });
             } else {
-                let text = commom.removeVietnameseDiacritics(data.value);
+                let text = commont.removeVietnameseDiacritics(data.value);
                 text = text.toLowerCase();
 
                 let rows = await db.keywordSearchs.findAll({
