@@ -1044,6 +1044,26 @@ const getDetailBillById = async (req, res, next) => {
     }
 };
 
+const createNewUserMobile = async (req, res, next) => {
+    try {
+        let data = await userService.createNewUserMobile(req.body);
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const verifyCodeForCreateUserMobile = async (req, res, next) => {
+    try {
+        let data = await userService.verifyCodeForCreateUserMobile(req.body);
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -1134,4 +1154,6 @@ module.exports = {
     createNewReportBlog,
     getBillById,
     getDetailBillById,
+    createNewUserMobile,
+    verifyCodeForCreateUserMobile,
 };

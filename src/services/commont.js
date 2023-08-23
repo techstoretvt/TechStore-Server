@@ -238,6 +238,8 @@ const routes = {
     createNewReportBlog: '/api/v1/create-new-report-blog',
     getBillById: '/api/v2/get-detail-bill-by-id',
     getDetailBillById: '/api/v2/get-detail-bill-by-id-2',
+    createNewUserMobile: '/api/v2/create-new-user-mobile',
+    verifyCodeForCreateUserMobile: '/api/v2/verify-code-for-create-user-mobile',
 };
 
 module.exports = {

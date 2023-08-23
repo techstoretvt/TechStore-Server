@@ -271,6 +271,7 @@ const initUserRoute = (app) => {
         verifyAccessToken,
         userController.createNewReportBlog
     );
+    router.post(routes.createNewUserMobile, userController.createNewUserMobile);
 
     router.put(
         routes.setDefaultAddress,
@@ -366,6 +367,10 @@ const initUserRoute = (app) => {
         routes.seenNotifyOfUser,
         verifyAccessToken,
         userController.seenNotifyOfUser
+    );
+    router.put(
+        routes.verifyCodeForCreateUserMobile,
+        userController.verifyCodeForCreateUserMobile
     );
 
     router.delete(
