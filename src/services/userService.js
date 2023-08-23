@@ -6700,36 +6700,6 @@ const verifyCodeForCreateUserMobile = (data) => {
     });
 };
 
-const getListKeywordSearchMobile = (data) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            if (!data.value) {
-                resolve({
-                    errCode: 1,
-                    errMessage: 'Missing required parameter!',
-                    data,
-                });
-            } else {
-                let text = removeVietnameseDiacritics(data.value);
-                text = text.toLowerCase();
-
-                let rows = await db.keywordSearchs.findAll({
-                    where: {
-                        keyword: text,
-                    },
-                });
-
-                resolve({
-                    errCode: 0,
-                    data: rows
-                });
-            }
-        } catch (e) {
-            reject(e);
-        }
-    });
-};
-
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -6820,5 +6790,4 @@ module.exports = {
     getDetailBillById,
     createNewUserMobile,
     verifyCodeForCreateUserMobile,
-    getListKeywordSearchMobile,
 };
