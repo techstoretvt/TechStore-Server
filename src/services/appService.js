@@ -2930,7 +2930,9 @@ const getListKeywordSearchMobile = (data) => {
 
                 let rows = await db.keywordSearchs.findAll({
                     where: {
-                        keyword: text,
+                        keyword: {
+                            [Op.like]: text,
+                        },
                     },
                 });
 
