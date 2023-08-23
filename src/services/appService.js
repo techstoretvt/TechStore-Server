@@ -2925,13 +2925,13 @@ const getListKeywordSearchMobile = (data) => {
                     data,
                 });
             } else {
-                let text = commont.removeVietnameseDiacritics(data.value);
-                text = text.toLowerCase();
+                // let text = commont.removeVietnameseDiacritics(data.value);
+                // text = text.toLowerCase();
 
                 let rows = await db.keywordSearchs.findAll({
                     where: {
                         keyword: {
-                            [Op.like]: text,
+                            [Op.like]: data.value,
                         },
                     },
                 });
