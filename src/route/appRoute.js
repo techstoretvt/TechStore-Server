@@ -98,6 +98,10 @@ const initAppRoute = (app) => {
         routes.getListBlogForyouMobile,
         appController.getListBlogForyouMobile
     );
+    router.get(
+        routes.getListKeywordSearchMobile,
+        appController.getListKeywordSearchMobile
+    );
 
     router.put(routes.increaseViewBlogById, appController.increaseViewBlogById);
 

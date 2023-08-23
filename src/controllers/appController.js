@@ -275,6 +275,15 @@ const getListBlogForyouMobile = async (req, res, next) => {
     }
 };
 
+const getListKeywordSearchMobile = async (req, res, next) => {
+    try {
+        let data = await appService.getListKeywordSearchMobile(req.query);
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
 module.exports = {
     checkStartServer,
     getProductPromotionHome,
@@ -303,4 +312,5 @@ module.exports = {
     getContentEventPromotionById,
     getSuggestProductMobile,
     getListBlogForyouMobile,
+    getListKeywordSearchMobile,
 };

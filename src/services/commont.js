@@ -50,6 +50,83 @@ const decodeToken = (token, primaryKey) => {
     }
 };
 
+function removeVietnameseDiacritics(str) {
+    const diacriticsMap = {
+        à: 'a',
+        á: 'a',
+        ả: 'a',
+        ã: 'a',
+        ạ: 'a',
+        ă: 'a',
+        ắ: 'a',
+        ằ: 'a',
+        ẳ: 'a',
+        ẵ: 'a',
+        ặ: 'a',
+        â: 'a',
+        ấ: 'a',
+        ầ: 'a',
+        ẩ: 'a',
+        ẫ: 'a',
+        ậ: 'a',
+        đ: 'd',
+        è: 'e',
+        é: 'e',
+        ẻ: 'e',
+        ẽ: 'e',
+        ẹ: 'e',
+        ê: 'e',
+        ế: 'e',
+        ề: 'e',
+        ể: 'e',
+        ễ: 'e',
+        ệ: 'e',
+        ì: 'i',
+        í: 'i',
+        ỉ: 'i',
+        ĩ: 'i',
+        ị: 'i',
+        ò: 'o',
+        ó: 'o',
+        ỏ: 'o',
+        õ: 'o',
+        ọ: 'o',
+        ô: 'o',
+        ố: 'o',
+        ồ: 'o',
+        ổ: 'o',
+        ỗ: 'o',
+        ộ: 'o',
+        ơ: 'o',
+        ớ: 'o',
+        ờ: 'o',
+        ở: 'o',
+        ỡ: 'o',
+        ợ: 'o',
+        ù: 'u',
+        ú: 'u',
+        ủ: 'u',
+        ũ: 'u',
+        ụ: 'u',
+        ư: 'u',
+        ứ: 'u',
+        ừ: 'u',
+        ử: 'u',
+        ữ: 'u',
+        ự: 'u',
+        ỳ: 'y',
+        ý: 'y',
+        ỷ: 'y',
+        ỹ: 'y',
+        ỵ: 'y',
+    };
+
+    return str.replace(
+        /[àáảãạăắằẳẵặâấầẩẫậđèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵ]/g,
+        (match) => diacriticsMap[match]
+    );
+}
+
 const routes = {
     //app
     getProductPromotionHome: '/api/v1/get-product-promotion-home',
@@ -79,6 +156,7 @@ const routes = {
 
     getSuggestProductMobile: '/api/v2/get-suggest-product-mobile',
     getListBlogForyouMobile: '/api/v2/gwt-list-blog-for-you-mobile',
+    getListKeywordSearchMobile: '/api/v2/get-list-keyword-search-mobile',
 
     //admin
     getAllTypeProduct: '/api/get-all-type-product',
@@ -249,4 +327,5 @@ module.exports = {
     comparePassword,
     decodeToken,
     routes,
+    removeVietnameseDiacritics,
 };
