@@ -2931,7 +2931,7 @@ const getListKeywordSearchMobile = (data) => {
                 let rows = await db.keywordSearchs.findAll({
                     where: {
                         keyword: {
-                            [Op.like]: data.value,
+                            [Op.like]: `%${data.value}%`,
                         },
                     },
                 });
