@@ -737,6 +737,53 @@ const getListStatusBillAdmin = async (req, res, next) => {
 
 //end winform
 
+//music app
+const themCaSi = async (req, res, next) => {
+    try {
+        //call service data
+        let data = await adminService.themCaSi(req.body);
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const layDsCaSi = async (req, res, next) => {
+    try {
+        //call service data
+        let data = await adminService.layDsCaSi();
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const xoaCaSi = async (req, res, next) => {
+    try {
+        //call service data
+        let data = await adminService.xoaCaSi(req.body);
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const suaCaSi = async (req, res, next) => {
+    try {
+        //call service data
+        let data = await adminService.suaCaSi(req.body);
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+//end music app
+
 module.exports = {
     addTypeProduct,
     getAllTypeProduct,
@@ -794,6 +841,14 @@ module.exports = {
     getInventoryByTypeProduct,
     adminLogin,
     checkLoginWithAdmin,
+
+    //music app
+    themCaSi,
+    layDsCaSi,
+    xoaCaSi,
+    suaCaSi,
+
+    //and music app
 
     //winform
     getListBillNoConfirm,

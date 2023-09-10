@@ -6,7 +6,7 @@ require('dotenv').config();
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_NAME,
     api_key: process.env.CLOUDINARY_KEY,
-    api_secret: process.env.CLOUDINARY_SECRET
+    api_secret: process.env.CLOUDINARY_SECRET,
 });
 
 const storage = new CloudinaryStorage({
@@ -16,17 +16,18 @@ const storage = new CloudinaryStorage({
         cb(null, file.originalname);
     },
     params: {
-        // folder: 'avatar_user',
         format: async (req, file) => 'webp', // định dạng file ảnh sau khi upload lên Cloudinary
         folder: 'evaluate',
         transformation: [
-            { // filter ảnh
-                width: 900, height: 900,
-                crop: 'limit'
+            {
+                // filter ảnh
+                width: 900,
+                height: 900,
+                crop: 'limit',
             },
-            { effect: "sharpen" },
-            { quality: "auto" }
-        ]
+            { effect: 'sharpen' },
+            { quality: 'auto' },
+        ],
     },
 });
 

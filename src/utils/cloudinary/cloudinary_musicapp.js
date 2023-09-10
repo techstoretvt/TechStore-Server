@@ -11,15 +11,19 @@ cloudinary.config({
 
 const storage = new CloudinaryStorage({
     cloudinary,
-    allowedFormats: ['jpg', 'png', 'jpeg', 'webp'],
+    allowedFormats: ['jpg', 'png', 'jpeg', 'webp', 'mp3'],
     filename: function (req, file, cb) {
         cb(null, file.originalname);
     },
     params: {
         format: async (req, file) => {
+            console.log('file', file, file.mimetype);
+            if (file.mimetype.includes('audio')) {
+                return 'mp3';
+            }
             return 'webp';
         }, // định dạng file ảnh sau khi upload lên Cloudinary
-        folder: 'Image_product',
+        folder: 'music',
         transformation: [
             {
                 // filter ảnh

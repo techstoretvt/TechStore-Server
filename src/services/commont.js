@@ -215,6 +215,14 @@ const routes = {
     adminLogin: '/api/v2/admin-login',
     checkLoginWithAdmin: '/api/v2/check-login-with-admin',
 
+    //music app
+    themCaSi: '/api/v2/them-ca-si',
+    layDsCaSi: '/api/v2/lay-ds-ca-si',
+    xoaCaSi: '/api/v2/xoa-ca-si',
+    suaCaSi: '/api/v2/sua-ca-si',
+
+    //end music app
+
     //winform
     getListBillNoConfirm: '/api/v1/get-list-bill-no-confirm',
     getDetailBillAdmin: '/api/v1/get-detail-bill-admin',
