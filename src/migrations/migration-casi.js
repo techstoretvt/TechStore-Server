@@ -16,6 +16,12 @@ module.exports = {
             moTa: {
                 type: Sequelize.TEXT,
             },
+            anh: {
+                type: Sequelize.STRING,
+            },
+            idAnh: {
+                type: Sequelize.STRING,
+            },
 
             createdAt: {
                 allowNull: false,

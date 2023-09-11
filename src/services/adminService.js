@@ -4628,7 +4628,7 @@ const getListStatusBillAdmin = (data) => {
 //end winform
 
 //music app
-const themCaSi = (data) => {
+const themCaSi = ({ file, data }) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.tenCaSi || !data.moTa) {
@@ -4656,6 +4656,8 @@ const themCaSi = (data) => {
                     id: uuidv4(),
                     tenCaSi: data.tenCaSi.trim(),
                     moTa: data.moTa.trim(),
+                    idAnh: file.filename,
+                    anh: file.path,
                 });
 
                 resolve({
@@ -4709,6 +4711,9 @@ const xoaCaSi = (data) => {
                         errMessage: 'Ca sĩ này không tồn tại!',
                     });
                 }
+                cloudinary.v2.uploader.destroy(`${casi.idAnh}`).then((res) => {
+                    console.log('res: ', res);
+                });
 
                 await casi.destroy();
 
@@ -4754,6 +4759,164 @@ const suaCaSi = (data) => {
                 resolve({
                     errCode: 0,
                     data: casi,
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+const themBaiHat = ({ files, data }) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.tenBaiHat || !data.loiBaiHat || !data.idCaSi) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data,
+                });
+            } else {
+                let fileImage = files.find((item) =>
+                    item.mimetype.includes('image')
+                );
+                let fileAudio = files.find((item) =>
+                    item.mimetype.includes('audio')
+                );
+                console.log(fileImage, fileAudio);
+
+                let baiHatMoi = await db.baihat.create({
+                    id: uuidv4(),
+                    tenBaiHat: data.tenBaiHat,
+                    loiBaiHat: data.loiBaiHat,
+                    anhBia: fileImage.path,
+                    linkBaiHat: fileAudio.path,
+                    idCaSi: data.idCaSi,
+                });
+
+                resolve({
+                    errCode: 0,
+                    data: baiHatMoi,
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+const layDsBaiHat = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let dsBaiHat = await db.baihat.findAll({
+                include: [
+                    {
+                        model: db.casi,
+                    },
+                ],
+                raw: false,
+                nest: true,
+                order: [['createdAt', 'desc']],
+            });
+
+            resolve({
+                errCode: 0,
+                data: dsBaiHat,
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+const xoaBaiHat = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.id) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data,
+                });
+            } else {
+                let baihat = await db.baihat.findOne({
+                    where: {
+                        id: data.id,
+                    },
+                    raw: false,
+                });
+
+                if (!baihat) {
+                    return resolve({
+                        errCode: 2,
+                        errMessage: 'Bài hát này không tồn tại!',
+                    });
+                }
+
+                let idAnh = baihat.anhBia.substring(
+                    baihat.anhBia.indexOf('music/'),
+                    baihat.anhBia.lastIndexOf('.')
+                );
+
+                // let idAudio = baihat.linkBaiHat.substring(
+                //     baihat.linkBaiHat.indexOf('music/'),
+                //     baihat.linkBaiHat.lastIndexOf('.')
+                // );
+
+                cloudinary.v2.uploader.destroy(`${idAnh}`).then((res) => {
+                    console.log('res image: ', res);
+                });
+                // cloudinary.v2.uploader
+                //     .destroy(`gfq2d71lk2amq1vsvmnm`)
+                //     .then((res) => {
+                //         console.log('res audio: ', res);
+                //     });
+
+                await baihat.destroy();
+
+                resolve({
+                    errCode: 0,
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+const suaBaiHat = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.id | !data.tenBaiHat | !data.loiBaiHat || !data.idCaSi) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data,
+                });
+            } else {
+                let baihat = await db.baihat.findOne({
+                    where: {
+                        id: data.id,
+                    },
+                    raw: false,
+                });
+
+                if (!baihat) {
+                    return resolve({
+                        errCode: 2,
+                        errMessage: 'Bài hát này không tồn tại!',
+                    });
+                }
+
+                baihat.tenBaiHat = data.tenBaiHat.trim();
+                baihat.loiBaiHat = data.loiBaiHat.trim();
+                baihat.idCaSi = data.idCaSi.trim();
+
+                await baihat.save();
+
+                resolve({
+                    errCode: 0,
+                    data: baihat,
                 });
             }
         } catch (e) {
@@ -4827,6 +4990,10 @@ module.exports = {
     layDsCaSi,
     xoaCaSi,
     suaCaSi,
+    themBaiHat,
+    layDsBaiHat,
+    xoaBaiHat,
+    suaBaiHat,
     //end music app
 
     //winform

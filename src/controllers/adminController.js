@@ -741,7 +741,10 @@ const getListStatusBillAdmin = async (req, res, next) => {
 const themCaSi = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.themCaSi(req.body);
+        let data = await adminService.themCaSi({
+            file: req.file,
+            data: req.query,
+        });
 
         return res.status(200).json(data);
     } catch (e) {
@@ -775,6 +778,52 @@ const suaCaSi = async (req, res, next) => {
     try {
         //call service data
         let data = await adminService.suaCaSi(req.body);
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const themBaiHat = async (req, res, next) => {
+    try {
+        //call service data
+        let data = await adminService.themBaiHat({
+            files: req.files,
+            data: req.query,
+        });
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const layDsBaiHat = async (req, res, next) => {
+    try {
+        //call service data
+        let data = await adminService.layDsBaiHat();
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const xoaBaiHat = async (req, res, next) => {
+    try {
+        //call service data
+        let data = await adminService.xoaBaiHat(req.body);
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+const suaBaiHat = async (req, res, next) => {
+    try {
+        //call service data
+        let data = await adminService.suaBaiHat(req.body);
 
         return res.status(200).json(data);
     } catch (e) {
@@ -847,6 +896,10 @@ module.exports = {
     layDsCaSi,
     xoaCaSi,
     suaCaSi,
+    themBaiHat,
+    layDsBaiHat,
+    xoaBaiHat,
+    suaBaiHat,
 
     //and music app
 

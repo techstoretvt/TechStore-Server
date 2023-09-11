@@ -220,6 +220,10 @@ const routes = {
     layDsCaSi: '/api/v2/lay-ds-ca-si',
     xoaCaSi: '/api/v2/xoa-ca-si',
     suaCaSi: '/api/v2/sua-ca-si',
+    themBaiHat: '/api/v2/them-bai-hat',
+    layDsBaiHat: '/api/v2/lay-ds-bai-hat',
+    xoaBaiHat: '/api/v2/xoa-bai-hat',
+    suaBaiHat: '/api/v2/sua-bai-hat',
 
     //end music app
 

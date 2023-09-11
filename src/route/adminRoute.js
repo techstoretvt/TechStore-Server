@@ -10,6 +10,7 @@ import cloudinary_product from '../utils/cloudinary/cloudinary_product';
 import cloudinary_typePoduct from '../utils/cloudinary/cloudinary_typeProduct';
 import cloudinary_notify from '../utils/cloudinary/cloudinary_notify';
 import cloudinary_eventPromotion from '../utils/cloudinary/cloudinary_eventPromotion';
+import cloudinary_music from '../utils/cloudinary/cloudinary_musicapp';
 
 let router = express.Router();
 
@@ -134,6 +135,11 @@ const initAdminRoute = (app) => {
         routes.layDsCaSi,
         verifyAccessTokenAdmin,
         adminController.layDsCaSi
+    );
+    router.get(
+        routes.layDsBaiHat,
+        verifyAccessTokenAdmin,
+        adminController.layDsBaiHat
     );
 
     //winform
@@ -262,7 +268,14 @@ const initAdminRoute = (app) => {
     router.post(
         routes.themCaSi,
         verifyAccessTokenAdmin,
+        cloudinary_music.single('file'),
         adminController.themCaSi
+    );
+    router.post(
+        routes.themBaiHat,
+        verifyAccessTokenAdmin,
+        cloudinary_music.array('file'),
+        adminController.themBaiHat
     );
 
     router.put(
@@ -334,6 +347,11 @@ const initAdminRoute = (app) => {
     );
 
     router.put(routes.suaCaSi, verifyAccessTokenAdmin, adminController.suaCaSi);
+    router.put(
+        routes.suaBaiHat,
+        verifyAccessTokenAdmin,
+        adminController.suaBaiHat
+    );
 
     router.delete(
         routes.deleteTypeProduct,
@@ -374,6 +392,11 @@ const initAdminRoute = (app) => {
         routes.xoaCaSi,
         verifyAccessTokenAdmin,
         adminController.xoaCaSi
+    );
+    router.delete(
+        routes.xoaBaiHat,
+        verifyAccessTokenAdmin,
+        adminController.xoaBaiHat
     );
 
     return app.use('/', router);

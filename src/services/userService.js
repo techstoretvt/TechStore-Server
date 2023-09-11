@@ -6593,7 +6593,6 @@ const createNewUserMobile = (data) => {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
-                    data,
                 });
             } else {
                 let passHash = commont.hashPassword(data.password);
@@ -6669,7 +6668,6 @@ const verifyCodeForCreateUserMobile = (data) => {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
-                    data,
                 });
             } else {
                 let user = await db.User.findOne({

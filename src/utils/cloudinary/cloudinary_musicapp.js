@@ -11,29 +11,29 @@ cloudinary.config({
 
 const storage = new CloudinaryStorage({
     cloudinary,
-    allowedFormats: ['jpg', 'png', 'jpeg', 'webp', 'mp3'],
+    // allowedFormats: ['mp3'],
     filename: function (req, file, cb) {
         cb(null, file.originalname);
     },
     params: {
-        format: async (req, file) => {
-            console.log('file', file, file.mimetype);
-            if (file.mimetype.includes('audio')) {
-                return 'mp3';
-            }
-            return 'webp';
-        }, // định dạng file ảnh sau khi upload lên Cloudinary
+        resource_type: 'auto',
+        // format: async (req, file) => {
+        //     console.log('file', file, file.mimetype);
+        //     if (file.mimetype.includes('image')) {
+        //         return 'webp';
+        //     }
+        // }, // định dạng file ảnh sau khi upload lên Cloudinary
         folder: 'music',
-        transformation: [
-            {
-                // filter ảnh
-                width: 1000,
-                height: 1000,
-                crop: 'limit',
-            },
-            { effect: 'sharpen' },
-            { quality: 'auto' },
-        ],
+        // transformation: [
+        //     {
+        //         // filter ảnh
+        //         width: 1000,
+        //         height: 1000,
+        //         crop: 'limit',
+        //     },
+        //     { effect: 'sharpen' },
+        //     { quality: 'auto' },
+        // ],
     },
 });
 

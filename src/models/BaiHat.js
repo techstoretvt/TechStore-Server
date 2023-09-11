@@ -4,6 +4,7 @@ module.exports = (sequelize, DataTypes) => {
     class baihat extends Model {
         static associate(models) {
             // define association here
+            baihat.belongsTo(models.casi, { foreignKey: 'idCaSi' });
         }
     }
     baihat.init(
