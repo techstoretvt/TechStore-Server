@@ -2947,6 +2947,50 @@ const getListKeywordSearchMobile = (data) => {
     });
 };
 
+const getListBaiHat = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let maxCount = +data.maxCount || 20;
+            let page = +data.page || 1;
+            let orderBy = data.orderBy || 'createdAt';
+            let order_style = data.order_style || 'asc';
+            let search_tenBH = data.search_tenBH || '';
+            let search_tenCS = data.search_tenCS || '';
+
+            let baihats = await db.baihat.findAll({
+                where: {
+                    tenBaiHat: {
+                        [Op.like]: `%${search_tenBH}%`,
+                    },
+                },
+                include: [
+                    {
+                        model: db.casi,
+                        where: {
+                            tenCaSi: {
+                                [Op.like]: `%${search_tenCS}%`,
+                            },
+                        },
+                    },
+                ],
+                limit: maxCount,
+                offset: (page - 1) * maxCount,
+                order: [[orderBy, order_style]],
+                raw: false,
+                nest: true,
+            });
+
+            resolve({
+                errCode: 0,
+                len: baihats.length,
+                data: baihats,
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 module.exports = {
     getProductPromotionHome,
     getTopSellProduct,
@@ -2975,4 +3019,5 @@ module.exports = {
     getSuggestProductMobile,
     getListBlogForyouMobile,
     getListKeywordSearchMobile,
+    getListBaiHat,
 };

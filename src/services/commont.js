@@ -224,6 +224,7 @@ const routes = {
     layDsBaiHat: '/api/v2/lay-ds-bai-hat',
     xoaBaiHat: '/api/v2/xoa-bai-hat',
     suaBaiHat: '/api/v2/sua-bai-hat',
+    getListBaiHat: '/api/v2/lay-ds-bai-hat-public',
 
     //end music app
 

@@ -103,6 +103,8 @@ const initAppRoute = (app) => {
         appController.getListKeywordSearchMobile
     );
 
+    router.get(routes.getListBaiHat, appController.getListBaiHat);
+
     router.put(routes.increaseViewBlogById, appController.increaseViewBlogById);
 
     //test

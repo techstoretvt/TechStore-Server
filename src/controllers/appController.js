@@ -284,6 +284,15 @@ const getListKeywordSearchMobile = async (req, res, next) => {
     }
 };
 
+const getListBaiHat = async (req, res, next) => {
+    try {
+        let data = await appService.getListBaiHat(req.query);
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
 module.exports = {
     checkStartServer,
     getProductPromotionHome,
@@ -313,4 +322,5 @@ module.exports = {
     getSuggestProductMobile,
     getListBlogForyouMobile,
     getListKeywordSearchMobile,
+    getListBaiHat,
 };

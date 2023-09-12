@@ -2289,7 +2289,6 @@ const getCodeVeridyForgetPass = (data) => {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
-                    data,
                 });
             } else {
                 let user = await db.User.findOne({
@@ -2355,7 +2354,6 @@ const changePassForget = (data) => {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
-                    data,
                 });
             } else {
                 let user = await db.User.findOne({
@@ -6673,7 +6671,7 @@ const verifyCodeForCreateUserMobile = (data) => {
                 let user = await db.User.findOne({
                     where: {
                         email: data.email,
-                        keyVerify: data.code,
+                        // keyVerify: data.code,
                     },
                     raw: false,
                 });
@@ -6684,6 +6682,13 @@ const verifyCodeForCreateUserMobile = (data) => {
                         errMessage: 'Not found user',
                     });
                 } else {
+                    if (user.keyVerify !== data.code) {
+                        return resolve({
+                            errCode: 3,
+                            errMessage: 'Mã xác nhận không đúng',
+                        });
+                    }
+
                     user.statusUser = 'true';
                     await user.save();
 
