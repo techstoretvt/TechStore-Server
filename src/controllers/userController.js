@@ -1064,6 +1064,26 @@ const verifyCodeForCreateUserMobile = async (req, res, next) => {
     }
 };
 
+const themDanhSachPhat = async (req, res, next) => {
+    try {
+        let data = await userService.themDanhSachPhat(req.body, req.payload);
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const layDanhSachPhat = async (req, res, next) => {
+    try {
+        let data = await userService.layDanhSachPhat(req.payload);
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -1156,4 +1176,6 @@ module.exports = {
     getDetailBillById,
     createNewUserMobile,
     verifyCodeForCreateUserMobile,
+    themDanhSachPhat,
+    layDanhSachPhat,
 };

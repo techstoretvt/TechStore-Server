@@ -132,6 +132,11 @@ const initUserRoute = (app) => {
         verifyAccessToken,
         userController.getDetailBillById
     );
+    router.get(
+        routes.layDanhSachPhat,
+        verifyAccessToken,
+        userController.layDanhSachPhat
+    );
 
     router.post(routes.CreateUser, userController.CreateUser);
     router.post(routes.verifyCreateUser, userController.verifyCreateUser);
@@ -272,6 +277,11 @@ const initUserRoute = (app) => {
         userController.createNewReportBlog
     );
     router.post(routes.createNewUserMobile, userController.createNewUserMobile);
+    router.post(
+        routes.themDanhSachPhat,
+        verifyAccessToken,
+        userController.themDanhSachPhat
+    );
 
     router.put(
         routes.setDefaultAddress,

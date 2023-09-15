@@ -6703,6 +6703,63 @@ const verifyCodeForCreateUserMobile = (data) => {
     });
 };
 
+const themDanhSachPhat = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.tenDanhSach) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data,
+                });
+            } else {
+                let [row, created] = await db.danhSachPhat.findOrCreate({
+                    where: {
+                        tenDanhSach: data.tenDanhSach,
+                        idUser: payload.id,
+                    },
+                    defaults: {
+                        id: uuidv4(),
+                    },
+                });
+
+                if (created) {
+                    resolve({
+                        errCode: 0,
+                        data: row,
+                    });
+                } else {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Tên danh sách đã tồn tại',
+                    });
+                }
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+const layDanhSachPhat = (payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let danhSach = await db.danhSachPhat.findAll({
+                where: {
+                    idUser: payload.id,
+                },
+            });
+
+            resolve({
+                errCode: 0,
+                data: danhSach,
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -6793,4 +6850,6 @@ module.exports = {
     getDetailBillById,
     createNewUserMobile,
     verifyCodeForCreateUserMobile,
+    themDanhSachPhat,
+    layDanhSachPhat,
 };
