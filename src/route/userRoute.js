@@ -138,6 +138,12 @@ const initUserRoute = (app) => {
         userController.layDanhSachPhat
     );
 
+    router.get(
+        routes.layBaiHatTrongDanhSach,
+        verifyAccessToken,
+        userController.layBaiHatTrongDanhSach
+    );
+
     router.post(routes.CreateUser, userController.CreateUser);
     router.post(routes.verifyCreateUser, userController.verifyCreateUser);
     router.post(routes.userLogin, userController.userLogin);
@@ -282,6 +288,11 @@ const initUserRoute = (app) => {
         verifyAccessToken,
         userController.themDanhSachPhat
     );
+    router.post(
+        routes.themBaiHatVaoDanhSach,
+        verifyAccessToken,
+        userController.themBaiHatVaoDanhSach
+    );
 
     router.put(
         routes.setDefaultAddress,
@@ -425,6 +436,11 @@ const initUserRoute = (app) => {
         routes.deleteShortVideoById,
         verifyAccessToken,
         userController.deleteShortVideoById
+    );
+    router.delete(
+        routes.xoaBaiHatKhoiDanhSach,
+        verifyAccessToken,
+        userController.xoaBaiHatKhoiDanhSach
     );
 
     return app.use('/', router);

@@ -4770,7 +4770,12 @@ const suaCaSi = (data) => {
 const themBaiHat = ({ files, data }) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.tenBaiHat || !data.loiBaiHat || !data.idCaSi) {
+            if (
+                !data.tenBaiHat ||
+                !data.loiBaiHat ||
+                !data.idCaSi ||
+                !data.thoiGian
+            ) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required paramteter!',
@@ -4792,6 +4797,7 @@ const themBaiHat = ({ files, data }) => {
                     anhBia: fileImage.path,
                     linkBaiHat: fileAudio.path,
                     idCaSi: data.idCaSi,
+                    thoiGian: +data.thoiGian,
                 });
 
                 resolve({

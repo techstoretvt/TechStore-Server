@@ -5,6 +5,9 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             // define association here
             baihat.belongsTo(models.casi, { foreignKey: 'idCaSi' });
+            baihat.hasOne(models.chiTietDanhSachPhat, {
+                foreignKey: 'idBaiHat',
+            });
         }
     }
     baihat.init(
@@ -14,6 +17,7 @@ module.exports = (sequelize, DataTypes) => {
             anhBia: DataTypes.STRING,
             linkBaiHat: DataTypes.STRING,
             idCaSi: DataTypes.STRING,
+            thoiGian: DataTypes.DOUBLE,
         },
         {
             sequelize,

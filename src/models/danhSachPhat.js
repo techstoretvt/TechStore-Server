@@ -5,6 +5,9 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             // define association here
             danhSachPhat.belongsTo(models.User, { foreignKey: 'idUser' });
+            danhSachPhat.hasMany(models.chiTietDanhSachPhat, {
+                foreignKey: 'idDanhSachPhat',
+            });
         }
     }
     danhSachPhat.init(

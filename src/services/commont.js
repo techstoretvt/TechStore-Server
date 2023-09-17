@@ -227,6 +227,9 @@ const routes = {
     getListBaiHat: '/api/v2/lay-ds-bai-hat-public',
     themDanhSachPhat: '/api/v2/them-danh-sach-phat',
     layDanhSachPhat: '/api/v2/lay-danh-sach-phat',
+    themBaiHatVaoDanhSach: '/api/v2/them-bai-hat-vao-danh-sach',
+    layBaiHatTrongDanhSach: '/api/v2/lay-bai-hat-trong-danh-sach',
+    xoaBaiHatKhoiDanhSach: '/api/v2/xoa-bai-hat-khoi-danh-sach',
 
     //end music app
 

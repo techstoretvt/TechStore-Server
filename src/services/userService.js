@@ -6760,6 +6760,142 @@ const layDanhSachPhat = (payload) => {
     });
 };
 
+const themBaiHatVaoDanhSach = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idBaiHat || !data.idDanhSachPhat) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data,
+                });
+            } else {
+                //kiem tra idBaiHat v IdDanhSachPhat
+
+                //end kiem tra
+                let maxSTT = await db.chiTietDanhSachPhat.max('stt', {
+                    where: {
+                        idDanhSachPhat: data.idDanhSachPhat,
+                    },
+                });
+
+                let [row, created] = await db.chiTietDanhSachPhat.findOrCreate({
+                    where: {
+                        idBaiHat: data.idBaiHat,
+                        idDanhSachPhat: data.idDanhSachPhat,
+                    },
+                    defaults: {
+                        id: uuidv4(),
+                        stt: maxSTT ? maxSTT + 1 : 1,
+                    },
+                });
+
+                if (created) {
+                    resolve({
+                        errCode: 0,
+                        data: row,
+                    });
+                } else {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Bài hát đã có trong danh sách',
+                    });
+                }
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+const layBaiHatTrongDanhSach = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idDanhSachPhat) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data,
+                });
+            } else {
+                //kiem tra idDanhSachPhat
+
+                //end Kiem tra
+
+                let chiTietDS = await db.danhSachPhat.findAll({
+                    where: {
+                        id: data.idDanhSachPhat,
+                        idUser: payload.id,
+                    },
+                    include: [
+                        {
+                            model: db.chiTietDanhSachPhat,
+                            include: [
+                                {
+                                    model: db.baihat,
+                                    include: [
+                                        {
+                                            model: db.casi,
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                    raw: false,
+                    nest: true,
+                });
+
+                resolve({
+                    errCode: 0,
+                    data: chiTietDS,
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+const xoaBaiHatKhoiDanhSach = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idChiTietDanhSachPhat) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data,
+                });
+            } else {
+                //kiem tra idDanhSachPhat va idBaiHat
+
+                //end Kiem tra
+
+                let chiTietDanhSachPhat = await db.chiTietDanhSachPhat.findOne({
+                    where: {
+                        id: data.idChiTietDanhSachPhat,
+                    },
+                    raw: false,
+                });
+
+                if (!chiTietDanhSachPhat) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Chi tiết danh sách phát không tồn tại',
+                    });
+                } else {
+                    await chiTietDanhSachPhat.destroy();
+                    resolve({
+                        errCode: 0,
+                    });
+                }
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -6852,4 +6988,7 @@ module.exports = {
     verifyCodeForCreateUserMobile,
     themDanhSachPhat,
     layDanhSachPhat,
+    themBaiHatVaoDanhSach,
+    layBaiHatTrongDanhSach,
+    xoaBaiHatKhoiDanhSach,
 };
