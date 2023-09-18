@@ -6822,7 +6822,7 @@ const layBaiHatTrongDanhSach = (data, payload) => {
 
                 //end Kiem tra
 
-                let chiTietDS = await db.danhSachPhat.findAll({
+                let chiTietDS = await db.danhSachPhat.findOne({
                     where: {
                         id: data.idDanhSachPhat,
                         idUser: payload.id,
