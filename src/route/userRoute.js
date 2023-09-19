@@ -442,7 +442,7 @@ const initUserRoute = (app) => {
         verifyAccessToken,
         userController.xoaBaiHatKhoiDanhSach
     );
-    router.post(
+    router.delete(
         routes.xoaDanhSachPhat,
         verifyAccessToken,
         userController.xoaDanhSachPhat
