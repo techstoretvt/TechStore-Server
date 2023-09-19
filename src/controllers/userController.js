@@ -1125,7 +1125,7 @@ const xoaBaiHatKhoiDanhSach = async (req, res, next) => {
 
 const xoaDanhSachPhat = async (req, res, next) => {
     try {
-        let data = await userService.xoaDanhSachPhat(req.body, req.payload);
+        let data = await userService.xoaDanhSachPhat(req.query, req.payload);
 
         return res.status(200).json(data);
     } catch (e) {
