@@ -6748,6 +6748,20 @@ const layDanhSachPhat = (payload) => {
                 where: {
                     idUser: payload.id,
                 },
+                include: [
+                    {
+                        model: db.chiTietDanhSachPhat,
+                        attributes: ['id'],
+                        include: [
+                            {
+                                model: db.baihat,
+                                attributes: ['id', 'anhBia'],
+                            },
+                        ],
+                    },
+                ],
+                raw: false,
+                nest: true,
             });
 
             resolve({
