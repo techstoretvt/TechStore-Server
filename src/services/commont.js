@@ -230,6 +230,7 @@ const routes = {
     themBaiHatVaoDanhSach: '/api/v2/them-bai-hat-vao-danh-sach',
     layBaiHatTrongDanhSach: '/api/v2/lay-bai-hat-trong-danh-sach',
     xoaBaiHatKhoiDanhSach: '/api/v2/xoa-bai-hat-khoi-danh-sach',
+    xoaDanhSachPhat: '/api/v2/xoa-danh-sach-phat',
 
     //end music app
 

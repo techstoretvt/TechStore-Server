@@ -6896,6 +6896,43 @@ const xoaBaiHatKhoiDanhSach = (data, payload) => {
     });
 };
 
+const xoaDanhSachPhat = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idDanhSachPhat) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data,
+                });
+            } else {
+                //kiem tra idDanhSachPhat
+
+                //end Kiem tra
+
+                await db.danhSachPhat.destroy({
+                    where: {
+                        id: data.idDanhSachPhat,
+                        idUser: payload.id,
+                    },
+                });
+
+                await db.chiTietDanhSachPhat.destroy({
+                    where: {
+                        idDanhSachPhat: data.idDanhSachPhat,
+                    },
+                });
+
+                resolve({
+                    errCode: 0,
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -6991,4 +7028,5 @@ module.exports = {
     themBaiHatVaoDanhSach,
     layBaiHatTrongDanhSach,
     xoaBaiHatKhoiDanhSach,
+    xoaDanhSachPhat,
 };

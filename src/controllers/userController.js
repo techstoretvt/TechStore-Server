@@ -1123,6 +1123,16 @@ const xoaBaiHatKhoiDanhSach = async (req, res, next) => {
     }
 };
 
+const xoaDanhSachPhat = async (req, res, next) => {
+    try {
+        let data = await userService.xoaDanhSachPhat(req.body, req.payload);
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -1220,4 +1230,5 @@ module.exports = {
     themBaiHatVaoDanhSach,
     layBaiHatTrongDanhSach,
     xoaBaiHatKhoiDanhSach,
+    xoaDanhSachPhat,
 };
