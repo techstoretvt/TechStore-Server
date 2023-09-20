@@ -1113,7 +1113,7 @@ const layBaiHatTrongDanhSach = async (req, res, next) => {
 const xoaBaiHatKhoiDanhSach = async (req, res, next) => {
     try {
         let data = await userService.xoaBaiHatKhoiDanhSach(
-            req.body,
+            req.query,
             req.payload
         );
 
