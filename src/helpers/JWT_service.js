@@ -10,7 +10,7 @@ const signAccessToken = async (user_Id) => {
         };
         const secret = process.env.ACCESS_TOKEN_SECRET;
         const options = {
-            expiresIn: '10m',
+            expiresIn: '60m',
         };
 
         JWT.sign(payload, secret, options, (err, token) => {
