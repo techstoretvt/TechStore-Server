@@ -6874,7 +6874,7 @@ const layBaiHatTrongDanhSach = (data, payload) => {
 const xoaBaiHatKhoiDanhSach = (data, payload) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.idChiTietDanhSachPhat) {
+            if (!data.idDanhSachPhat || !data.idBaiHat) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
@@ -6887,7 +6887,8 @@ const xoaBaiHatKhoiDanhSach = (data, payload) => {
 
                 let chiTietDanhSachPhat = await db.chiTietDanhSachPhat.findOne({
                     where: {
-                        id: data.idChiTietDanhSachPhat,
+                        idDanhSachPhat: data.idDanhSachPhat,
+                        idBaiHat: data.idBaiHat,
                     },
                     raw: false,
                 });
