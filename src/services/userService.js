@@ -6984,6 +6984,40 @@ const layBaiHatCuaCaSi = (data, payload) => {
         }
     });
 };
+const goiYCaSi = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            //kiem tra idCaSi
+
+            //end Kiem tra
+
+            let listCS;
+
+            if (data.idCaSi) {
+                listCS = await db.casi.findAll({
+                    where: {
+                        id: {
+                            [Op.ne]: data.idCaSi,
+                        },
+                    },
+                    limit: +data.limit || 10,
+                    raw: false,
+                });
+            } else {
+                listCS = await db.casi.findAll({
+                    limit: +data.limit || 10,
+                });
+            }
+
+            resolve({
+                errCode: 0,
+                data: listCS,
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
 
 module.exports = {
     CreateUser,
@@ -7082,4 +7116,5 @@ module.exports = {
     xoaBaiHatKhoiDanhSach,
     xoaDanhSachPhat,
     layBaiHatCuaCaSi,
+    goiYCaSi,
 };
