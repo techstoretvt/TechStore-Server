@@ -7019,6 +7019,42 @@ const goiYCaSi = (data, payload) => {
     });
 };
 
+const layCaSiById = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idCaSi) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data,
+                });
+            } else {
+                //kiem tra idCaSi
+
+                //end Kiem tra
+                let casi = await db.casi.findOne({
+                    where: {
+                        id: data.idCaSi,
+                    },
+                });
+                if (!casi) {
+                    return resolve({
+                        errCode: 2,
+                        errMessage: 'Không tìm thấy ca sĩ',
+                    });
+                }
+
+                resolve({
+                    errCode: 0,
+                    data: casi,
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -7117,4 +7153,5 @@ module.exports = {
     xoaDanhSachPhat,
     layBaiHatCuaCaSi,
     goiYCaSi,
+    layCaSiById,
 };

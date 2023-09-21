@@ -151,6 +151,11 @@ const initUserRoute = (app) => {
     );
 
     router.get(routes.goiYCaSi, verifyAccessToken, userController.goiYCaSi);
+    router.get(
+        routes.layCaSiById,
+        verifyAccessToken,
+        userController.layCaSiById
+    );
 
     router.post(routes.CreateUser, userController.CreateUser);
     router.post(routes.verifyCreateUser, userController.verifyCreateUser);
