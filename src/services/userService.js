@@ -6948,6 +6948,43 @@ const xoaDanhSachPhat = (data, payload) => {
     });
 };
 
+const layBaiHatCuaCaSi = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idCaSi) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data,
+                });
+            } else {
+                //kiem tra idCaSi
+
+                //end Kiem tra
+
+                let baihats = await db.baihat.findAll({
+                    include: [
+                        {
+                            model: db.casi,
+                            where: {
+                                id: data.idCaSi,
+                            },
+                        },
+                    ],
+                    raw: false,
+                    nest: true,
+                });
+                resolve({
+                    errCode: 0,
+                    data: baihats,
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -7044,4 +7081,5 @@ module.exports = {
     layBaiHatTrongDanhSach,
     xoaBaiHatKhoiDanhSach,
     xoaDanhSachPhat,
+    layBaiHatCuaCaSi,
 };

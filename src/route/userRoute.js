@@ -144,6 +144,12 @@ const initUserRoute = (app) => {
         userController.layBaiHatTrongDanhSach
     );
 
+    router.get(
+        routes.layBaiHatCuaCaSi,
+        verifyAccessToken,
+        userController.layBaiHatCuaCaSi
+    );
+
     router.post(routes.CreateUser, userController.CreateUser);
     router.post(routes.verifyCreateUser, userController.verifyCreateUser);
     router.post(routes.userLogin, userController.userLogin);
