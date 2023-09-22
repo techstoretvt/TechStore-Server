@@ -1163,6 +1163,16 @@ const layCaSiById = async (req, res, next) => {
     }
 };
 
+const timKiemBaiHat = async (req, res, next) => {
+    try {
+        let data = await userService.timKiemBaiHat(req.query, req.payload);
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -1264,4 +1274,5 @@ module.exports = {
     layBaiHatCuaCaSi,
     goiYCaSi,
     layCaSiById,
+    timKiemBaiHat,
 };

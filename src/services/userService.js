@@ -17,6 +17,7 @@ const { google } = require('googleapis');
 const fs = require('fs');
 const path = require('path');
 import { handleEmit } from '../index';
+import Fuse from 'fuse.js';
 const createError = require('http-errors');
 var cloudinary = require('cloudinary');
 // await cloudinary.v2.uploader.destroy('vznd4hds4kudr0zbvfop')
@@ -7055,6 +7056,48 @@ const layCaSiById = (data, payload) => {
     });
 };
 
+const timKiemBaiHat = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.tenBaiHat) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data,
+                });
+            } else {
+                let offset = +data.offset || 0;
+                let limit = +data.limit || 10;
+
+                let listBH = await db.baihat.findAll({
+                    include: [
+                        {
+                            model: db.casi,
+                        },
+                    ],
+                    raw: false,
+                    nest: true,
+                });
+
+                const options = {
+                    keys: ['tenBaiHat', 'loiBaiHat'],
+                };
+
+                const fuse = new Fuse(listBH, options);
+
+                const result = fuse.search(data.tenBaiHat);
+
+                resolve({
+                    errCode: 0,
+                    data: result.slice(offset * limit, limit),
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -7154,4 +7197,5 @@ module.exports = {
     layBaiHatCuaCaSi,
     goiYCaSi,
     layCaSiById,
+    timKiemBaiHat,
 };
