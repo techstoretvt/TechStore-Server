@@ -7098,6 +7098,42 @@ const timKiemBaiHat = (data, payload) => {
     });
 };
 
+const timKiemCaSi = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.tenCaSi) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data,
+                });
+            } else {
+                let offset = +data.offset || 0;
+                let limit = +data.limit || 10;
+
+                let listCS = await db.casi.findAll({ raw: false });
+
+                console.log(listCS[0].tenCaSi);
+
+                const options = {
+                    keys: ['tenCaSi', 'moTa'],
+                };
+
+                const fuse = new Fuse(listCS, options);
+
+                const result = fuse.search(data.tenCaSi);
+
+                resolve({
+                    errCode: 0,
+                    data: result.slice(offset * limit, limit),
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -7198,4 +7234,5 @@ module.exports = {
     goiYCaSi,
     layCaSiById,
     timKiemBaiHat,
+    timKiemCaSi,
 };

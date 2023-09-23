@@ -235,6 +235,7 @@ const routes = {
     goiYCaSi: '/api/v2/goi-y-ca-si',
     layCaSiById: '/api/v2/lay-ca-si-by-id',
     timKiemBaiHat: '/api/v2/tim-kiem-bai-hat',
+    timKiemCaSi: '/api/v2/tim-kiem-ca-si',
 
     //end music app
 

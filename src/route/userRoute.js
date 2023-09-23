@@ -163,6 +163,12 @@ const initUserRoute = (app) => {
         userController.timKiemBaiHat
     );
 
+    router.get(
+        routes.timKiemCaSi,
+        verifyAccessToken,
+        userController.timKiemCaSi
+    );
+
     router.post(routes.CreateUser, userController.CreateUser);
     router.post(routes.verifyCreateUser, userController.verifyCreateUser);
     router.post(routes.userLogin, userController.userLogin);
