@@ -7144,6 +7144,13 @@ const doiTenDanhSach = (data, payload) => {
                     data,
                 });
             } else {
+                if (data.tenDanhSach.length > 30) {
+                    return resolve({
+                        errCode: 4,
+                        errMessage: 'Tên danh sách quá dài',
+                    });
+                }
+
                 let danhsach = await db.danhSachPhat.findOne({
                     where: {
                         id: data.idDanhSach,
@@ -7158,6 +7165,19 @@ const doiTenDanhSach = (data, payload) => {
                         errMessage: 'Không tìm thấy danh sách nào',
                     });
                 } else {
+                    let checkTen = await db.danhsach.findOne({
+                        where: {
+                            idUser: payload.id,
+                            tenDanhSach: data.tenDanhSach,
+                        },
+                    });
+                    if (checkTen) {
+                        return resolve({
+                            errCode: 3,
+                            errMessage: 'Tên danh sách đã tồn tại',
+                        });
+                    }
+
                     danhsach.tenDanhSach = data.tenDanhSach;
                     await danhsach.save();
 
