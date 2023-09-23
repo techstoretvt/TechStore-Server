@@ -418,6 +418,11 @@ const initUserRoute = (app) => {
         routes.verifyCodeForCreateUserMobile,
         userController.verifyCodeForCreateUserMobile
     );
+    router.put(
+        routes.doiTenDanhSach,
+        verifyAccessToken,
+        userController.doiTenDanhSach
+    );
 
     router.delete(
         routes.deleteAddressUser,

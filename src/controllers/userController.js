@@ -1183,6 +1183,16 @@ const timKiemCaSi = async (req, res, next) => {
     }
 };
 
+const doiTenDanhSach = async (req, res, next) => {
+    try {
+        let data = await userService.doiTenDanhSach(req.query, req.payload);
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -1286,4 +1296,5 @@ module.exports = {
     layCaSiById,
     timKiemBaiHat,
     timKiemCaSi,
+    doiTenDanhSach,
 };

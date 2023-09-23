@@ -7134,6 +7134,44 @@ const timKiemCaSi = (data, payload) => {
     });
 };
 
+const doiTenDanhSach = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idDanhSach || !data.tenDanhSach) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data,
+                });
+            } else {
+                let danhsach = await db.danhSachPhat.findOne({
+                    where: {
+                        id: data.idDanhSach,
+                        idUser: payload.id,
+                    },
+                    raw: false,
+                });
+
+                if (!danhsach) {
+                    return resolve({
+                        errCode: 2,
+                        errMessage: 'Không tìm thấy danh sách nào',
+                    });
+                } else {
+                    danhsach.tenDanhSach = data.tenDanhSach;
+                    await danhsach.save();
+
+                    return resolve({
+                        errCode: 0,
+                    });
+                }
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -7235,4 +7273,5 @@ module.exports = {
     layCaSiById,
     timKiemBaiHat,
     timKiemCaSi,
+    doiTenDanhSach,
 };
