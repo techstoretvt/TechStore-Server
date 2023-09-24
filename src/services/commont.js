@@ -237,6 +237,7 @@ const routes = {
     timKiemBaiHat: '/api/v2/tim-kiem-bai-hat',
     timKiemCaSi: '/api/v2/tim-kiem-ca-si',
     doiTenDanhSach: '/api/v2/doi-ten-danh-sach',
+    doiViTriBaiHatTrongDS: '/api/v2/doi-vi-tri-trong-ds',
 
     //end music app
 

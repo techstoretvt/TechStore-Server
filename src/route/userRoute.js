@@ -424,6 +424,12 @@ const initUserRoute = (app) => {
         userController.doiTenDanhSach
     );
 
+    router.put(
+        routes.doiViTriBaiHatTrongDS,
+        verifyAccessToken,
+        userController.doiViTriBaiHatTrongDS
+    );
+
     router.delete(
         routes.deleteAddressUser,
         verifyAccessToken,

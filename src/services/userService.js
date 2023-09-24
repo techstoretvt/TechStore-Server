@@ -18,6 +18,7 @@ const fs = require('fs');
 const path = require('path');
 import { handleEmit } from '../index';
 import Fuse from 'fuse.js';
+import { dataflow } from 'googleapis/build/src/apis/dataflow';
 const createError = require('http-errors');
 var cloudinary = require('cloudinary');
 // await cloudinary.v2.uploader.destroy('vznd4hds4kudr0zbvfop')
@@ -7193,6 +7194,54 @@ const doiTenDanhSach = (data, payload) => {
     });
 };
 
+const doiViTriBaiHatTrongDS = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idFrom || !data.idTo) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data,
+                });
+            } else {
+                let dataFrom = await db.chiTietDanhSachPhat.findOne({
+                    where: {
+                        id: data.idFrom,
+                    },
+                    raw: false,
+                });
+
+                let dataTo = await db.chiTietDanhSachPhat.findOne({
+                    where: {
+                        id: data.idTo,
+                    },
+                    raw: false,
+                });
+
+                if (!dataFrom || !dataTo) {
+                    return resolve({
+                        errCode: 2,
+                        errMessage: 'Không tìm thấy bài hát trong ds',
+                    });
+                }
+
+                let tam = dataFrom.stt;
+                dataFrom.stt = dataTo.stt;
+                dataTo.stt = tam;
+
+                await dataflow.save();
+                await dataTo.save();
+
+                resolve({
+                    errCode: 0,
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -7295,4 +7344,5 @@ module.exports = {
     timKiemBaiHat,
     timKiemCaSi,
     doiTenDanhSach,
+    doiViTriBaiHatTrongDS,
 };
