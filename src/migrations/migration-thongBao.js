@@ -11,10 +11,10 @@ module.exports = {
             },
 
             title: {
-                type: Sequelize.STRING,
+                type: Sequelize.TEXT,
             },
             content: {
-                type: Sequelize.STRING,
+                type: Sequelize.TEXT,
             },
             timeCreate: {
                 type: Sequelize.DOUBLE,

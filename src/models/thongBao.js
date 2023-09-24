@@ -8,8 +8,8 @@ module.exports = (sequelize, DataTypes) => {
     }
     thongBao.init(
         {
-            title: DataTypes.STRING,
-            content: DataTypes.STRING,
+            title: DataTypes.TEXT,
+            content: DataTypes.TEXT,
             timeCreate: DataTypes.DOUBLE,
             urlImage: DataTypes.TEXT,
         },
