@@ -7247,7 +7247,7 @@ const doiViTriBaiHatTrongDS = (data, payload) => {
                 dataFrom.stt = dataTo.stt;
                 dataTo.stt = tam;
 
-                await dataflow.save();
+                await dataFrom.save();
                 await dataTo.save();
 
                 resolve({
