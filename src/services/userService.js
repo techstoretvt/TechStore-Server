@@ -7197,7 +7197,7 @@ const doiTenDanhSach = (data, payload) => {
 const doiViTriBaiHatTrongDS = (data, payload) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.idFrom || !data.idTo) {
+            if (!data.idFrom || !data.idTo || !data.idDanhSach) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!',
@@ -7206,15 +7206,33 @@ const doiViTriBaiHatTrongDS = (data, payload) => {
             } else {
                 let dataFrom = await db.chiTietDanhSachPhat.findOne({
                     where: {
-                        id: data.idFrom,
+                        idDanhSachPhat: data.idDanhSach,
                     },
+                    include: [
+                        {
+                            model: db.baihat,
+                            where: {
+                                id: data.idFrom,
+                            },
+                        },
+                    ],
+                    nest: true,
                     raw: false,
                 });
 
                 let dataTo = await db.chiTietDanhSachPhat.findOne({
                     where: {
-                        id: data.idTo,
+                        idDanhSachPhat: data.idDanhSach,
                     },
+                    include: [
+                        {
+                            model: db.baihat,
+                            where: {
+                                id: data.idTo,
+                            },
+                        },
+                    ],
+                    nest: true,
                     raw: false,
                 });
 
