@@ -7260,6 +7260,28 @@ const doiViTriBaiHatTrongDS = (data, payload) => {
     });
 };
 
+const layDanhSachThongBao = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let limit = +data.limit || 10;
+            let offset = +data.offset || 0;
+
+            let thongBaos = await db.thongBao.findAll({
+                limit,
+                offset,
+                order: [['createdAt', 'desc']],
+            });
+
+            resolve({
+                errCode: 0,
+                data: thongBaos,
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -7363,4 +7385,5 @@ module.exports = {
     timKiemCaSi,
     doiTenDanhSach,
     doiViTriBaiHatTrongDS,
+    layDanhSachThongBao,
 };

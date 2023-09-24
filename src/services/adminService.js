@@ -4800,6 +4800,80 @@ const themBaiHat = ({ files, data }) => {
                     thoiGian: +data.thoiGian,
                 });
 
+                let arrayTitle = [
+                    'Ra mắt bài hát mới',
+                    `"${data.tenBaiHat}" đã có trên ứng dụng`,
+                    'Ngày mới vui vẻ cùng bài hát mới',
+                    `Ra mắt bài hát mới "${data.tenBaiHat}"`,
+                    `Cùng nghe bài hát mới nào`,
+                    'Mời bạn lắng nghe',
+                    `Ca khúc mới có tên "${data.tenBaiHat}"`,
+                ];
+
+                let arrContent = [
+                    `"${data.tenBaiHat}" - một bài hát mới của [tên nghệ sĩ/nhóm nhạc] đã chính thức ra mắt. Đây là một bài hát về tình yêu đơn phương, mang đến cho người nghe những cảm xúc lắng đọng và sâu sắc.
+
+                    Lời bài hát như một lời tự sự của một người đang yêu thầm một ai đó. Những câu hát mộc mạc, giản dị, nhưng đầy chân thành, đã chạm đến trái tim của nhiều người yêu nhạc.
+                    
+                    "${data.tenBaiHat}" không chỉ là một bài hát về tình yêu đơn phương, mà còn là một bài hát về sự dũng cảm để theo đuổi ước mơ và tình yêu của bản thân.
+                    
+                    Hãy cùng thưởng thức "${data.tenBaiHat}" và cảm nhận những cung bậc cảm xúc của tình yêu đơn phương nhé!`,
+                    `"${data.tenBaiHat}" - một bài hát mới của [tên nghệ sĩ/nhóm nhạc] đã chính thức ra mắt. Đây là một bài hát về tình yêu đơn phương, mang đến cho người nghe những cảm xúc lắng đọng và sâu sắc.
+
+                    Giai điệu của bài hát du dương, ngọt ngào, kết hợp với giọng hát đầy cảm xúc của [tên nghệ sĩ/nhóm nhạc], đã mang đến cho khán giả những cảm xúc lắng đọng.
+                    
+                    "${data.tenBaiHat}" là một bài hát dễ nghe, dễ nhớ, và dễ đi vào lòng người. Bài hát chắc chắn sẽ là một bản hit trong thời gian tới.`,
+                    `"${data.tenBaiHat}" - một bài hát mới của [tên nghệ sĩ/nhóm nhạc] đã chính thức ra mắt. Đây là một bài hát về tình yêu đơn phương, mang đến cho người nghe những cảm xúc lắng đọng và sâu sắc.
+
+                    Bài hát được sáng tác bởi [tên nhạc sĩ]. Giai điệu bài hát du dương, ngọt ngào, kết hợp với giọng hát đầy cảm xúc của [tên nghệ sĩ/nhóm nhạc], đã mang đến cho khán giả những cảm xúc lắng đọng.
+                    
+                    MV của bài hát được quay tại [địa điểm quay]. MV được đạo diễn bởi [tên đạo diễn]. MV tái hiện câu chuyện tình yêu đơn phương của [tên nghệ sĩ/nhóm nhạc] một cách chân thực và đầy cảm xúc.
+                    
+                    "${data.tenBaiHat}" là một bài hát có ý nghĩa sâu sắc. Bài hát không chỉ là một bài hát về tình yêu đơn phương, mà còn là một bài hát về sự dũng cảm để theo đuổi ước mơ và tình yêu của bản thân.`,
+                    `"${data.tenBaiHat}" - một bài hát mới của [tên nghệ sĩ/nhóm nhạc] đã chính thức ra mắt. Đây là một bài hát về tình yêu đơn phương, mang đến cho người nghe những cảm xúc lắng đọng và sâu sắc.
+
+                    Bài hát đã nhận được nhiều lời khen ngợi từ khán giả và giới chuyên môn. "${data.tenBaiHat}" được đánh giá là một bài hát xuất sắc, và là một trong những bài hát đáng nghe nhất trong năm.
+                    
+                    Hãy cùng thưởng thức "${data.tenBaiHat}" và cảm nhận những cung bậc cảm xúc của tình yêu đơn phương nhé!`,
+                    `"${data.tenBaiHat}" - một bài hát mới của [tên nghệ sĩ/nhóm nhạc] đã chính thức ra mắt. Đây là một bài hát về tình yêu đơn phương, mang đến cho người nghe những cảm xúc lắng đọng và sâu sắc.
+
+                    Bài hát là một lời tự sự của một người đang yêu thầm một ai đó. Những câu hát mộc mạc, giản dị, nhưng đầy chân thành, đã chạm đến trái tim của nhiều người yêu nhạc.
+                    
+                    "${data.tenBaiHat}" không chỉ là một bài hát về tình yêu đơn phương, mà còn là một bài hát về sự dũng cảm để theo đuổi ước mơ và tình yêu của bản thân.
+                    
+                    Bài hát mang đến cho khán giả một thông điệp rằng: Tình yêu đơn phương cũng là một loại tình yêu, và nó cũng đáng được trân trọng.
+                    
+                    Hãy cùng thưởng thức "${data.tenBaiHat}" và cảm nhận những cung bậc cảm xúc của tình yêu đơn phương nhé!`,
+                    `"${data.tenBaiHat}" - một bài hát mới của ca sĩ/nhóm nhạc [tên nghệ sĩ/nhóm nhạc] đã chính thức ra mắt. Đây là một bài hát về tình yêu, mang đến cho người nghe những cảm xúc ngọt ngào và lãng mạn.
+
+                    Lời bài hát như một lời tỏ tình của một người đang yêu. Những câu hát ngọt ngào, lãng mạn, đã chạm đến trái tim của nhiều người yêu nhạc.
+                    
+                    Giai điệu của bài hát nhẹ nhàng, êm ái, kết hợp với giọng hát đầy cảm xúc của [tên nghệ sĩ/nhóm nhạc], đã mang đến cho khán giả những cảm xúc ngọt ngào.
+                    
+                    "${data.tenBaiHat}" là một bài hát dễ nghe, dễ nhớ, và dễ đi vào lòng người. Bài hát chắc chắn sẽ là một bản hit trong thời gian tới.`,
+                    `"${data.tenBaiHat}" - một bài hát mới của ca sĩ/nhóm nhạc [tên nghệ sĩ/nhóm nhạc] đã chính thức ra mắt. Đây là một bài hát về tình yêu, mang đến cho người nghe những cảm xúc ngọt ngào và lãng mạn.
+
+                    Bài hát được sáng tác bởi [tên nhạc sĩ]. Giai điệu của bài hát nhẹ nhàng, êm ái, kết hợp với giọng hát đầy cảm xúc của [tên nghệ sĩ/nhóm nhạc], đã mang đến cho khán giả những cảm xúc ngọt ngào.
+                    
+                    MV của bài hát được quay tại [địa điểm quay]. MV được đạo diễn bởi [tên đạo diễn]. MV tái hiện câu chuyện tình yêu ngọt ngào và lãng mạn của [tên nghệ sĩ/nhóm nhạc].
+                    
+                    "${data.tenBaiHat}" là một bài hát có ý nghĩa sâu sắc. Bài hát không chỉ là một bài hát về tình yêu, mà còn là một bài hát về sự trân trọng những điều nhỏ bé trong cuộc sống.`,
+                ];
+
+                const number = Math.floor(Math.random() * arrayTitle.length);
+                const number2 = Math.floor(Math.random() * arrContent.length);
+                const number3 = Math.floor(Math.random() * 15);
+
+                const time = new Date().getTime();
+
+                await db.thongBao.create({
+                    id: uuidv4(),
+                    title: arrayTitle[number],
+                    content: arrContent[number2],
+                    timeCreate: time,
+                    urlImage: `https://source.unsplash.com/random?sig=${number3}`,
+                });
+
                 resolve({
                     errCode: 0,
                     data: baiHatMoi,
