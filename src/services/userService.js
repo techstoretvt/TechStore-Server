@@ -6857,6 +6857,7 @@ const layBaiHatTrongDanhSach = (data, payload) => {
                             ],
                         },
                     ],
+                    order: [[{ model: db.chiTietDanhSachPhat }, 'stt', 'asc']],
                     raw: false,
                     nest: true,
                 });
