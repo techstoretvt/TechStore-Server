@@ -89,6 +89,9 @@ io.on('connection', (socket) => {
 
     socket.on('demo_event', (from, msg) => {
         console.log('demo_event', msg);
+        console.log('from', from);
+
+        io.emit('server_res', 'noi dung gui ve');
     });
 
     socket.on('disconnect', () => {
