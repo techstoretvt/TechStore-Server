@@ -2048,6 +2048,8 @@ const lockUserAdmin = (data) => {
                         user.statusUser = data.status;
                         await user.save();
 
+                        handleEmit(`khoa_tai_khoan_${data.idUser}`, '');
+
                         resolve({
                             errCode: 0,
                         });
