@@ -7169,7 +7169,7 @@ const doiTenDanhSach = (data, payload) => {
                         errMessage: 'Không tìm thấy danh sách nào',
                     });
                 } else {
-                    let checkTen = await db.danhsach.findOne({
+                    let checkTen = await db.danhSachPhat.findOne({
                         where: {
                             idUser: payload.id,
                             tenDanhSach: data.tenDanhSach,
