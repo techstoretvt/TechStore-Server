@@ -4874,6 +4874,13 @@ const themBaiHat = ({ files, data }) => {
                     urlImage: `https://source.unsplash.com/random?sig=${number3}`,
                 });
 
+                handleEmit('new_thong_bao', {
+                    title: arrayTitle[number],
+                    content: arrContent[number2],
+                    timeCreate: time,
+                    urlImage: `https://source.unsplash.com/random?sig=${number3}`,
+                });
+
                 resolve({
                     errCode: 0,
                     data: baiHatMoi,
