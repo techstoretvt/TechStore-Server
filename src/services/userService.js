@@ -409,6 +409,7 @@ const userLogin = (data, header) => {
                             data: {
                                 accessToken,
                                 refreshToken,
+                                id: user.id,
                             },
                         });
                     } else {
@@ -427,6 +428,7 @@ const userLogin = (data, header) => {
                                 data: {
                                     accessToken,
                                     refreshToken,
+                                    id: user.id,
                                 },
                             });
                         } else {
