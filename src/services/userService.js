@@ -686,6 +686,7 @@ const loginGoogle = (data, header) => {
                         data: {
                             accessToken: accessToken,
                             refreshToken: refreshToken,
+                            idUser: user.id,
                         },
                     });
                 } else if (user.statusUser === 'false') {
@@ -7175,7 +7176,7 @@ const doiTenDanhSach = (data, payload) => {
                             tenDanhSach: data.tenDanhSach,
                         },
                     });
-                    if (checkTen) {
+                    if (checkTen && checkTen.id !== data.idDanhSach) {
                         return resolve({
                             errCode: 3,
                             errMessage: 'Tên danh sách đã tồn tại',
