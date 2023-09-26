@@ -4800,6 +4800,7 @@ const themBaiHat = ({ files, data }) => {
                     linkBaiHat: fileAudio.path,
                     idCaSi: data.idCaSi,
                     thoiGian: +data.thoiGian,
+                    linkMV: data.linkMV || 'false',
                 });
 
                 let arrayTitle = [
@@ -5000,6 +5001,7 @@ const suaBaiHat = (data) => {
                 baihat.tenBaiHat = data.tenBaiHat.trim();
                 baihat.loiBaiHat = data.loiBaiHat.trim();
                 baihat.idCaSi = data.idCaSi.trim();
+                baihat.linkMV = data.linkMV || 'false'
 
                 await baihat.save();
 

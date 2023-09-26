@@ -28,6 +28,9 @@ module.exports = {
             thoiGian: {
                 type: Sequelize.DOUBLE,
             },
+            linkMV: {
+                type: Sequelize.TEXT,
+            },
 
             createdAt: {
                 allowNull: false,
