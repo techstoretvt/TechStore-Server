@@ -1219,6 +1219,32 @@ const layDanhSachThongBao = async (req, res, next) => {
     }
 };
 
+const toggleYeuThichBaiHat = async (req, res, next) => {
+    try {
+        let data = await userService.toggleYeuThichBaiHat(
+            req.query,
+            req.payload
+        );
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const kiemTraYeuThichBaiHat = async (req, res, next) => {
+    try {
+        let data = await userService.kiemTraYeuThichBaiHat(
+            req.query,
+            req.payload
+        );
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -1325,4 +1351,6 @@ module.exports = {
     doiTenDanhSach,
     doiViTriBaiHatTrongDS,
     layDanhSachThongBao,
+    toggleYeuThichBaiHat,
+    kiemTraYeuThichBaiHat,
 };

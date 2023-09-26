@@ -175,6 +175,12 @@ const initUserRoute = (app) => {
         userController.layDanhSachThongBao
     );
 
+    router.get(
+        routes.kiemTraYeuThichBaiHat,
+        verifyAccessToken,
+        userController.kiemTraYeuThichBaiHat
+    );
+
     router.post(routes.CreateUser, userController.CreateUser);
     router.post(routes.verifyCreateUser, userController.verifyCreateUser);
     router.post(routes.userLogin, userController.userLogin);
@@ -323,6 +329,11 @@ const initUserRoute = (app) => {
         routes.themBaiHatVaoDanhSach,
         verifyAccessToken,
         userController.themBaiHatVaoDanhSach
+    );
+    router.post(
+        routes.toggleYeuThichBaiHat,
+        verifyAccessToken,
+        userController.toggleYeuThichBaiHat
     );
 
     router.put(

@@ -8,6 +8,7 @@ module.exports = (sequelize, DataTypes) => {
             baihat.hasOne(models.chiTietDanhSachPhat, {
                 foreignKey: 'idBaiHat',
             });
+            baihat.hasMany(models.yeuThichBaiHat, { foreignKey: 'idBaiHat' });
         }
     }
     baihat.init(

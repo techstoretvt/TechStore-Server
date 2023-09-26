@@ -7285,6 +7285,82 @@ const layDanhSachThongBao = (data, payload) => {
     });
 };
 
+const toggleYeuThichBaiHat = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idBaiHat) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data,
+                });
+            } else {
+                let [row, create] = await db.yeuThichBaiHat.findOrCreate({
+                    where: {
+                        idUser: payload.id,
+                        idBaiHat: data.idBaiHat,
+                    },
+                    defaults: {
+                        id: uuidv4(),
+                    },
+                    raw: false,
+                });
+
+                if (create) {
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'like',
+                    });
+                } else {
+                    await row.destroy();
+
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'notLike',
+                    });
+                }
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+const kiemTraYeuThichBaiHat = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idBaiHat) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!',
+                    data,
+                });
+            } else {
+                let row = await db.yeuThichBaiHat.findOne({
+                    where: {
+                        idUser: payload.id,
+                        idBaiHat: data.idBaiHat,
+                    },
+                });
+
+                if (row) {
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'like',
+                    });
+                } else {
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'notLike',
+                    });
+                }
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -7389,4 +7465,6 @@ module.exports = {
     doiTenDanhSach,
     doiViTriBaiHatTrongDS,
     layDanhSachThongBao,
+    toggleYeuThichBaiHat,
+    kiemTraYeuThichBaiHat,
 };

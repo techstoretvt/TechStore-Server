@@ -21,6 +21,8 @@ module.exports = (sequelize, DataTypes) => {
             User.hasMany(models.reportVideos, { foreignKey: 'idUser' });
             User.hasMany(models.reportBlogs, { foreignKey: 'idUser' });
             User.hasMany(models.danhSachPhat, { foreignKey: 'idUser' });
+
+            User.hasMany(models.yeuThichBaiHat, { foreignKey: 'idUser' });
         }
     }
     User.init(
