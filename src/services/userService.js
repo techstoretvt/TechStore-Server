@@ -7273,6 +7273,11 @@ const layDanhSachBaiHatYeuThich = (data, payload) => {
                 include: [
                     {
                         model: db.baihat,
+                        include: [
+                            {
+                                model: db.casi
+                            }
+                        ]
                     },
                 ],
                 order: [[order_by, order_type]],
