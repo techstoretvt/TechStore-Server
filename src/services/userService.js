@@ -7262,6 +7262,10 @@ const kiemTraYeuThichBaiHat = (data, payload) => {
 const layDanhSachBaiHatYeuThich = (data, payload) => {
     return new Promise(async (resolve, reject) => {
         try {
+
+            let order_by = data.order_by || 'createdAt'
+            let order_type = data.order_type || 'desc'
+
             let row = await db.yeuThichBaiHat.findAll({
                 where: {
                     idUser: payload.id,
@@ -7271,6 +7275,7 @@ const layDanhSachBaiHatYeuThich = (data, payload) => {
                         model: db.baihat,
                     },
                 ],
+                order: [[order_by, order_type]],
                 raw: false,
                 nest: true,
             });
