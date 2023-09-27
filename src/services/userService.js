@@ -1,32 +1,32 @@
-import db from '../models';
-require('dotenv').config();
-import jwt from 'jsonwebtoken';
-import { v4 as uuidv4 } from 'uuid';
-import Verifier from 'email-verifier';
-const { Op } = require('sequelize');
+import db from "../models";
+require("dotenv").config();
+import jwt from "jsonwebtoken";
+import { v4 as uuidv4 } from "uuid";
+import Verifier from "email-verifier";
+const { Op } = require("sequelize");
 import {
     signAccessToken,
     signRefreshToken,
     verifyRefreshToken,
-} from '../helpers/JWT_service';
+} from "../helpers/JWT_service";
 
-const paypal = require('paypal-rest-sdk');
-import commont from '../services/commont';
-const { google } = require('googleapis');
+const paypal = require("paypal-rest-sdk");
+import commont from "../services/commont";
+const { google } = require("googleapis");
 // const { OAuth2Client } = require('google-auth-library');
-const fs = require('fs');
-const path = require('path');
-import { handleEmit } from '../index';
-import Fuse from 'fuse.js';
-import { dataflow } from 'googleapis/build/src/apis/dataflow';
-const createError = require('http-errors');
-var cloudinary = require('cloudinary');
+const fs = require("fs");
+const path = require("path");
+import { handleEmit } from "../index";
+import Fuse from "fuse.js";
+import { dataflow } from "googleapis/build/src/apis/dataflow";
+const createError = require("http-errors");
+var cloudinary = require("cloudinary");
 // await cloudinary.v2.uploader.destroy('vznd4hds4kudr0zbvfop')
 
 // import sequelize from 'sequelize';
 
 paypal.configure({
-    mode: 'sandbox', //sandbox or live
+    mode: "sandbox", //sandbox or live
     client_id: process.env.PAYPAL_CLIENT_ID,
     client_secret: process.env.PAYPAL_CLIENT_SECRET,
 });
@@ -43,7 +43,7 @@ const oAuth2Client = new google.auth.OAuth2(
 oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
 
 const drive = google.drive({
-    version: 'v3',
+    version: "v3",
     auth: oAuth2Client,
 });
 
@@ -53,14 +53,14 @@ let GG_Drive = {
             await drive.permissions.create({
                 fileId,
                 requestBody: {
-                    role: 'reader',
-                    type: 'anyone',
+                    role: "reader",
+                    type: "anyone",
                 },
             });
 
             const getUrl = await drive.files.get({
                 fileId,
-                fields: 'webViewLink, webContentLink',
+                fields: "webViewLink, webContentLink",
             });
 
             return getUrl;
@@ -68,18 +68,18 @@ let GG_Drive = {
             console.error(error);
         }
     },
-    uploadFile: async (name, idForder = '') => {
+    uploadFile: async (name, idForder = "") => {
         try {
             let date = new Date().getTime();
 
             const createFile = await drive.files.create({
                 requestBody: {
                     name: `Video-${date}`,
-                    mimeType: 'video/*',
+                    mimeType: "video/*",
                     parents: [idForder],
                 },
                 media: {
-                    mimeType: 'video/*',
+                    mimeType: "video/*",
                     body: fs.createReadStream(
                         path.join(__dirname, `../public/videoTam/${name}`)
                     ),
@@ -94,7 +94,7 @@ let GG_Drive = {
                 id: createFile.data.id,
             };
         } catch (error) {
-            console.error('Loi tu upload', error);
+            console.error("Loi tu upload", error);
         }
     },
     deleteFile: async (fileId) => {
@@ -119,15 +119,10 @@ let verifier_email = new Verifier(process.env.API_KEY_VERIFY_EMAIL, {
 const CreateUser = (data, header) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (
-                !data.firstName ||
-                !data.lastName ||
-                !data.pass ||
-                !data.email
-            ) {
+            if (!data.firstName || !data.lastName || !data.pass || !data.email) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                 });
             }
             let hasePass = commont.hashPassword(data.pass);
@@ -140,19 +135,18 @@ const CreateUser = (data, header) => {
                     if (err) {
                         throw err;
                     }
-                    if (res.smtpCheck === 'false') {
+                    if (res.smtpCheck === "false") {
                         resolve({
                             errCode: 3,
                             errMessage:
-                                'Email này không tồn tại, vui lòng kiểm tra lỗi chính tả!',
+                                "Email này không tồn tại, vui lòng kiểm tra lỗi chính tả!",
                         });
                         return;
                     } else {
                         if (data.firstName.length > 30 || data.lastName > 30) {
                             resolve({
                                 errCode: 4,
-                                errMessage:
-                                    'Độ dài của tên vượt quá mức cho phép!',
+                                errMessage: "Độ dài của tên vượt quá mức cho phép!",
                             });
                             return;
                         }
@@ -163,27 +157,27 @@ const CreateUser = (data, header) => {
                                 firstName: data.firstName,
                                 lastName: data.lastName,
                                 pass: hasePass,
-                                idTypeUser: '3',
+                                idTypeUser: "3",
                                 keyVerify: keyVerify,
-                                statusUser: 'wait',
-                                typeAccount: 'web',
+                                statusUser: "wait",
+                                typeAccount: "web",
                                 id: uuidv4(),
-                                gender: 'nam',
-                                birtday: '1/1/1990',
+                                gender: "nam",
+                                birtday: "1/1/1990",
                             },
                             raw: false,
                         });
 
                         if (!created) {
                             //Tài khoản đã tồn tại
-                            if (user.statusUser === 'true') {
+                            if (user.statusUser === "true") {
                                 resolve({
                                     errCode: 2,
-                                    errMessage: 'Tài khoản này đã tồn tại!',
+                                    errMessage: "Tài khoản này đã tồn tại!",
                                 });
                             }
                             //Tài khoản chưa được xác nhận
-                            else if (user.statusUser === 'wait') {
+                            else if (user.statusUser === "wait") {
                                 //update data
                                 user.firstName = data.firstName;
                                 user.lastName = data.lastName;
@@ -193,32 +187,25 @@ const CreateUser = (data, header) => {
 
                                 //create token
                                 let tokens = CreateToken(user);
-                                const accessToken = await signAccessToken(
-                                    user.id
-                                );
+                                const accessToken = await signAccessToken(user.id);
                                 const refreshToken = await signRefreshToken(
                                     user.id,
-                                    header['user-agent']
+                                    header["user-agent"]
                                 );
 
                                 //send email
-                                let title =
-                                    'Xác nhận tạo tài khoản TechStoreTvT';
+                                let title = "Xác nhận tạo tài khoản TechStoreTvT";
                                 let contentHtml = contentSendEmail(
                                     user.id,
                                     user.keyVerify,
                                     user.firstName
                                 );
 
-                                commont.sendEmail(
-                                    user.email,
-                                    title,
-                                    contentHtml
-                                );
+                                commont.sendEmail(user.email, title, contentHtml);
 
                                 resolve({
                                     errCode: 0,
-                                    errMessage: 'Tài khoản chưa được xác nhận',
+                                    errMessage: "Tài khoản chưa được xác nhận",
                                     data: {
                                         accessToken: accessToken,
                                         refreshToken: refreshToken,
@@ -232,11 +219,11 @@ const CreateUser = (data, header) => {
                             const accessToken = await signAccessToken(user.id);
                             const refreshToken = await signRefreshToken(
                                 user.id,
-                                header['user-agent']
+                                header["user-agent"]
                             );
 
                             //send email
-                            let title = 'Xác nhận tạo tài khoản TechStoreTvT';
+                            let title = "Xác nhận tạo tài khoản TechStoreTvT";
                             let contentHtml = contentSendEmail(
                                 user.id,
                                 user.keyVerify,
@@ -247,7 +234,7 @@ const CreateUser = (data, header) => {
 
                             resolve({
                                 errCode: 0,
-                                errMessage: 'Đã tạo tài khoản',
+                                errMessage: "Đã tạo tài khoản",
                                 data: {
                                     accessToken: accessToken,
                                     refreshToken: refreshToken,
@@ -259,7 +246,7 @@ const CreateUser = (data, header) => {
                 }
             );
         } catch (e) {
-            console.log('lỗi');
+            console.log("lỗi");
             reject(e);
         }
     });
@@ -308,14 +295,14 @@ const CreateToken = (user) => {
         { id, idGoogle, firstName, idTypeUser },
         process.env.ACCESS_TOKEN_SECRET,
         {
-            expiresIn: '120m',
+            expiresIn: "120m",
         }
     );
     const refreshToken = jwt.sign(
         { id, idGoogle, firstName, idTypeUser },
         process.env.REFESH_TOKEN_SECRET,
         {
-            expiresIn: '7d',
+            expiresIn: "7d",
         }
     );
 
@@ -328,14 +315,14 @@ const verifyCreateUser = (data) => {
             if (!data.id || !data.keyVerify) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                 });
             } else {
                 let user = await db.User.findOne({
                     where: {
                         id: data.id,
                         keyVerify: data.keyVerify,
-                        statusUser: 'wait',
+                        statusUser: "wait",
                     },
                     raw: false,
                 });
@@ -344,17 +331,17 @@ const verifyCreateUser = (data) => {
                     resolve({
                         errCode: 2,
                         errMessage:
-                            'Tài khoản không tồn tại hoặc đã được kích hoạt từ trước đó!',
+                            "Tài khoản không tồn tại hoặc đã được kích hoạt từ trước đó!",
                     });
                 } else {
-                    user.statusUser = 'true';
+                    user.statusUser = "true";
 
                     await user.save();
 
                     resolve({
                         errCode: 0,
                         errMessage:
-                            'Kích hoạt tài khoản thành công. Cảm ơn vì đã xác nhận.',
+                            "Kích hoạt tài khoản thành công. Cảm ơn vì đã xác nhận.",
                         keyVerify: data.keyVerify,
                     });
                 }
@@ -371,7 +358,7 @@ const userLogin = (data, header) => {
             if (!data.email || !data.pass) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                 });
             } else {
                 let user = await db.User.findOne({
@@ -382,30 +369,30 @@ const userLogin = (data, header) => {
 
                 if (
                     !user ||
-                    user.statusUser === 'wait' ||
+                    user.statusUser === "wait" ||
                     !commont.comparePassword(data.pass, user.pass)
                 ) {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Tài khoản hoặc mật khẩu không chính xác!',
+                        errMessage: "Tài khoản hoặc mật khẩu không chính xác!",
                     });
                 } else {
                     //check block VV
-                    if (user.statusUser === 'false') {
+                    if (user.statusUser === "false") {
                         resolve({
                             errCode: 3,
-                            errMessage: 'Tài khoản đã bị khóa vô thời hạn!',
+                            errMessage: "Tài khoản đã bị khóa vô thời hạn!",
                         });
-                    } else if (user.statusUser === 'true') {
+                    } else if (user.statusUser === "true") {
                         let tokens = CreateToken(user);
                         const accessToken = await signAccessToken(user.id);
                         const refreshToken = await signRefreshToken(
                             user.id,
-                            header['user-agent']
+                            header["user-agent"]
                         );
                         resolve({
                             errCode: 0,
-                            errMessage: 'Đăng nhập thành công!',
+                            errMessage: "Đăng nhập thành công!",
                             data: {
                                 accessToken,
                                 refreshToken,
@@ -420,11 +407,11 @@ const userLogin = (data, header) => {
                             const accessToken = await signAccessToken(user.id);
                             const refreshToken = await signRefreshToken(
                                 user.id,
-                                header['user-agent']
+                                header["user-agent"]
                             );
                             resolve({
                                 errCode: 0,
-                                errMessage: 'Đăng nhập thành công!',
+                                errMessage: "Đăng nhập thành công!",
                                 data: {
                                     accessToken,
                                     refreshToken,
@@ -457,13 +444,13 @@ const refreshToken = (data, header) => {
             if (!data.refreshToken) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                 });
             } else {
                 //decode refreshToken
                 let decoded = await verifyRefreshToken(
                     data.refreshToken,
-                    header['user-agent']
+                    header["user-agent"]
                 );
 
                 if (decoded !== null) {
@@ -471,11 +458,11 @@ const refreshToken = (data, header) => {
                     const accessToken = await signAccessToken(decoded.id);
                     const refreshToken = await signRefreshToken(
                         decoded.id,
-                        header['user-agent']
+                        header["user-agent"]
                     );
                     resolve({
                         errCode: 0,
-                        errMessage: 'Tạo token thành công!',
+                        errMessage: "Tạo token thành công!",
                         data: {
                             accessToken,
                             refreshToken,
@@ -484,8 +471,7 @@ const refreshToken = (data, header) => {
                 } else {
                     resolve({
                         errCode: 2,
-                        errMessage:
-                            'RefreshToken đã hết hạn hoặc không thể giải mã!',
+                        errMessage: "RefreshToken đã hết hạn hoặc không thể giải mã!",
                     });
                 }
             }
@@ -504,43 +490,43 @@ const getUserLogin = (data, payload) => {
                     id: payload.id,
                 },
                 attributes: {
-                    exclude: ['pass', 'keyVerify', 'createdAt', 'updatedAt'],
+                    exclude: ["pass", "keyVerify", "createdAt", "updatedAt"],
                 },
             });
 
             if (user) {
                 let date = new Date().getTime();
-                if (user.statusUser !== 'wait' && user.statusUser !== 'false') {
-                    if (user.statusUser === 'true') {
+                if (user.statusUser !== "wait" && user.statusUser !== "false") {
+                    if (user.statusUser === "true") {
                         resolve({
                             errCode: 0,
-                            errMessage: 'Get user succeed!',
+                            errMessage: "Get user succeed!",
                             data: user,
                         });
                     } else {
                         if (+user.statusUser < date) {
                             resolve({
                                 errCode: 0,
-                                errMessage: 'Get user succeed!',
+                                errMessage: "Get user succeed!",
                                 data: user,
                             });
                         } else {
                             resolve({
                                 errCode: 3,
-                                errMessage: 'Not found user!',
+                                errMessage: "Not found user!",
                             });
                         }
                     }
                 } else {
                     resolve({
                         errCode: 3,
-                        errMessage: 'User was blocked!',
+                        errMessage: "User was blocked!",
                     });
                 }
             } else {
                 resolve({
                     errCode: 3,
-                    errMessage: 'Not found user!',
+                    errMessage: "Not found user!",
                 });
             }
         } catch (e) {
@@ -555,7 +541,7 @@ const getUserLoginRefreshToken = (data) => {
             if (!data.refreshToken) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                 });
             } else {
                 //decode accessToken
@@ -570,25 +556,17 @@ const getUserLoginRefreshToken = (data) => {
                             id: decoded.id,
                         },
                         attributes: {
-                            exclude: [
-                                'pass',
-                                'keyVerify',
-                                'createdAt',
-                                'updatedAt',
-                            ],
+                            exclude: ["pass", "keyVerify", "createdAt", "updatedAt"],
                         },
                     });
 
                     if (user) {
                         let date = new Date().getTime();
-                        if (
-                            user.statusUser !== 'wait' &&
-                            user.statusUser !== 'false'
-                        ) {
-                            if (user.statusUser === 'true') {
+                        if (user.statusUser !== "wait" && user.statusUser !== "false") {
+                            if (user.statusUser === "true") {
                                 resolve({
                                     errCode: 0,
-                                    errMessage: 'Get user succeed!',
+                                    errMessage: "Get user succeed!",
                                     data: user,
                                     tokens: CreateToken(user),
                                 });
@@ -596,34 +574,33 @@ const getUserLoginRefreshToken = (data) => {
                                 if (+user.statusUser < date) {
                                     resolve({
                                         errCode: 0,
-                                        errMessage: 'Get user succeed!',
+                                        errMessage: "Get user succeed!",
                                         data: user,
                                         tokens: CreateToken(user),
                                     });
                                 } else {
                                     resolve({
                                         errCode: 3,
-                                        errMessage: 'Not found user!',
+                                        errMessage: "Not found user!",
                                     });
                                 }
                             }
                         } else {
                             resolve({
                                 errCode: 3,
-                                errMessage: 'Not found user!',
+                                errMessage: "Not found user!",
                             });
                         }
                     } else {
                         resolve({
                             errCode: 3,
-                            errMessage: 'Not found user!',
+                            errMessage: "Not found user!",
                         });
                     }
                 } else {
                     resolve({
                         errCode: 2,
-                        errMessage:
-                            'refreshToken đã hết hạn hoặc không thể giải mã!',
+                        errMessage: "refreshToken đã hết hạn hoặc không thể giải mã!",
                     });
                 }
             }
@@ -636,39 +613,34 @@ const getUserLoginRefreshToken = (data) => {
 const loginGoogle = (data, header) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (
-                !data.firstName ||
-                !data.lastName ||
-                !data.idGoogle ||
-                !data.avatar
-            ) {
+            if (!data.firstName || !data.lastName || !data.idGoogle || !data.avatar) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                 });
             } else {
                 //
                 let [user, created] = await db.User.findOrCreate({
                     where: {
                         idGoogle: data.idGoogle.toString(),
-                        typeAccount: 'google',
+                        typeAccount: "google",
                     },
                     defaults: {
                         firstName: data.firstName,
                         lastName: data.lastName,
 
-                        idTypeUser: '3',
+                        idTypeUser: "3",
 
-                        statusUser: 'true',
+                        statusUser: "true",
                         avatarGoogle: data.avatar,
                         id: uuidv4(),
-                        gender: 'nam',
-                        birtday: '1/1/1990',
+                        gender: "nam",
+                        birtday: "1/1/1990",
                     },
                     raw: false,
                 });
 
-                if (user.statusUser === 'true') {
+                if (user.statusUser === "true") {
                     if (user.avatarUpdate) {
                         user.avatarGoogle = data.avatar;
                         await user.save();
@@ -678,21 +650,21 @@ const loginGoogle = (data, header) => {
                     const accessToken = await signAccessToken(user.id);
                     const refreshToken = await signRefreshToken(
                         user.id,
-                        header['user-agent']
+                        header["user-agent"]
                     );
                     resolve({
                         errCode: 0,
-                        errMessage: 'Đăng nhập thành công!',
+                        errMessage: "Đăng nhập thành công!",
                         data: {
                             accessToken: accessToken,
                             refreshToken: refreshToken,
                             idUser: user.id,
                         },
                     });
-                } else if (user.statusUser === 'false') {
+                } else if (user.statusUser === "false") {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Tài khoản đã bị khóa vĩnh viễn!',
+                        errMessage: "Tài khoản đã bị khóa vĩnh viễn!",
                     });
                 } else {
                     const date = new Date().getTime();
@@ -716,11 +688,11 @@ const loginGoogle = (data, header) => {
                         const accessToken = await signAccessToken(user.id);
                         const refreshToken = await signRefreshToken(
                             user.id,
-                            header['user-agent']
+                            header["user-agent"]
                         );
                         resolve({
                             errCode: 0,
-                            errMessage: 'Đăng nhập thành công!',
+                            errMessage: "Đăng nhập thành công!",
                             data: {
                                 accessToken: accessToken,
                                 refreshToken: refreshToken,
@@ -746,7 +718,7 @@ const loginFacebook = (data, header) => {
             ) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                 });
             } else {
                 //
@@ -755,20 +727,20 @@ const loginFacebook = (data, header) => {
                     defaults: {
                         firstName: data.firstName,
                         lastName: data.lastName,
-                        email: 'none',
-                        idTypeUser: '3',
-                        typeAccount: 'facebook',
+                        email: "none",
+                        idTypeUser: "3",
+                        typeAccount: "facebook",
 
-                        statusUser: 'true',
+                        statusUser: "true",
                         avatarFacebook: data.avatarFacebook,
                         id: uuidv4(),
-                        gender: 'nam',
-                        birtday: '1/1/1990',
+                        gender: "nam",
+                        birtday: "1/1/1990",
                     },
                     raw: false,
                 });
 
-                if (user.statusUser === 'true') {
+                if (user.statusUser === "true") {
                     if (user.avatarUpdate) {
                         user.avatarFacebook = data.avatarFacebook;
                         await user.save();
@@ -779,25 +751,25 @@ const loginFacebook = (data, header) => {
                     const accessToken = await signAccessToken(user.id);
                     const refreshToken = await signRefreshToken(
                         user.id,
-                        header['user-agent']
+                        header["user-agent"]
                     );
                     resolve({
                         errCode: 0,
-                        errMessage: 'Đăng nhập thành công!',
+                        errMessage: "Đăng nhập thành công!",
                         data: {
                             accessToken: accessToken,
                             refreshToken: refreshToken,
                         },
                     });
-                } else if (user.statusUser === 'false') {
+                } else if (user.statusUser === "false") {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Tài khoản đã bị khóa vĩnh viễn!',
+                        errMessage: "Tài khoản đã bị khóa vĩnh viễn!",
                     });
-                } else if (user.statusUser === 'wait') {
+                } else if (user.statusUser === "wait") {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Tài khoản chưa được kích hoạt!',
+                        errMessage: "Tài khoản chưa được kích hoạt!",
                     });
                 } else {
                     const date = new Date().getTime();
@@ -821,11 +793,11 @@ const loginFacebook = (data, header) => {
                         const accessToken = await signAccessToken(user.id);
                         const refreshToken = await signRefreshToken(
                             user.id,
-                            header['user-agent']
+                            header["user-agent"]
                         );
                         resolve({
                             errCode: 0,
-                            errMessage: 'Đăng nhập thành công!',
+                            errMessage: "Đăng nhập thành công!",
                             data: {
                                 accessToken: accessToken,
                                 refreshToken: refreshToken,
@@ -846,7 +818,7 @@ const loginGithub = (data, header) => {
             if (!data.firstName || !data.idGithub || !data.avatarGithub) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                 });
             } else {
                 //
@@ -854,21 +826,21 @@ const loginGithub = (data, header) => {
                     where: { idGithub: data.idGithub.toString() },
                     defaults: {
                         firstName: data.firstName,
-                        lastName: '0',
+                        lastName: "0",
                         // email: 'none',
-                        idTypeUser: '3',
-                        typeAccount: 'github',
+                        idTypeUser: "3",
+                        typeAccount: "github",
 
-                        statusUser: 'true',
+                        statusUser: "true",
                         avatarGithub: data.avatarGithub,
                         id: uuidv4(),
-                        gender: 'nam',
-                        birtday: '1/1/1990',
+                        gender: "nam",
+                        birtday: "1/1/1990",
                     },
                     raw: false,
                 });
 
-                if (user.statusUser === 'true') {
+                if (user.statusUser === "true") {
                     if (user.avatarUpdate) {
                         user.avatarGithub = data.avatarGithub;
                         await user.save();
@@ -879,25 +851,25 @@ const loginGithub = (data, header) => {
                     const accessToken = await signAccessToken(user.id);
                     const refreshToken = await signRefreshToken(
                         user.id,
-                        header['user-agent']
+                        header["user-agent"]
                     );
                     resolve({
                         errCode: 0,
-                        errMessage: 'Đăng nhập thành công!',
+                        errMessage: "Đăng nhập thành công!",
                         data: {
                             accessToken: accessToken,
                             refreshToken: refreshToken,
                         },
                     });
-                } else if (user.statusUser === 'false') {
+                } else if (user.statusUser === "false") {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Tài khoản đã bị khóa vĩnh viễn!',
+                        errMessage: "Tài khoản đã bị khóa vĩnh viễn!",
                     });
-                } else if (user.statusUser === 'wait') {
+                } else if (user.statusUser === "wait") {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Tài khoản chưa được kích hoạt!',
+                        errMessage: "Tài khoản chưa được kích hoạt!",
                     });
                 } else {
                     const date = new Date().getTime();
@@ -921,11 +893,11 @@ const loginGithub = (data, header) => {
                         const accessToken = await signAccessToken(user.id);
                         const refreshToken = await signRefreshToken(
                             user.id,
-                            header['user-agent']
+                            header["user-agent"]
                         );
                         resolve({
                             errCode: 0,
-                            errMessage: 'Đăng nhập thành công!',
+                            errMessage: "Đăng nhập thành công!",
                             data: {
                                 accessToken: accessToken,
                                 refreshToken: refreshToken,
@@ -943,7 +915,7 @@ const loginGithub = (data, header) => {
 const addProductToCart = (data, payload) => {
     return new Promise(async (resolve, reject) => {
         try {
-            console.log('api add cart');
+            console.log("api add cart");
             if (
                 !data.idProduct ||
                 !data.amount ||
@@ -952,7 +924,7 @@ const addProductToCart = (data, payload) => {
             ) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                 });
             } else {
                 let idUser = payload.id;
@@ -971,20 +943,20 @@ const addProductToCart = (data, payload) => {
                     resolve({
                         errCode: 3,
                         errMessage:
-                            'Lỗi không tìm thấy sản phẩm hoặc phân loại, vui lòng thử lại sau!',
+                            "Lỗi không tìm thấy sản phẩm hoặc phân loại, vui lòng thử lại sau!",
                     });
                 } else {
-                    if (product.isSell === 'false') {
+                    if (product.isSell === "false") {
                         resolve({
                             errCode: 4,
-                            errMessage: 'Sản phẩm đã ngừng bán!',
+                            errMessage: "Sản phẩm đã ngừng bán!",
                         });
                         return;
                     }
                     if (+data.amount > classifyProduct.amount) {
                         resolve({
                             errCode: 5,
-                            errMessage: 'Hàng trong kho không còn đủ!',
+                            errMessage: "Hàng trong kho không còn đủ!",
                         });
                         return;
                     }
@@ -997,26 +969,25 @@ const addProductToCart = (data, payload) => {
                         },
                         defaults: {
                             amount: +data.amount,
-                            isChoose: 'false',
+                            isChoose: "false",
                             id: uuidv4(),
                         },
                         raw: false,
                     });
                     if (!create) {
                         cart.amount =
-                            cart.amount + data.amount * 1 <=
-                            classifyProduct.amount
+                            cart.amount + data.amount * 1 <= classifyProduct.amount
                                 ? cart.amount + data.amount * 1
                                 : classifyProduct.amount;
                         await cart.save();
                         resolve({
                             errCode: 0,
-                            errMessage: 'Đã thêm vào giỏ hàng',
+                            errMessage: "Đã thêm vào giỏ hàng",
                         });
                     } else {
                         resolve({
                             errCode: 0,
-                            errMessage: 'Đã thêm vào giỏ hàng',
+                            errMessage: "Đã thêm vào giỏ hàng",
                         });
                     }
                 }
@@ -1038,7 +1009,7 @@ const addCartOrMoveCart = (data, payload) => {
             ) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                 });
             } else {
                 let idUser = payload.id;
@@ -1057,13 +1028,13 @@ const addCartOrMoveCart = (data, payload) => {
                     resolve({
                         errCode: 3,
                         errMessage:
-                            'Lỗi không tìm thấy sản phẩm hoặc phân loại, vui lòng thử lại sau!',
+                            "Lỗi không tìm thấy sản phẩm hoặc phân loại, vui lòng thử lại sau!",
                     });
                 } else {
-                    if (product.isSell === 'false') {
+                    if (product.isSell === "false") {
                         resolve({
                             errCode: 4,
-                            errMessage: 'Sản phẩm đã ngừng bán!',
+                            errMessage: "Sản phẩm đã ngừng bán!",
                         });
                         return;
                     }
@@ -1090,12 +1061,12 @@ const addCartOrMoveCart = (data, payload) => {
 
                         resolve({
                             errCode: 0,
-                            errMessage: 'Sản phẩm đã có trong giỏ hàng',
+                            errMessage: "Sản phẩm đã có trong giỏ hàng",
                         });
                     } else {
                         resolve({
                             errCode: 0,
-                            errMessage: 'Đã thêm vào giỏ hàng',
+                            errMessage: "Đã thêm vào giỏ hàng",
                         });
                     }
                 }
@@ -1110,8 +1081,8 @@ const addNewAddressUser = (data, payload) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (
-                data.country === '-1' ||
-                data.district === '-1' ||
+                data.country === "-1" ||
+                data.district === "-1" ||
                 !data.nameAddress ||
                 !data.nameUser ||
                 !data.sdtUser ||
@@ -1120,7 +1091,7 @@ const addNewAddressUser = (data, payload) => {
             ) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                 });
             } else {
                 let idUser = payload.id;
@@ -1132,14 +1103,14 @@ const addNewAddressUser = (data, payload) => {
                         nameAddress: data.nameAddress.toLowerCase(),
                     },
                     defaults: {
-                        isDefault: 'false',
+                        isDefault: "false",
                         fullname: data.nameUser,
                         sdt: data.sdtUser,
                         country: data.country,
                         district: data.district,
                         addressText: data.addressText,
                         id: uuidv4(),
-                        status: 'true',
+                        status: "true",
                     },
                     raw: false,
                 });
@@ -1152,27 +1123,27 @@ const addNewAddressUser = (data, payload) => {
                         },
                     });
 
-                    if (checkStatusAdress.status === 'true') {
+                    if (checkStatusAdress.status === "true") {
                         resolve({
                             errCode: 3,
-                            errMessage: 'Tên địa chỉ này đã tồn tại!',
+                            errMessage: "Tên địa chỉ này đã tồn tại!",
                         });
                     } else {
                         let updateAddress = await db.addressUser.findOne({
                             where: {
                                 idUser,
-                                isDefault: 'true',
-                                status: 'true',
+                                isDefault: "true",
+                                status: "true",
                             },
                             raw: false,
                         });
                         if (updateAddress) {
-                            updateAddress.isDefault = 'false';
+                            updateAddress.isDefault = "false";
                             await updateAddress.save();
                         }
 
-                        addressUser.status = 'true';
-                        addressUser.isDefault = 'true';
+                        addressUser.status = "true";
+                        addressUser.isDefault = "true";
                         addressUser.fullname = data.nameUser;
                         addressUser.sdt = data.sdtUser;
                         addressUser.country = data.country;
@@ -1183,28 +1154,28 @@ const addNewAddressUser = (data, payload) => {
 
                         resolve({
                             errCode: 0,
-                            errMessage: 'Thêm địa chỉ thành công.',
+                            errMessage: "Thêm địa chỉ thành công.",
                         });
                     }
                 } else {
                     let updateAddress = await db.addressUser.findOne({
                         where: {
                             idUser,
-                            isDefault: 'true',
+                            isDefault: "true",
                         },
                         raw: false,
                     });
                     if (updateAddress) {
-                        updateAddress.isDefault = 'false';
+                        updateAddress.isDefault = "false";
                         await updateAddress.save();
                     }
 
-                    addressUser.isDefault = 'true';
+                    addressUser.isDefault = "true";
                     await addressUser.save();
 
                     resolve({
                         errCode: 0,
-                        errMessage: 'Thêm địa chỉ thành công.',
+                        errMessage: "Thêm địa chỉ thành công.",
                     });
                 }
             }
@@ -1220,7 +1191,7 @@ const getAddressUser = (data, payload) => {
             if (!data.accessToken) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                 });
             } else {
                 let idUser = payload.id;
@@ -1228,9 +1199,9 @@ const getAddressUser = (data, payload) => {
                 let addressUser = await db.addressUser.findAll({
                     where: {
                         idUser,
-                        status: 'true',
+                        status: "true",
                     },
-                    order: [['id', 'ASC']],
+                    order: [["id", "ASC"]],
                 });
 
                 if (addressUser) {
@@ -1241,7 +1212,7 @@ const getAddressUser = (data, payload) => {
                 } else {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Not found!',
+                        errMessage: "Not found!",
                     });
                 }
             }
@@ -1257,7 +1228,7 @@ const setDefaultAddress = (data, payload) => {
             if (!data.accessToken || !data.id) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -1266,12 +1237,12 @@ const setDefaultAddress = (data, payload) => {
                 let address = await db.addressUser.findOne({
                     where: {
                         idUser,
-                        isDefault: 'true',
+                        isDefault: "true",
                     },
                     raw: false,
                 });
                 if (address) {
-                    address.isDefault = 'false';
+                    address.isDefault = "false";
                     await address.save();
                 }
 
@@ -1283,17 +1254,17 @@ const setDefaultAddress = (data, payload) => {
                 });
 
                 if (addressUser) {
-                    addressUser.isDefault = 'true';
+                    addressUser.isDefault = "true";
                     addressUser.save();
 
                     resolve({
                         errCode: 0,
-                        errMessage: 'success',
+                        errMessage: "success",
                     });
                 } else {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Không tìm thấy địa chỉ này!',
+                        errMessage: "Không tìm thấy địa chỉ này!",
                         decode,
                     });
                 }
@@ -1310,7 +1281,7 @@ const deleteAddressUser = (data, payload) => {
             if (!data.accessToken || !data.id) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -1324,29 +1295,29 @@ const deleteAddressUser = (data, payload) => {
                     raw: false,
                 });
                 if (address) {
-                    address.isDefault = 'false';
-                    address.status = 'false';
+                    address.isDefault = "false";
+                    address.status = "false";
                     await address.save();
 
                     let addressDefault = await db.addressUser.findOne({
                         where: {
                             idUser,
-                            isDefault: 'true',
-                            status: 'true',
+                            isDefault: "true",
+                            status: "true",
                         },
                     });
                     if (!addressDefault) {
                         let addressDefault2 = await db.addressUser.findOne({
                             where: {
                                 idUser,
-                                isDefault: 'false',
-                                status: 'true',
+                                isDefault: "false",
+                                status: "true",
                             },
                             raw: false,
                         });
 
                         if (addressDefault2) {
-                            addressDefault2.isDefault = 'true';
+                            addressDefault2.isDefault = "true";
                             await addressDefault2.save();
                         }
                     }
@@ -1357,7 +1328,7 @@ const deleteAddressUser = (data, payload) => {
                 } else {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Không tìm thấy địa chỉ này!',
+                        errMessage: "Không tìm thấy địa chỉ này!",
                     });
                 }
             }
@@ -1373,8 +1344,8 @@ const editAddressUser = (data, payload) => {
             if (
                 !data.accessToken ||
                 !data.id ||
-                data.country === '-1' ||
-                data.district === '-1' ||
+                data.country === "-1" ||
+                data.district === "-1" ||
                 !data.nameUser ||
                 !data.nameAddress ||
                 !data.sdtUser ||
@@ -1382,7 +1353,7 @@ const editAddressUser = (data, payload) => {
             ) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -1395,7 +1366,7 @@ const editAddressUser = (data, payload) => {
                         id: {
                             [Op.ne]: data.id,
                         },
-                        status: 'true',
+                        status: "true",
                     },
                 });
 
@@ -1424,13 +1395,13 @@ const editAddressUser = (data, payload) => {
                     } else {
                         resolve({
                             errCode: 3,
-                            errMessage: 'Không tìm thấy địa chỉ này',
+                            errMessage: "Không tìm thấy địa chỉ này",
                         });
                     }
                 } else {
                     resolve({
                         errCode: 4,
-                        errMessage: 'Tên địa chỉ này đã tồn tại!',
+                        errMessage: "Tên địa chỉ này đã tồn tại!",
                     });
                 }
             }
@@ -1446,7 +1417,7 @@ const getListCartUser = (data, payload) => {
             if (!data.accessToken) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -1465,30 +1436,22 @@ const getListCartUser = (data, payload) => {
                             include: [
                                 {
                                     model: db.imageProduct,
-                                    as: 'imageProduct-product',
+                                    as: "imageProduct-product",
                                     attributes: {
-                                        exclude: [
-                                            'createdAt',
-                                            'updatedAt',
-                                            'id',
-                                        ],
+                                        exclude: ["createdAt", "updatedAt", "id"],
                                     },
                                 },
                                 {
                                     model: db.promotionProduct,
                                     attributes: {
-                                        exclude: [
-                                            'createdAt',
-                                            'updatedAt',
-                                            'id',
-                                        ],
+                                        exclude: ["createdAt", "updatedAt", "id"],
                                     },
                                 },
                                 {
                                     model: db.classifyProduct,
-                                    as: 'classifyProduct-product',
+                                    as: "classifyProduct-product",
                                     attributes: {
-                                        exclude: ['createdAt', 'updatedAt'],
+                                        exclude: ["createdAt", "updatedAt"],
                                     },
                                 },
                             ],
@@ -1496,7 +1459,7 @@ const getListCartUser = (data, payload) => {
                             nest: true,
                         },
                     ],
-                    order: [['stt', 'DESC']],
+                    order: [["stt", "DESC"]],
                     raw: false,
                     nest: true,
                 });
@@ -1518,7 +1481,7 @@ const editAmountCartUser = (data, payload) => {
             if (!data.accessToken || !data.id || !data.typeEdit) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -1540,7 +1503,7 @@ const editAmountCartUser = (data, payload) => {
                         },
                     });
 
-                    if (data.typeEdit === 'prev') {
+                    if (data.typeEdit === "prev") {
                         if (cartTemp.amount !== 1) {
                             cart.amount = cart.amount - 1;
                             await cart.save();
@@ -1548,7 +1511,7 @@ const editAmountCartUser = (data, payload) => {
                         resolve({
                             errCode: 0,
                         });
-                    } else if (data.typeEdit === 'next') {
+                    } else if (data.typeEdit === "next") {
                         let classifyProduct = await db.classifyProduct.findOne({
                             where: {
                                 id: cartTemp.idClassifyProduct,
@@ -1567,11 +1530,11 @@ const editAmountCartUser = (data, payload) => {
                             resolve({
                                 errCode: 4,
                                 errMessage:
-                                    'Xin lỗi, số lượng sản phẩm trong kho không còn đủ!',
+                                    "Xin lỗi, số lượng sản phẩm trong kho không còn đủ!",
                             });
                             return;
                         }
-                    } else if (data.typeEdit === 'value') {
+                    } else if (data.typeEdit === "value") {
                         let classifyProduct = await db.classifyProduct.findOne({
                             where: {
                                 id: cartTemp.idClassifyProduct,
@@ -1608,7 +1571,7 @@ const editAmountCartUser = (data, payload) => {
                 } else {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Không tìm thấy sản phẩm trong giỏ hàng!',
+                        errMessage: "Không tìm thấy sản phẩm trong giỏ hàng!",
                     });
                 }
             }
@@ -1624,7 +1587,7 @@ const chooseProductInCart = (data, payload) => {
             if (!data.accessToken || !data.id) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -1640,11 +1603,10 @@ const chooseProductInCart = (data, payload) => {
                 if (!cart) {
                     resolve({
                         errCode: 3,
-                        errMessage:
-                            'Không tìm thấy sản phẩm này trong giỏ hàng!',
+                        errMessage: "Không tìm thấy sản phẩm này trong giỏ hàng!",
                     });
                 } else {
-                    cart.isChoose = cart.isChoose === 'true' ? 'false' : 'true';
+                    cart.isChoose = cart.isChoose === "true" ? "false" : "true";
                     await cart.save();
 
                     resolve({
@@ -1664,7 +1626,7 @@ const deleteProductInCart = (data, payload) => {
             if (!data.accessToken || !data.id) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -1680,8 +1642,7 @@ const deleteProductInCart = (data, payload) => {
                 if (!cart) {
                     resolve({
                         errCode: 3,
-                        errMessage:
-                            'Không tìm thấy sản phẩm này trong giỏ hàng!',
+                        errMessage: "Không tìm thấy sản phẩm này trong giỏ hàng!",
                     });
                 } else {
                     await cart.destroy();
@@ -1703,7 +1664,7 @@ const updateClassifyProductInCart = (data, payload) => {
             if (!data.accessToken || !data.idCart || !data.idClassify) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -1736,7 +1697,7 @@ const updateClassifyProductInCart = (data, payload) => {
                 } else {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Không tìm thấy loại sản phẩm!',
+                        errMessage: "Không tìm thấy loại sản phẩm!",
                     });
                 }
             }
@@ -1752,7 +1713,7 @@ const createNewBill = (data, payload) => {
             if (!data.accessToken || !data.Totals) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -1761,14 +1722,14 @@ const createNewBill = (data, payload) => {
                 let addressUser = await db.addressUser.findOne({
                     where: {
                         idUser,
-                        isDefault: 'true',
+                        isDefault: "true",
                     },
                 });
 
                 let cart = await db.cart.findAll({
                     where: {
                         idUser,
-                        isChoose: 'true',
+                        isChoose: "true",
                     },
                     raw: true,
                 });
@@ -1776,7 +1737,7 @@ const createNewBill = (data, payload) => {
                 if (!addressUser) {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Vui lòng chọn địa chỉ nhận hàng!',
+                        errMessage: "Vui lòng chọn địa chỉ nhận hàng!",
                     });
                     return;
                 }
@@ -1784,7 +1745,7 @@ const createNewBill = (data, payload) => {
                 if (cart.length === 0) {
                     resolve({
                         errCode: 4,
-                        errMessage: 'Vui lòng chọn sản phẩm bạn muốn mua!',
+                        errMessage: "Vui lòng chọn sản phẩm bạn muốn mua!",
                     });
                     return;
                 }
@@ -1797,7 +1758,7 @@ const createNewBill = (data, payload) => {
                         id: {
                             [Op.in]: listIdProduct,
                         },
-                        isSell: 'false',
+                        isSell: "false",
                     },
                 });
 
@@ -1846,15 +1807,15 @@ const createNewBill = (data, payload) => {
                     timeBill: date.toString(),
                     idStatusBill: 1,
                     idAddressUser: addressUser.id,
-                    note: data.note || '',
+                    note: data.note || "",
                     totals: +data.Totals,
-                    payment: 'hand',
+                    payment: "hand",
                 });
 
                 await db.statusBills.create({
                     id: uuidv4(),
                     idBill: bill.id,
-                    nameStatus: 'Đặt hàng',
+                    nameStatus: "Đặt hàng",
                     idStatusBill: bill.idStatusBill,
                     timeStatus: date,
                 });
@@ -1865,7 +1826,7 @@ const createNewBill = (data, payload) => {
                         idBill: bill.id,
                         idProduct: item.idProduct,
                         amount: item.amount,
-                        isReviews: 'false',
+                        isReviews: "false",
                         idClassifyProduct: item.idClassifyProduct,
                     };
                 });
@@ -1890,7 +1851,7 @@ const createNewBill = (data, payload) => {
                 await db.cart.destroy({
                     where: {
                         idUser,
-                        isChoose: 'true',
+                        isChoose: "true",
                     },
                 });
 
@@ -1902,7 +1863,7 @@ const createNewBill = (data, payload) => {
                     where: {
                         month,
                         year,
-                        type: 'ban',
+                        type: "ban",
                     },
                     raw: false,
                 });
@@ -1915,12 +1876,12 @@ const createNewBill = (data, payload) => {
                         id: uuidv4(),
                         year,
                         month,
-                        type: 'ban',
+                        type: "ban",
                         money: +data.Totals,
                     });
                 }
 
-                handleEmit('refreshAmountProduct', {});
+                handleEmit("refreshAmountProduct", {});
 
                 resolve({
                     errCode: 0,
@@ -1939,7 +1900,7 @@ const chooseAllProductInCart = (data, payload) => {
             if (!data.accessToken) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -1947,7 +1908,7 @@ const chooseAllProductInCart = (data, payload) => {
 
                 await db.cart.update(
                     {
-                        isChoose: data.type ? 'true' : 'false',
+                        isChoose: data.type ? "true" : "false",
                     },
                     {
                         where: {
@@ -1972,7 +1933,7 @@ const getListBillByType = (data, payload) => {
             if (!data.accessToken || !data.type) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -1980,13 +1941,13 @@ const getListBillByType = (data, payload) => {
                 let countType1 = await db.bill.count({
                     where: {
                         idUser,
-                        idStatusBill: '1',
+                        idStatusBill: "1",
                     },
                 });
                 let countType2 = await db.bill.count({
                     where: {
                         idUser,
-                        idStatusBill: '2',
+                        idStatusBill: "2",
                     },
                 });
 
@@ -2007,7 +1968,7 @@ const getListBillByType = (data, payload) => {
                                         include: [
                                             {
                                                 model: db.imageProduct,
-                                                as: 'imageProduct-product',
+                                                as: "imageProduct-product",
                                             },
                                             { model: db.promotionProduct },
                                         ],
@@ -2018,7 +1979,7 @@ const getListBillByType = (data, payload) => {
                                 ],
                             },
                         ],
-                        order: [['updatedAt', 'DESC']],
+                        order: [["updatedAt", "DESC"]],
                         raw: false,
                         nest: true,
                     });
@@ -2063,7 +2024,7 @@ const getListBillByType = (data, payload) => {
                                         include: [
                                             {
                                                 model: db.imageProduct,
-                                                as: 'imageProduct-product',
+                                                as: "imageProduct-product",
                                             },
                                             { model: db.promotionProduct },
                                         ],
@@ -2074,7 +2035,7 @@ const getListBillByType = (data, payload) => {
                                 ],
                             },
                         ],
-                        order: [['updatedAt', 'DESC']],
+                        order: [["updatedAt", "DESC"]],
                         raw: false,
                         nest: true,
                     });
@@ -2107,7 +2068,7 @@ const getListBillByType = (data, payload) => {
                                         include: [
                                             {
                                                 model: db.imageProduct,
-                                                as: 'imageProduct-product',
+                                                as: "imageProduct-product",
                                             },
                                             { model: db.promotionProduct },
                                         ],
@@ -2118,7 +2079,7 @@ const getListBillByType = (data, payload) => {
                                 ],
                             },
                         ],
-                        order: [['updatedAt', 'DESC']],
+                        order: [["updatedAt", "DESC"]],
                         raw: false,
                         nest: true,
                     });
@@ -2149,7 +2110,7 @@ const userCancelBill = (data, payload) => {
             if (!data.accessToken || !data.id || !data.note) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -2174,7 +2135,7 @@ const userCancelBill = (data, payload) => {
                 if (!bill) {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Không tìm thấy hóa đơn!',
+                        errMessage: "Không tìm thấy hóa đơn!",
                         decode,
                     });
                 } else {
@@ -2186,7 +2147,7 @@ const userCancelBill = (data, payload) => {
                     await db.statusBills.create({
                         id: uuidv4(),
                         idBill: bill.id,
-                        nameStatus: 'Đã hủy',
+                        nameStatus: "Đã hủy",
                         idStatusBill: 4,
                         timeStatus: new Date().getTime(),
                     });
@@ -2228,7 +2189,7 @@ const userRepurchaseBill = (data, payload) => {
             if (!data.accessToken || !data.id) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -2253,7 +2214,7 @@ const userRepurchaseBill = (data, payload) => {
                 if (!bill) {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Không tìm thấy hóa đơn!',
+                        errMessage: "Không tìm thấy hóa đơn!",
                         decode,
                     });
                 } else {
@@ -2270,7 +2231,7 @@ const userRepurchaseBill = (data, payload) => {
                             idProduct: item.idProduct,
                             amount: item.amount,
                             idClassifyProduct: item.idClassifyProduct,
-                            isChoose: 'false',
+                            isChoose: "false",
                         };
                     });
 
@@ -2293,7 +2254,7 @@ const getCodeVeridyForgetPass = (data) => {
             if (!data.email) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                 });
             } else {
                 let user = await db.User.findOne({
@@ -2305,24 +2266,23 @@ const getCodeVeridyForgetPass = (data) => {
                 if (!user) {
                     resolve({
                         errCode: 2,
-                        errMessage:
-                            'Email không chính xác hoặc chưa được đăng kí!',
+                        errMessage: "Email không chính xác hoặc chưa được đăng kí!",
                     });
                 } else {
                     let timeCurrent = new Date().getTime();
-                    if (user.statusUser === 'false') {
+                    if (user.statusUser === "false") {
                         resolve({
                             errCode: 3,
-                            errMessage: 'Tài khoản đã bị khóa vĩnh viễn!',
+                            errMessage: "Tài khoản đã bị khóa vĩnh viễn!",
                         });
                         return;
                     } else if (
-                        user.statusUser !== 'true' &&
+                        user.statusUser !== "true" &&
                         +user.statusUser > timeCurrent
                     ) {
                         resolve({
                             errCode: 3,
-                            errMessage: 'Tài khoản đang bị tạm khóa!',
+                            errMessage: "Tài khoản đang bị tạm khóa!",
                         });
                         return;
                     }
@@ -2334,7 +2294,7 @@ const getCodeVeridyForgetPass = (data) => {
 
                     commont.sendEmail(
                         data.email,
-                        'Mã xác nhận TechStoreTvT',
+                        "Mã xác nhận TechStoreTvT",
                         `<h3>Mã xác nhận của bạn là: ${rd}</h3>
                         <div>Lưu ý: không gửi mã này cho bất kì ai.</div>
                         `
@@ -2358,7 +2318,7 @@ const changePassForget = (data) => {
             if (!data.email || !data.keyVerify || !data.pass) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                 });
             } else {
                 let user = await db.User.findOne({
@@ -2371,7 +2331,7 @@ const changePassForget = (data) => {
                 if (!user) {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Có lỗi xảy ra vui lòng thử lại sau!',
+                        errMessage: "Có lỗi xảy ra vui lòng thử lại sau!",
                     });
                 } else {
                     let hasePass = commont.hashPassword(data.pass);
@@ -2396,7 +2356,7 @@ const checkKeyVerify = (data) => {
             if (!data.email || !data.keyVerify) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -2410,7 +2370,7 @@ const checkKeyVerify = (data) => {
                 if (!user) {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Mã xác nhận không chính xác!',
+                        errMessage: "Mã xác nhận không chính xác!",
                     });
                 } else {
                     resolve({
@@ -2430,7 +2390,7 @@ const hasReceivedProduct = (data, payload) => {
             if (!data.accessToken || !data.id) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -2446,7 +2406,7 @@ const hasReceivedProduct = (data, payload) => {
                 if (!bill) {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Lỗi không tìm thấy đơn hàng!',
+                        errMessage: "Lỗi không tìm thấy đơn hàng!",
                     });
                 } else {
                     bill.idStatusBill = 3;
@@ -2456,7 +2416,7 @@ const hasReceivedProduct = (data, payload) => {
                     await db.statusBills.create({
                         id: uuidv4(),
                         idBill: bill.id,
-                        nameStatus: 'Hoàn thành',
+                        nameStatus: "Hoàn thành",
                         idStatusBill: 3,
                         timeStatus: new Date().getTime(),
                     });
@@ -2495,7 +2455,7 @@ const buyProductByCard = (data, payload) => {
             if (!data.accessToken) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -2504,14 +2464,14 @@ const buyProductByCard = (data, payload) => {
                 let addressUser = await db.addressUser.findOne({
                     where: {
                         idUser,
-                        isDefault: 'true',
+                        isDefault: "true",
                     },
                 });
 
                 let cart = await db.cart.findAll({
                     where: {
                         idUser,
-                        isChoose: 'true',
+                        isChoose: "true",
                     },
                     raw: true,
                 });
@@ -2519,7 +2479,7 @@ const buyProductByCard = (data, payload) => {
                 if (!addressUser) {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Vui lòng chọn địa chỉ nhận hàng!',
+                        errMessage: "Vui lòng chọn địa chỉ nhận hàng!",
                     });
                     return;
                 }
@@ -2527,7 +2487,7 @@ const buyProductByCard = (data, payload) => {
                 if (cart.length === 0) {
                     resolve({
                         errCode: 4,
-                        errMessage: 'Vui lòng chọn sản phẩm bạn muốn mua!',
+                        errMessage: "Vui lòng chọn sản phẩm bạn muốn mua!",
                     });
                     return;
                 }
@@ -2540,7 +2500,7 @@ const buyProductByCard = (data, payload) => {
                         id: {
                             [Op.in]: listIdProduct,
                         },
-                        isSell: 'false',
+                        isSell: "false",
                     },
                 });
 
@@ -2585,7 +2545,7 @@ const buyProductByCard = (data, payload) => {
                 let cart2 = await db.cart.findAll({
                     where: {
                         idUser,
-                        isChoose: 'true',
+                        isChoose: "true",
                     },
                     include: [
                         {
@@ -2603,38 +2563,31 @@ const buyProductByCard = (data, payload) => {
 
                 let arrayProduct = cart.map((item, index) => {
                     let price;
-                    if (
-                        cart2[index].classifyProduct.nameClassifyProduct ===
-                        'default'
-                    )
+                    if (cart2[index].classifyProduct.nameClassifyProduct === "default")
                         price = +cart2[index].product.priceProduct;
                     else price = cart2[index].classifyProduct.priceClassify;
 
                     totals = totals + Math.floor(price / 23000) * +item.amount;
-                    price = Math.floor(price / 23000) + '.00';
+                    price = Math.floor(price / 23000) + ".00";
 
                     return {
                         name: cart2[index].product.nameProduct,
                         sku: cart2[index].classifyProduct.nameClassifyProduct,
                         price: price,
-                        currency: 'USD',
+                        currency: "USD",
                         quantity: +item.amount,
                     };
                 });
 
                 const create_payment_json = {
-                    intent: 'sale',
+                    intent: "sale",
                     payer: {
-                        payment_method: 'paypal',
+                        payment_method: "paypal",
                     },
                     redirect_urls: {
-                        return_url: `${
-                            process.env.LINK_BACKEND
-                        }/api/v1/buy-product-by-card/success?price=${
-                            totals + '.00'
-                        }&accessToken=${data.accessToken}&totalsReq=${
-                            data.totalsReq
-                        }`,
+                        return_url: `${process.env.LINK_BACKEND
+                            }/api/v1/buy-product-by-card/success?price=${totals + ".00"
+                            }&accessToken=${data.accessToken}&totalsReq=${data.totalsReq}`,
                         cancel_url: `${process.env.LINK_FONTEND}/cart`,
                     },
                     transactions: [
@@ -2643,33 +2596,30 @@ const buyProductByCard = (data, payload) => {
                                 items: arrayProduct,
                             },
                             amount: {
-                                currency: 'USD',
-                                total: totals + '.00',
+                                currency: "USD",
+                                total: totals + ".00",
                             },
-                            description: 'Shop TechStoreTvT siêu tiện siêu rẽ.',
+                            description: "Shop TechStoreTvT siêu tiện siêu rẽ.",
                         },
                     ],
                 };
 
-                paypal.payment.create(
-                    create_payment_json,
-                    function (error, payment) {
-                        if (error) {
-                            throw error;
-                        } else {
-                            for (let i = 0; i < payment.links.length; i++) {
-                                if (payment.links[i].rel === 'approval_url') {
-                                    // res.redirect(payment.links[i].href);
-                                    resolve({
-                                        errCode: 0,
-                                        errMessage: 'ok',
-                                        link: payment.links[i].href,
-                                    });
-                                }
+                paypal.payment.create(create_payment_json, function (error, payment) {
+                    if (error) {
+                        throw error;
+                    } else {
+                        for (let i = 0; i < payment.links.length; i++) {
+                            if (payment.links[i].rel === "approval_url") {
+                                // res.redirect(payment.links[i].href);
+                                resolve({
+                                    errCode: 0,
+                                    errMessage: "ok",
+                                    link: payment.links[i].href,
+                                });
                             }
                         }
                     }
-                );
+                });
             }
         } catch (e) {
             reject(e);
@@ -2683,7 +2633,7 @@ const buyProductByCardSucess = (data) => {
             if (!data.accessToken) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -2694,8 +2644,7 @@ const buyProductByCardSucess = (data) => {
                 if (decode === null) {
                     resolve({
                         errCode: 2,
-                        errMessage:
-                            'Kết nối quá hạn, vui lòng tải lại trang và thử lại!',
+                        errMessage: "Kết nối quá hạn, vui lòng tải lại trang và thử lại!",
                         decode,
                     });
                 } else {
@@ -2710,7 +2659,7 @@ const buyProductByCardSucess = (data) => {
                         transactions: [
                             {
                                 amount: {
-                                    currency: 'USD',
+                                    currency: "USD",
                                     total: price,
                                 },
                             },
@@ -2729,14 +2678,14 @@ const buyProductByCardSucess = (data) => {
                                 let addressUser = await db.addressUser.findOne({
                                     where: {
                                         idUser,
-                                        isDefault: 'true',
+                                        isDefault: "true",
                                     },
                                 });
 
                                 let cart = await db.cart.findAll({
                                     where: {
                                         idUser,
-                                        isChoose: 'true',
+                                        isChoose: "true",
                                     },
                                     raw: true,
                                 });
@@ -2749,14 +2698,14 @@ const buyProductByCardSucess = (data) => {
                                     timeBill: date.toString(),
                                     idStatusBill: 1,
                                     idAddressUser: addressUser.id,
-                                    note: data.note || '',
+                                    note: data.note || "",
                                     totals: +data.totalsReq,
-                                    payment: 'card',
+                                    payment: "card",
                                 });
                                 await db.statusBills.create({
                                     id: uuidv4(),
                                     idBill: bill.id,
-                                    nameStatus: 'Đặt hàng',
+                                    nameStatus: "Đặt hàng",
                                     idStatusBill: bill.idStatusBill,
                                     timeStatus: date,
                                 });
@@ -2776,21 +2725,19 @@ const buyProductByCardSucess = (data) => {
                                         idBill: bill.id,
                                         idProduct: item.idProduct,
                                         amount: item.amount,
-                                        isReviews: 'false',
-                                        idClassifyProduct:
-                                            item.idClassifyProduct,
+                                        isReviews: "false",
+                                        idClassifyProduct: item.idClassifyProduct,
                                     };
                                 });
 
-                                await db.detailBill.bulkCreate(
-                                    arrayDetailBill,
-                                    { individualHooks: true }
-                                );
+                                await db.detailBill.bulkCreate(arrayDetailBill, {
+                                    individualHooks: true,
+                                });
 
                                 await db.cart.destroy({
                                     where: {
                                         idUser,
-                                        isChoose: 'true',
+                                        isChoose: "true",
                                     },
                                 });
 
@@ -2802,26 +2749,25 @@ const buyProductByCardSucess = (data) => {
                                     where: {
                                         month,
                                         year,
-                                        type: 'ban',
+                                        type: "ban",
                                     },
                                     raw: false,
                                 });
 
                                 if (moneyBill) {
-                                    moneyBill.money =
-                                        moneyBill.money + +data.totalsReq;
+                                    moneyBill.money = moneyBill.money + +data.totalsReq;
                                     await moneyBill.save();
                                 } else {
                                     await db.moneyBills.create({
                                         id: uuidv4(),
                                         year,
                                         month,
-                                        type: 'ban',
+                                        type: "ban",
                                         money: +data.totalsReq,
                                     });
                                 }
 
-                                handleEmit('refreshAmountProduct', {});
+                                handleEmit("refreshAmountProduct", {});
 
                                 resolve({
                                     errCode: 0,
@@ -2843,7 +2789,7 @@ const createNewEvaluateProduct = (data, payload) => {
             if (!data.accessToken || !data.idDetailBill || !data.star) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -2858,7 +2804,7 @@ const createNewEvaluateProduct = (data, payload) => {
                             model: db.bill,
                             where: {
                                 idUser,
-                                idStatusBill: '3',
+                                idStatusBill: "3",
                             },
                         },
                     ],
@@ -2866,11 +2812,11 @@ const createNewEvaluateProduct = (data, payload) => {
                     nest: true,
                 });
 
-                if (!detailBill || detailBill.isReviews === 'true') {
+                if (!detailBill || detailBill.isReviews === "true") {
                     resolve({
                         errCode: 3,
                         errMessage:
-                            'Không tìm thấy hoặc bạn không được phép thực hiện tính năng này!',
+                            "Không tìm thấy hoặc bạn không được phép thực hiện tính năng này!",
                     });
                 } else {
                     let evaluateProduct = await db.evaluateProduct.create({
@@ -2878,12 +2824,12 @@ const createNewEvaluateProduct = (data, payload) => {
                         idUser,
                         idProduct: detailBill.idProduct,
                         starNumber: data.star,
-                        content: data.content || '',
-                        displayname: '' + data.displayName || 'true',
+                        content: data.content || "",
+                        displayname: "" + data.displayName || "true",
                         idDetailBill: data.idDetailBill,
                     });
 
-                    detailBill.isReviews = 'true';
+                    detailBill.isReviews = "true";
                     await detailBill.save();
 
                     resolve({
@@ -2960,10 +2906,10 @@ const createNewEvaluateProductFailed = (data) => {
             if (!detailbill) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'not found detail bill',
+                    errMessage: "not found detail bill",
                 });
             } else {
-                detailbill.isReviews = 'false';
+                detailbill.isReviews = "false";
                 await detailbill.save();
 
                 await db.evaluateProduct.destroy({
@@ -3005,7 +2951,7 @@ const updataEvaluateProduct = (data, payload) => {
             ) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -3022,7 +2968,7 @@ const updataEvaluateProduct = (data, payload) => {
                     resolve({
                         errCode: 3,
                         errMessage:
-                            'Không tìm thấy hoặc bạn không được phép thực hiện tính năng này!',
+                            "Không tìm thấy hoặc bạn không được phép thực hiện tính năng này!",
                     });
                 } else {
                     evaluateProduct.starNumber = data.star;
@@ -3030,15 +2976,14 @@ const updataEvaluateProduct = (data, payload) => {
                     evaluateProduct.displayname = data.displayname;
                     await evaluateProduct.save();
 
-                    let imageEvaluateProduct =
-                        await db.imageEvaluateProduct.findAll({
-                            where: {
-                                idEvaluateProduct: evaluateProduct.id,
-                                imagebase64: {
-                                    [Op.notIn]: data.listImage,
-                                },
+                    let imageEvaluateProduct = await db.imageEvaluateProduct.findAll({
+                        where: {
+                            idEvaluateProduct: evaluateProduct.id,
+                            imagebase64: {
+                                [Op.notIn]: data.listImage,
                             },
-                        });
+                        },
+                    });
                     imageEvaluateProduct.forEach(async (item) => {
                         await cloudinary.v2.uploader.destroy(
                             `evaluate/${item.idCloudinary}`
@@ -3072,7 +3017,7 @@ const deleteVideoEvaluate = (data) => {
             if (!data.idDetailBill) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -3157,7 +3102,7 @@ const updateProfileUser = (data, payload) => {
             if (!data.accessToken || !data.firstName) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -3172,16 +3117,13 @@ const updateProfileUser = (data, payload) => {
                 if (!user) {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Không tìm thấy tài khoản!',
+                        errMessage: "Không tìm thấy tài khoản!",
                     });
                 } else {
-                    if (
-                        data.firstName.length > 30 ||
-                        data.lastName.length > 30
-                    ) {
+                    if (data.firstName.length > 30 || data.lastName.length > 30) {
                         resolve({
                             errCode: 4,
-                            errMessage: 'Độ dài của tên vượt quá mức cho phép!',
+                            errMessage: "Độ dài của tên vượt quá mức cho phép!",
                         });
                         return;
                     }
@@ -3210,7 +3152,7 @@ const updateAvatarUser = ({ file, query, payload }) => {
             if (!query.accessToken) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                 });
             } else {
                 let idUser = payload.id;
@@ -3224,17 +3166,12 @@ const updateAvatarUser = ({ file, query, payload }) => {
                 if (!user) {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Không tìm thấy tài khoản!',
+                        errMessage: "Không tìm thấy tài khoản!",
                     });
                 } else {
                     if (user.avatarUpdate) {
-                        let idCloudinary = user.avatarUpdate
-                            .split('/')
-                            .pop()
-                            .split('.')[0];
-                        cloudinary.v2.uploader.destroy(
-                            `avatar_user/${idCloudinary}`
-                        );
+                        let idCloudinary = user.avatarUpdate.split("/").pop().split(".")[0];
+                        cloudinary.v2.uploader.destroy(`avatar_user/${idCloudinary}`);
                     }
 
                     user.avatarUpdate = file.path;
@@ -3257,7 +3194,7 @@ const getConfirmCodeChangePass = (data) => {
             if (!data.email || !data.passOld) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -3270,24 +3207,23 @@ const getConfirmCodeChangePass = (data) => {
                 if (!user) {
                     resolve({
                         errCode: 2,
-                        errMessage:
-                            'Email không chính xác hoặc chưa được đăng kí!',
+                        errMessage: "Email không chính xác hoặc chưa được đăng kí!",
                     });
                 } else {
                     let timeCurrent = new Date().getTime();
-                    if (user.statusUser === 'false') {
+                    if (user.statusUser === "false") {
                         resolve({
                             errCode: 3,
-                            errMessage: 'Tài khoản đã bị khóa vĩnh viễn!',
+                            errMessage: "Tài khoản đã bị khóa vĩnh viễn!",
                         });
                         return;
                     } else if (
-                        user.statusUser !== 'true' &&
+                        user.statusUser !== "true" &&
                         +user.statusUser > timeCurrent
                     ) {
                         resolve({
                             errCode: 3,
-                            errMessage: 'Tài khoản đang bị tạm khóa!',
+                            errMessage: "Tài khoản đang bị tạm khóa!",
                         });
                         return;
                     }
@@ -3295,7 +3231,7 @@ const getConfirmCodeChangePass = (data) => {
                     if (!commont.comparePassword(data.passOld, user.pass)) {
                         resolve({
                             errCode: 3,
-                            errMessage: 'Mật khẩu cũ không đúng!',
+                            errMessage: "Mật khẩu cũ không đúng!",
                         });
                         return;
                     }
@@ -3307,7 +3243,7 @@ const getConfirmCodeChangePass = (data) => {
 
                     commont.sendEmail(
                         data.email,
-                        'Mã xác nhận TechStoreTvT',
+                        "Mã xác nhận TechStoreTvT",
                         `<h3>Mã xác nhận của bạn là: ${rd}</h3>
                         <div>Lưu ý: không gửi mã này cho bất kì ai.</div>
                         `
@@ -3331,7 +3267,7 @@ const confirmCodeChangePass = (data) => {
             if (!data.email || !data.keyVerify || !data.pass) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -3346,14 +3282,14 @@ const confirmCodeChangePass = (data) => {
                 if (!user) {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Có lỗi xảy ra vui lòng thử lại sau!',
+                        errMessage: "Có lỗi xảy ra vui lòng thử lại sau!",
                     });
                 } else {
-                    if (user.typeAccount !== 'web') {
+                    if (user.typeAccount !== "web") {
                         resolve({
                             errCode: 3,
                             errMessage:
-                                'Tài khoản phải là tài khoản được tạo trên website mới được phép thực hiện chức năng này!',
+                                "Tài khoản phải là tài khoản được tạo trên website mới được phép thực hiện chức năng này!",
                         });
                         return;
                     }
@@ -3389,7 +3325,7 @@ const createNewBlog = (data, payload) => {
             ) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -3406,19 +3342,19 @@ const createNewBlog = (data, payload) => {
                     idUser,
                     timeBlog: date.toString(),
                     viewBlog: 0,
-                    typeBlog: 'default',
+                    typeBlog: "default",
                     timePost: data.timePost || 0,
                     backgroundColor: data.bgColor,
                     editVideo: data.editVideo,
                     editImage: data.editImage,
                 });
 
-                if (data.typeVideo === 'iframe' && data.urlVideo) {
+                if (data.typeVideo === "iframe" && data.urlVideo) {
                     await db.videoBlogs.create({
                         id: uuidv4(),
                         idBlog: idBlog,
                         video: data.urlVideo,
-                        idDrive: '',
+                        idDrive: "",
                     });
                 }
 
@@ -3439,7 +3375,7 @@ const createNewImageBlog = ({ files, query }) => {
             if (!files || files.length === 0 || !query.idBlog) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data: {
                         files,
                         query,
@@ -3465,7 +3401,7 @@ const createNewImageBlog = ({ files, query }) => {
                     raw: false,
                 });
                 if (blog) {
-                    blog.editImage = 'false';
+                    blog.editImage = "false";
                     await blog.save();
                 }
 
@@ -3486,7 +3422,7 @@ const createNewImageBlog = ({ files, query }) => {
 
                 resolve({
                     errCode: 0,
-                    errMessage: 'ok',
+                    errMessage: "ok",
                 });
             }
         } catch (e) {
@@ -3501,7 +3437,7 @@ const uploadVideoNewBlog = (idBlog, fileName) => {
             if (!idBlog || !fileName) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data: {
                         idBlog,
                         fileName,
@@ -3541,7 +3477,7 @@ const uploadVideoNewBlog = (idBlog, fileName) => {
                     raw: false,
                 });
                 if (blog) {
-                    blog.editVideo = 'false';
+                    blog.editVideo = "false";
                     await blog.save();
                 }
 
@@ -3575,7 +3511,7 @@ const getBlogEditById = (data, payload) => {
             if (!data.accessToken || !data.idBlog) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -3584,7 +3520,7 @@ const getBlogEditById = (data, payload) => {
                     where: {
                         idUser,
                         id: data.idBlog,
-                        typeBlog: 'default',
+                        typeBlog: "default",
                     },
                     include: [
                         {
@@ -3600,7 +3536,7 @@ const getBlogEditById = (data, payload) => {
                 if (!blog) {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Không tìm thấy bài viết nào!',
+                        errMessage: "Không tìm thấy bài viết nào!",
                     });
                 } else {
                     resolve({
@@ -3632,7 +3568,7 @@ const updateBlog = (data, payload) => {
             ) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -3641,7 +3577,7 @@ const updateBlog = (data, payload) => {
                     where: {
                         idUser,
                         id: data.idBlog,
-                        typeBlog: 'default',
+                        typeBlog: "default",
                     },
                     raw: false,
                 });
@@ -3649,7 +3585,7 @@ const updateBlog = (data, payload) => {
                 if (!blog) {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Không tìm thấy bài viết nào!',
+                        errMessage: "Không tìm thấy bài viết nào!",
                     });
                 } else {
                     blog.title = data.title;
@@ -3700,9 +3636,9 @@ const updateBlog = (data, payload) => {
                         }
                     }
                     if (
-                        data.typeVideo === 'iframe' &&
+                        data.typeVideo === "iframe" &&
                         data.urlVideo &&
-                        data.urlVideo !== ''
+                        data.urlVideo !== ""
                     ) {
                         let videoBlog = await db.videoBlogs.findOne({
                             where: {
@@ -3715,14 +3651,14 @@ const updateBlog = (data, payload) => {
                                 id: uuidv4(),
                                 idBlog: data.idBlog,
                                 video: data.urlVideo,
-                                idDrive: '',
+                                idDrive: "",
                             });
                         } else {
                             if (videoBlog.video !== data.urlVideo) {
                                 if (videoBlog.idDrive) {
                                     GG_Drive.deleteFile(videoBlog.idDrive);
                                 }
-                                videoBlog.idDrive = '';
+                                videoBlog.idDrive = "";
                                 videoBlog.video = data.urlVideo;
                                 await videoBlog.save();
                             }
@@ -3747,7 +3683,7 @@ const shareProduct = (data, payload) => {
             if (!data.accessToken || !data.idProduct || !data.content) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -3757,7 +3693,7 @@ const shareProduct = (data, payload) => {
                     contentHTML: data.content,
                     idUser,
                     viewBlog: 0,
-                    typeBlog: 'product',
+                    typeBlog: "product",
                     timePost: 0,
                 });
 
@@ -3782,7 +3718,7 @@ const shareBlog = (data, payload) => {
             if (!data.accessToken || !data.idBlog || !data.content) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -3791,7 +3727,7 @@ const shareBlog = (data, payload) => {
                     where: {
                         id: data.idBlog,
                         typeBlog: {
-                            [Op.ne]: 'shareBlog',
+                            [Op.ne]: "shareBlog",
                         },
                     },
                     raw: false,
@@ -3799,7 +3735,7 @@ const shareBlog = (data, payload) => {
                 if (!checkBlogExits) {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Bài viết không tồn tại!',
+                        errMessage: "Bài viết không tồn tại!",
                     });
                     return;
                 }
@@ -3809,7 +3745,7 @@ const shareBlog = (data, payload) => {
                     contentHTML: data.content,
                     idUser,
                     viewBlog: 0,
-                    typeBlog: 'shareBlog',
+                    typeBlog: "shareBlog",
                     timePost: 0,
                 });
 
@@ -3838,7 +3774,7 @@ const toggleLikeBlog = (data, payload) => {
             if (!data.accessToken || !data.idBlog) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -3857,7 +3793,7 @@ const toggleLikeBlog = (data, payload) => {
                 if (!checkBlogExits) {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Bài viết không tồn tại!',
+                        errMessage: "Bài viết không tồn tại!",
                     });
                     return;
                 }
@@ -3891,7 +3827,7 @@ const toggleLikeBlog = (data, payload) => {
                             title: `Đã có ${checkBlogExits.amountLike} lượt thích bài viết`,
                             content: `${user.firstName} ${user.lastName} đã yêu thích bài viết của bạn`,
                             timeCreate: date,
-                            typeNotify: 'blog',
+                            typeNotify: "blog",
                             urlImage: checkBlogExits.imageBlogs[0].image,
                             redirect_to: `/blogs/detail-blog/${checkBlogExits.id}`,
                         });
@@ -3904,7 +3840,7 @@ const toggleLikeBlog = (data, payload) => {
 
                     resolve({
                         errCode: 0,
-                        errMessage: 'Like',
+                        errMessage: "Like",
                     });
                 } else {
                     checkBlogExits.amountLike = checkBlogExits.amountLike - 1;
@@ -3920,7 +3856,7 @@ const toggleLikeBlog = (data, payload) => {
                     await db.notifycations.destroy({
                         where: {
                             idUser: checkBlogExits.idUser,
-                            typeNotify: 'blog',
+                            typeNotify: "blog",
                             content: `${user.firstName} ${user.lastName} đã yêu thích bài viết của bạn`,
                             urlImage: checkBlogExits.imageBlogs[0].image,
                         },
@@ -3928,7 +3864,7 @@ const toggleLikeBlog = (data, payload) => {
 
                     resolve({
                         errCode: 0,
-                        errMessage: 'unLike',
+                        errMessage: "unLike",
                     });
                 }
             }
@@ -3944,7 +3880,7 @@ const createNewCommentBlog = (data, payload) => {
             if (!data.accessToken || !data.idBlog || !data.content) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -3957,7 +3893,7 @@ const createNewCommentBlog = (data, payload) => {
                 if (!checkBlogExits) {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Bài viết không tồn tại!',
+                        errMessage: "Bài viết không tồn tại!",
                     });
                     return;
                 }
@@ -3969,7 +3905,7 @@ const createNewCommentBlog = (data, payload) => {
                     idUser,
                     content: data.content,
                     idBlog: data.idBlog,
-                    timeCommentBlog: date + '',
+                    timeCommentBlog: date + "",
                 });
 
                 //tang sl comment
@@ -4002,7 +3938,7 @@ const createNewCommentBlog = (data, payload) => {
                         title: `${user.firstName} ${user.lastName} đã bình luận bài viết`,
                         content: `${data.content}`,
                         timeCreate: date,
-                        typeNotify: 'blog',
+                        typeNotify: "blog",
                         urlImage: blog.imageBlogs[0].image,
                         redirect_to: `/blogs/detail-blog/${blog.id}`,
                     });
@@ -4029,7 +3965,7 @@ const createNewShortVideo = (data, payload) => {
             if (!data.accessToken || !data.content || !data.scope) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -4039,8 +3975,8 @@ const createNewShortVideo = (data, payload) => {
                     idUser,
                     content: data.content,
                     scope: data.scope,
-                    loadImage: 'false',
-                    loadVideo: 'false',
+                    loadImage: "false",
+                    loadVideo: "false",
                 });
 
                 if (data?.listHashTag?.length > 0) {
@@ -4078,9 +4014,7 @@ const uploadCoverImageShortVideo = ({ file, query }) => {
                     raw: false,
                 });
                 if (shortVideo.idCloudinary) {
-                    await cloudinary.v2.uploader.destroy(
-                        shortVideo.idCloudinary
-                    );
+                    await cloudinary.v2.uploader.destroy(shortVideo.idCloudinary);
                 }
                 if (shortVideo.idDriveVideo) {
                     await GG_Drive.deleteFile(shortVideo.idDriveVideo);
@@ -4088,7 +4022,7 @@ const uploadCoverImageShortVideo = ({ file, query }) => {
                 await shortVideo.destroy();
                 await db.hashTagVideos.destroy({
                     where: {
-                        idShortVideo: query?.idShortVideo || '123',
+                        idShortVideo: query?.idShortVideo || "123",
                     },
                 });
                 handleEmit(`refresh-short-video-user-${shortVideo?.idUser}`, {
@@ -4097,7 +4031,7 @@ const uploadCoverImageShortVideo = ({ file, query }) => {
 
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -4114,7 +4048,7 @@ const uploadCoverImageShortVideo = ({ file, query }) => {
 
                 shortVideo.urlImage = file.path;
                 shortVideo.idCloudinary = file.filename;
-                shortVideo.loadImage = 'true';
+                shortVideo.loadImage = "true";
                 await shortVideo.save();
 
                 handleEmit(`refresh-short-video-user-${shortVideo?.idUser}`, {
@@ -4151,7 +4085,7 @@ const uploadVideoForShortVideo = (idShortVideo, url) => {
             }
 
             shortVideo.idDriveVideo = urlVideo.id;
-            shortVideo.loadVideo = 'true';
+            shortVideo.loadVideo = "true";
             await shortVideo.save();
 
             handleEmit(`refresh-short-video-user-${shortVideo?.idUser}`, {
@@ -4177,7 +4111,7 @@ const uploadVideoForShortVideo = (idShortVideo, url) => {
             await shortVideo.destroy();
             await db.hashTagVideos.destroy({
                 where: {
-                    idShortVideo: idShortVideo || '123',
+                    idShortVideo: idShortVideo || "123",
                 },
             });
             handleEmit(`refresh-short-video-user-${shortVideo?.idUser}`, {
@@ -4194,7 +4128,7 @@ const getShortVideoById = (data, payload) => {
             if (!data.accessToken || !data.idShortVideo) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -4207,7 +4141,7 @@ const getShortVideoById = (data, payload) => {
                     include: [
                         {
                             model: db.hashTagVideos,
-                            attributes: ['idProduct'],
+                            attributes: ["idProduct"],
                         },
                     ],
                     raw: false,
@@ -4221,7 +4155,7 @@ const getShortVideoById = (data, payload) => {
                 } else {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Không tìm thấy video!',
+                        errMessage: "Không tìm thấy video!",
                     });
                 }
             }
@@ -4242,7 +4176,7 @@ const updateShortVideoById = (data, payload) => {
             ) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -4258,8 +4192,8 @@ const updateShortVideoById = (data, payload) => {
                 if (shortVideo) {
                     shortVideo.content = data.content;
                     shortVideo.scope = data.scope;
-                    shortVideo.loadImage = data?.editImage ?? 'true';
-                    shortVideo.loadVideo = data?.editVideo ?? 'true';
+                    shortVideo.loadImage = data?.editImage ?? "true";
+                    shortVideo.loadVideo = data?.editVideo ?? "true";
                     await shortVideo.save();
 
                     await db.hashTagVideos.destroy({
@@ -4269,7 +4203,7 @@ const updateShortVideoById = (data, payload) => {
                     });
 
                     if (data?.listHashTag?.length > 0) {
-                        console.log('list hash tag', data?.listHashTag);
+                        console.log("list hash tag", data?.listHashTag);
                         let arrHashTag = data?.listHashTag?.map((item) => {
                             return {
                                 id: uuidv4(),
@@ -4277,7 +4211,7 @@ const updateShortVideoById = (data, payload) => {
                                 idProduct: item,
                             };
                         });
-                        console.log('arr hash tag', arrHashTag);
+                        console.log("arr hash tag", arrHashTag);
                         await db.hashTagVideos.bulkCreate(arrHashTag, {
                             individualHooks: true,
                         });
@@ -4288,7 +4222,7 @@ const updateShortVideoById = (data, payload) => {
                 } else {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Không tìm thấy video!',
+                        errMessage: "Không tìm thấy video!",
                     });
                 }
             }
@@ -4304,7 +4238,7 @@ const getListBlogUserByPage = (data, payload) => {
             if (!data.accessToken || !data.page) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -4317,75 +4251,64 @@ const getListBlogUserByPage = (data, payload) => {
                     offset: (data.page - 1) * 10,
                     limit: 10,
                     attributes: {
-                        exclude: [
-                            'updatedAt',
-                            'timeBlog',
-                            'idUser',
-                            'contentMarkdown',
-                        ],
+                        exclude: ["updatedAt", "timeBlog", "idUser", "contentMarkdown"],
                     },
                     include: [
                         {
                             model: db.imageBlogs,
                             attributes: {
                                 exclude: [
-                                    'createdAt',
-                                    'updatedAt',
-                                    'stt',
-                                    'idCloudinary',
-                                    'idBlog',
-                                    '',
+                                    "createdAt",
+                                    "updatedAt",
+                                    "stt",
+                                    "idCloudinary",
+                                    "idBlog",
+                                    "",
                                 ],
                             },
                         },
                         {
                             model: db.videoBlogs,
                             attributes: {
-                                exclude: [
-                                    'createdAt',
-                                    'updatedAt',
-                                    'stt',
-                                    'idBlog',
-                                    '',
-                                ],
+                                exclude: ["createdAt", "updatedAt", "stt", "idBlog", ""],
                             },
                         },
                         {
                             model: db.User,
                             attributes: {
                                 exclude: [
-                                    'updatedAt',
-                                    'statusUser',
-                                    'sdt',
-                                    'pass',
-                                    'keyVerify',
-                                    'idGoogle',
-                                    'idGithub',
-                                    'idFacebook',
-                                    'id',
-                                    'email',
-                                    'createdAt',
-                                    'birtday',
-                                    'gender',
+                                    "updatedAt",
+                                    "statusUser",
+                                    "sdt",
+                                    "pass",
+                                    "keyVerify",
+                                    "idGoogle",
+                                    "idGithub",
+                                    "idFacebook",
+                                    "id",
+                                    "email",
+                                    "createdAt",
+                                    "birtday",
+                                    "gender",
                                 ],
                             },
                             where: {
                                 statusUser: {
-                                    [Op.ne]: 'false',
+                                    [Op.ne]: "false",
                                 },
                             },
                         },
                         {
                             model: db.blogShares,
-                            as: 'blogs-blogShares-parent',
+                            as: "blogs-blogShares-parent",
                             attributes: {
                                 exclude: [
-                                    'createdAt',
-                                    'updatedAt',
-                                    'stt',
-                                    'idBlogShare',
-                                    'idProduct',
-                                    'idBlog',
+                                    "createdAt",
+                                    "updatedAt",
+                                    "stt",
+                                    "idBlogShare",
+                                    "idProduct",
+                                    "idBlog",
                                 ],
                             },
                             include: [
@@ -4393,39 +4316,39 @@ const getListBlogUserByPage = (data, payload) => {
                                     model: db.product,
                                     attributes: {
                                         exclude: [
-                                            'createdAt',
-                                            'updatedAt',
-                                            'stt',
-                                            'sold',
-                                            'priceProduct',
-                                            'nameProductEn',
-                                            'isSell',
-                                            'idTypeProduct',
-                                            'idTrademark',
-                                            'contentMarkdown',
-                                            'contentHTML',
+                                            "createdAt",
+                                            "updatedAt",
+                                            "stt",
+                                            "sold",
+                                            "priceProduct",
+                                            "nameProductEn",
+                                            "isSell",
+                                            "idTypeProduct",
+                                            "idTrademark",
+                                            "contentMarkdown",
+                                            "contentHTML",
                                         ],
                                     },
                                     include: [
                                         {
                                             model: db.imageProduct,
-                                            as: 'imageProduct-product',
+                                            as: "imageProduct-product",
                                         },
                                     ],
                                 },
                                 {
                                     model: db.blogs,
-                                    as: 'blogs-blogShares-child',
+                                    as: "blogs-blogShares-child",
                                     attributes: {
                                         exclude: [
-                                            'createdAt',
-                                            'updatedAt',
-                                            'stt',
-                                            'viewBlog',
-                                            'timePost',
-                                            'timeBlog',
-                                            'idUser',
-                                            'contentMarkdown',
+                                            "createdAt",
+                                            "updatedAt",
+                                            "stt",
+                                            "viewBlog",
+                                            "timePost",
+                                            "timeBlog",
+                                            "idUser",
+                                            "contentMarkdown",
                                         ],
                                     },
                                 },
@@ -4444,7 +4367,7 @@ const getListBlogUserByPage = (data, payload) => {
                         //    attributes: ['id']
                         // }
                     ],
-                    order: [['stt', 'DESC']],
+                    order: [["stt", "DESC"]],
                     raw: false,
                     nest: true,
                 });
@@ -4458,24 +4381,24 @@ const getListBlogUserByPage = (data, payload) => {
                             model: db.User,
                             attributes: {
                                 exclude: [
-                                    'updatedAt',
-                                    'statusUser',
-                                    'sdt',
-                                    'pass',
-                                    'keyVerify',
-                                    'idGoogle',
-                                    'idGithub',
-                                    'idFacebook',
-                                    'id',
-                                    'email',
-                                    'createdAt',
-                                    'birtday',
-                                    'gender',
+                                    "updatedAt",
+                                    "statusUser",
+                                    "sdt",
+                                    "pass",
+                                    "keyVerify",
+                                    "idGoogle",
+                                    "idGithub",
+                                    "idFacebook",
+                                    "id",
+                                    "email",
+                                    "createdAt",
+                                    "birtday",
+                                    "gender",
                                 ],
                             },
                             where: {
                                 statusUser: {
-                                    [Op.ne]: 'false',
+                                    [Op.ne]: "false",
                                 },
                             },
                         },
@@ -4502,7 +4425,7 @@ const deleteBlogUserById = (data, payload) => {
             if (!data.accessToken || !data.idBlog) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -4516,7 +4439,7 @@ const deleteBlogUserById = (data, payload) => {
                     include: [
                         {
                             model: db.blogShares,
-                            as: 'blogs-blogShares-parent',
+                            as: "blogs-blogShares-parent",
                         },
                     ],
                     raw: false,
@@ -4525,7 +4448,7 @@ const deleteBlogUserById = (data, payload) => {
                 if (!blog) {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Bài viết không tồn tại!',
+                        errMessage: "Bài viết không tồn tại!",
                     });
                 } else {
                     await db.blogShares.destroy({
@@ -4540,7 +4463,7 @@ const deleteBlogUserById = (data, payload) => {
                         raw: false,
                     });
                     if (videoBlog) {
-                        if (videoBlog.idDrive !== '')
+                        if (videoBlog.idDrive !== "")
                             GG_Drive.deleteFile(videoBlog.idDrive);
                         await videoBlog.destroy();
                     }
@@ -4561,7 +4484,7 @@ const deleteBlogUserById = (data, payload) => {
                     });
 
                     //xoa amount share
-                    if (blog.typeBlog === 'shareBlog') {
+                    if (blog.typeBlog === "shareBlog") {
                         if (data.idBlogShare) {
                             let blogShare = await db.blogs.findOne({
                                 where: {
@@ -4571,12 +4494,11 @@ const deleteBlogUserById = (data, payload) => {
                             });
 
                             if (blogShare) {
-                                console.log('tim thay');
-                                blogShare.amountShare =
-                                    blogShare.amountShare - 1;
+                                console.log("tim thay");
+                                blogShare.amountShare = blogShare.amountShare - 1;
                                 await blogShare.save();
                             } else {
-                                console.log('khong tim thay');
+                                console.log("khong tim thay");
                             }
                         }
                     }
@@ -4599,7 +4521,7 @@ const editContentBlogUserById = (data, payload) => {
             if (!data.accessToken || !data.idBlog || !data.content) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -4615,7 +4537,7 @@ const editContentBlogUserById = (data, payload) => {
                 if (!blog) {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Bài viết không tồn tại!',
+                        errMessage: "Bài viết không tồn tại!",
                     });
                 } else {
                     blog.contentHTML = data.content;
@@ -4638,7 +4560,7 @@ const deleteCommentBlogById = (data, payload) => {
             if (!data.accessToken || !data.idComment) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -4653,7 +4575,7 @@ const deleteCommentBlogById = (data, payload) => {
                             model: db.User,
                             where: {
                                 statusUser: {
-                                    [Op.ne]: 'false',
+                                    [Op.ne]: "false",
                                 },
                             },
                         },
@@ -4665,7 +4587,7 @@ const deleteCommentBlogById = (data, payload) => {
                 if (!commentBlog) {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Hiện không thể thực hiện tính năng này!',
+                        errMessage: "Hiện không thể thực hiện tính năng này!",
                     });
                     return;
                 } else {
@@ -4699,7 +4621,7 @@ const updateCommentBlogById = (data, payload) => {
             if (!data.accessToken || !data.idComment || !data.content) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -4714,7 +4636,7 @@ const updateCommentBlogById = (data, payload) => {
                             model: db.User,
                             where: {
                                 statusUser: {
-                                    [Op.ne]: 'false',
+                                    [Op.ne]: "false",
                                 },
                             },
                         },
@@ -4726,7 +4648,7 @@ const updateCommentBlogById = (data, payload) => {
                 if (!commentBlog) {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Hiện không thể thực hiện tính năng này!',
+                        errMessage: "Hiện không thể thực hiện tính năng này!",
                     });
                     return;
                 } else {
@@ -4749,7 +4671,7 @@ const getListBlogByIdUser = (data) => {
             if (!data.idUser || !data.page) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -4766,11 +4688,11 @@ const getListBlogByIdUser = (data) => {
                     limit: 10,
                     attributes: {
                         exclude: [
-                            'updatedAt',
-                            'timePost',
-                            'timeBlog',
-                            'idUser',
-                            'contentMarkdown',
+                            "updatedAt",
+                            "timePost",
+                            "timeBlog",
+                            "idUser",
+                            "contentMarkdown",
                         ],
                     },
                     include: [
@@ -4778,63 +4700,57 @@ const getListBlogByIdUser = (data) => {
                             model: db.imageBlogs,
                             attributes: {
                                 exclude: [
-                                    'createdAt',
-                                    'updatedAt',
-                                    'stt',
-                                    'idCloudinary',
-                                    'idBlog',
-                                    '',
+                                    "createdAt",
+                                    "updatedAt",
+                                    "stt",
+                                    "idCloudinary",
+                                    "idBlog",
+                                    "",
                                 ],
                             },
                         },
                         {
                             model: db.videoBlogs,
                             attributes: {
-                                exclude: [
-                                    'createdAt',
-                                    'updatedAt',
-                                    'stt',
-                                    'idBlog',
-                                    '',
-                                ],
+                                exclude: ["createdAt", "updatedAt", "stt", "idBlog", ""],
                             },
                         },
                         {
                             model: db.User,
                             attributes: {
                                 exclude: [
-                                    'updatedAt',
-                                    'statusUser',
-                                    'sdt',
-                                    'pass',
-                                    'keyVerify',
-                                    'idGoogle',
-                                    'idGithub',
-                                    'idFacebook',
-                                    'id',
-                                    'email',
-                                    'createdAt',
-                                    'birtday',
-                                    'gender',
+                                    "updatedAt",
+                                    "statusUser",
+                                    "sdt",
+                                    "pass",
+                                    "keyVerify",
+                                    "idGoogle",
+                                    "idGithub",
+                                    "idFacebook",
+                                    "id",
+                                    "email",
+                                    "createdAt",
+                                    "birtday",
+                                    "gender",
                                 ],
                             },
                             where: {
                                 statusUser: {
-                                    [Op.ne]: 'false',
+                                    [Op.ne]: "false",
                                 },
                             },
                         },
                         {
                             model: db.blogShares,
-                            as: 'blogs-blogShares-parent',
+                            as: "blogs-blogShares-parent",
                             attributes: {
                                 exclude: [
-                                    'createdAt',
-                                    'updatedAt',
-                                    'stt',
-                                    'idBlogShare',
-                                    'idProduct',
-                                    'idBlog',
+                                    "createdAt",
+                                    "updatedAt",
+                                    "stt",
+                                    "idBlogShare",
+                                    "idProduct",
+                                    "idBlog",
                                 ],
                             },
                             include: [
@@ -4842,39 +4758,39 @@ const getListBlogByIdUser = (data) => {
                                     model: db.product,
                                     attributes: {
                                         exclude: [
-                                            'createdAt',
-                                            'updatedAt',
-                                            'stt',
-                                            'sold',
-                                            'priceProduct',
-                                            'nameProductEn',
-                                            'isSell',
-                                            'idTypeProduct',
-                                            'idTrademark',
-                                            'contentMarkdown',
-                                            'contentHTML',
+                                            "createdAt",
+                                            "updatedAt",
+                                            "stt",
+                                            "sold",
+                                            "priceProduct",
+                                            "nameProductEn",
+                                            "isSell",
+                                            "idTypeProduct",
+                                            "idTrademark",
+                                            "contentMarkdown",
+                                            "contentHTML",
                                         ],
                                     },
                                     include: [
                                         {
                                             model: db.imageProduct,
-                                            as: 'imageProduct-product',
+                                            as: "imageProduct-product",
                                         },
                                     ],
                                 },
                                 {
                                     model: db.blogs,
-                                    as: 'blogs-blogShares-child',
+                                    as: "blogs-blogShares-child",
                                     attributes: {
                                         exclude: [
-                                            'createdAt',
-                                            'updatedAt',
-                                            'stt',
-                                            'viewBlog',
-                                            'timePost',
-                                            'timeBlog',
-                                            'idUser',
-                                            'contentMarkdown',
+                                            "createdAt",
+                                            "updatedAt",
+                                            "stt",
+                                            "viewBlog",
+                                            "timePost",
+                                            "timeBlog",
+                                            "idUser",
+                                            "contentMarkdown",
                                         ],
                                     },
                                 },
@@ -4882,19 +4798,19 @@ const getListBlogByIdUser = (data) => {
                         },
                         {
                             model: db.likeBlog,
-                            attributes: ['id'],
+                            attributes: ["id"],
                         },
                         {
                             model: db.blogShares,
-                            as: 'listBlogShare',
-                            attributes: ['id'],
+                            as: "listBlogShare",
+                            attributes: ["id"],
                         },
                         {
                             model: db.commentBlog,
-                            attributes: ['id'],
+                            attributes: ["id"],
                         },
                     ],
-                    order: [['stt', 'DESC']],
+                    order: [["stt", "DESC"]],
                     raw: false,
                     nest: true,
                 });
@@ -4908,24 +4824,24 @@ const getListBlogByIdUser = (data) => {
                             model: db.User,
                             attributes: {
                                 exclude: [
-                                    'updatedAt',
-                                    'statusUser',
-                                    'sdt',
-                                    'pass',
-                                    'keyVerify',
-                                    'idGoogle',
-                                    'idGithub',
-                                    'idFacebook',
-                                    'id',
-                                    'email',
-                                    'createdAt',
-                                    'birtday',
-                                    'gender',
+                                    "updatedAt",
+                                    "statusUser",
+                                    "sdt",
+                                    "pass",
+                                    "keyVerify",
+                                    "idGoogle",
+                                    "idGithub",
+                                    "idFacebook",
+                                    "id",
+                                    "email",
+                                    "createdAt",
+                                    "birtday",
+                                    "gender",
                                 ],
                             },
                             where: {
                                 statusUser: {
-                                    [Op.ne]: 'false',
+                                    [Op.ne]: "false",
                                 },
                             },
                         },
@@ -4952,7 +4868,7 @@ const saveBlogCollection = (data, payload) => {
             if (!data.accessToken || !data.idBlog) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -4967,22 +4883,21 @@ const saveBlogCollection = (data, payload) => {
                 if (!checkBlog) {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Không tìm thấy bài viết!',
+                        errMessage: "Không tìm thấy bài viết!",
                     });
                     return;
                 }
 
-                let [collection, create] =
-                    await db.collectionBlogs.findOrCreate({
-                        where: {
-                            idBlog: data.idBlog,
-                            idUser,
-                        },
-                        defaults: {
-                            id: uuidv4(),
-                        },
-                        raw: false,
-                    });
+                let [collection, create] = await db.collectionBlogs.findOrCreate({
+                    where: {
+                        idBlog: data.idBlog,
+                        idUser,
+                    },
+                    defaults: {
+                        id: uuidv4(),
+                    },
+                    raw: false,
+                });
 
                 if (!create) {
                     await collection.destroy();
@@ -5007,7 +4922,7 @@ const getListCollectionBlogUserByPage = (data, payload) => {
             if (!data.accessToken || !data.page) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -5019,22 +4934,18 @@ const getListCollectionBlogUserByPage = (data, payload) => {
                     },
                     limit: 20,
                     offset: (data.page - 1) * 20,
-                    attributes: ['id', 'createdAt'],
+                    attributes: ["id", "createdAt"],
                     include: [
                         {
                             model: db.blogs,
-                            attributes: [
-                                'contentHTML',
-                                'backgroundColor',
-                                'id',
-                            ],
+                            attributes: ["contentHTML", "backgroundColor", "id"],
                             include: [
                                 {
                                     model: db.User,
-                                    attributes: ['firstName', 'lastName'],
+                                    attributes: ["firstName", "lastName"],
                                     where: {
                                         statusUser: {
-                                            [Op.ne]: 'false',
+                                            [Op.ne]: "false",
                                         },
                                     },
                                 },
@@ -5056,7 +4967,7 @@ const getListCollectionBlogUserByPage = (data, payload) => {
                                     model: db.User,
                                     where: {
                                         statusUser: {
-                                            [Op.ne]: 'false',
+                                            [Op.ne]: "false",
                                         },
                                     },
                                 },
@@ -5084,7 +4995,7 @@ const deleteCollectBlogById = (data, payload) => {
             if (!data.accessToken || !data.idCollect) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -5112,7 +5023,7 @@ const createCommentShortVideo = (data, payload) => {
             if (!data.accessToken || !data.idShortVideo || !data.content) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -5125,7 +5036,7 @@ const createCommentShortVideo = (data, payload) => {
                 if (!shortVideo) {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Không tìm thấy video nào!',
+                        errMessage: "Không tìm thấy video nào!",
                     });
                     return;
                 }
@@ -5152,10 +5063,10 @@ const createCommentShortVideo = (data, payload) => {
                     await db.notifycations.create({
                         id: uuidv4(),
                         idUser: shortVideo.idUser,
-                        title: 'Bình luận mới trong video của bạn',
+                        title: "Bình luận mới trong video của bạn",
                         content: `${user.firstName} ${user.lastName} đã để lại bình luận: ${data.content}`,
                         timeCreate: date,
-                        typeNotify: 'short_video',
+                        typeNotify: "short_video",
                         urlImage: shortVideo.urlImage,
                         redirect_to: `/short-video/foryou?_isv=${shortVideo.id}`,
                     });
@@ -5183,7 +5094,7 @@ const deleteCommentShortVideoById = (data, payload) => {
             if (!data.accessToken || !data.idCommemtShortVideo) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -5198,7 +5109,7 @@ const deleteCommentShortVideoById = (data, payload) => {
                     resolve({
                         errCode: 3,
                         errMessage:
-                            'Không tìm thấy hoặc bạn không được phép thực hiện chức năng này!',
+                            "Không tìm thấy hoặc bạn không được phép thực hiện chức năng này!",
                     });
                     return;
                 }
@@ -5238,7 +5149,7 @@ const editCommentShortVideoById = (data, payload) => {
             ) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -5255,7 +5166,7 @@ const editCommentShortVideoById = (data, payload) => {
                     resolve({
                         errCode: 3,
                         errMessage:
-                            'Không tìm thấy hoặc bạn không được phép thực hiện chức năng này!',
+                            "Không tìm thấy hoặc bạn không được phép thực hiện chức năng này!",
                     });
                     return;
                 }
@@ -5279,7 +5190,7 @@ const toggleLikeShortVideo = (data, payload) => {
             if (!data.accessToken || !data.idShortVideo) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -5295,21 +5206,20 @@ const toggleLikeShortVideo = (data, payload) => {
                     resolve({
                         errCode: 3,
                         errMessage:
-                            'Không tìm thấy hoặc bạn không được phép thực hiện chức năng này!',
+                            "Không tìm thấy hoặc bạn không được phép thực hiện chức năng này!",
                     });
                     return;
                 }
 
-                let [likeShortVideo, create] =
-                    await db.likeShortVideos.findOrCreate({
-                        where: {
-                            idUser,
-                            idShortVideo: shortVideo.id,
-                        },
-                        defaults: {
-                            id: uuidv4(),
-                        },
-                    });
+                let [likeShortVideo, create] = await db.likeShortVideos.findOrCreate({
+                    where: {
+                        idUser,
+                        idShortVideo: shortVideo.id,
+                    },
+                    defaults: {
+                        id: uuidv4(),
+                    },
+                });
 
                 if (create) {
                     shortVideo.countLike = shortVideo.countLike + 1;
@@ -5326,23 +5236,23 @@ const toggleLikeShortVideo = (data, payload) => {
                         await db.notifycations.create({
                             id: uuidv4(),
                             idUser: shortVideo.idUser,
-                            title: 'Lượt yêu thích video ngắn mới',
+                            title: "Lượt yêu thích video ngắn mới",
                             content: `${user.firstName} ${user.lastName} đã thích 1 video của bạn`,
                             timeCreate: date,
-                            typeNotify: 'short_video',
+                            typeNotify: "short_video",
                             urlImage: shortVideo.urlImage,
                             redirect_to: `/short-video/foryou?_isv=${shortVideo.id}`,
                         });
 
                         handleEmit(`new-notify-${shortVideo.idUser}`, {
-                            title: 'Lượt yêu thích video ngắn mới',
+                            title: "Lượt yêu thích video ngắn mới",
                             content: `${user.firstName} ${user.lastName} đã thích 1 video của bạn`,
                         });
                     }
 
                     resolve({
                         errCode: 0,
-                        mess: 'add',
+                        mess: "add",
                     });
                 } else {
                     shortVideo.countLike = shortVideo.countLike - 1;
@@ -5364,8 +5274,8 @@ const toggleLikeShortVideo = (data, payload) => {
                     await db.notifycations.destroy({
                         where: {
                             idUser: shortVideo.idUser,
-                            title: 'Lượt yêu thích video ngắn mới',
-                            typeNotify: 'short_video',
+                            title: "Lượt yêu thích video ngắn mới",
+                            typeNotify: "short_video",
                             content: `${user.firstName} ${user.lastName} đã thích 1 video của bạn`,
                             urlImage: shortVideo.urlImage,
                         },
@@ -5373,7 +5283,7 @@ const toggleLikeShortVideo = (data, payload) => {
 
                     resolve({
                         errCode: 0,
-                        mess: 'remove',
+                        mess: "remove",
                     });
                 }
             }
@@ -5389,7 +5299,7 @@ const checkUserLikeShortVideo = (data, payload) => {
             if (!data.accessToken || !data.idShortVideo) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -5425,7 +5335,7 @@ const saveCollectionShortVideo = (data, payload) => {
             if (!data.accessToken || !data.idShortVideo) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -5445,13 +5355,13 @@ const saveCollectionShortVideo = (data, payload) => {
                 if (create) {
                     resolve({
                         errCode: 0,
-                        mess: 'add',
+                        mess: "add",
                     });
                 } else {
                     await collectionShortVideo.destroy();
                     resolve({
                         errCode: 0,
-                        mess: 'remove',
+                        mess: "remove",
                     });
                 }
             }
@@ -5467,18 +5377,17 @@ const CheckSaveCollectionShortVideo = (data, payload) => {
             if (!data.accessToken || !data.idShortVideo) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
                 let idUser = payload.id;
-                let collectionShortVideo =
-                    await db.collectionShortVideos.findOne({
-                        where: {
-                            idUser,
-                            idShortVideo: data.idShortVideo,
-                        },
-                    });
+                let collectionShortVideo = await db.collectionShortVideos.findOne({
+                    where: {
+                        idUser,
+                        idShortVideo: data.idShortVideo,
+                    },
+                });
 
                 if (collectionShortVideo) {
                     resolve({
@@ -5509,11 +5418,11 @@ const getListVideoByIdUser = (data) => {
             ) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
-                let idUser = '';
+                let idUser = "";
                 if (data.idUser && !data.accessToken) idUser = data.idUser;
                 else {
                     let decoded = commont.decodeToken(
@@ -5523,7 +5432,7 @@ const getListVideoByIdUser = (data) => {
                     if (decoded === null) {
                         resolve({
                             errCode: 2,
-                            errMessage: 'Đăng nhập đã hết hạn!',
+                            errMessage: "Đăng nhập đã hết hạn!",
                         });
                         return;
                     }
@@ -5536,57 +5445,57 @@ const getListVideoByIdUser = (data) => {
                     },
                 });
 
-                let countLike = await db.shortVideos.sum('countLike');
+                let countLike = await db.shortVideos.sum("countLike");
 
                 if (data.idUser) {
-                    if (data.nav === 'video') {
+                    if (data.nav === "video") {
                         let listVideo = await db.shortVideos.findAll({
                             where: {
                                 idUser,
-                                scope: 'public',
+                                scope: "public",
                             },
 
                             attributes: [
-                                'id',
-                                'idDriveVideo',
-                                'urlImage',
-                                'content',
-                                'scope',
-                                'countLike',
-                                'countComment',
-                                'stt',
-                                'loadImage',
-                                'loadVideo',
+                                "id",
+                                "idDriveVideo",
+                                "urlImage",
+                                "content",
+                                "scope",
+                                "countLike",
+                                "countComment",
+                                "stt",
+                                "loadImage",
+                                "loadVideo",
                             ],
                             include: [
                                 {
                                     model: db.hashTagVideos,
-                                    attributes: ['id'],
+                                    attributes: ["id"],
                                     include: [
                                         {
                                             model: db.product,
-                                            attributes: ['id', 'nameProduct'],
+                                            attributes: ["id", "nameProduct"],
                                         },
                                     ],
                                 },
                                 {
                                     model: db.User,
                                     attributes: [
-                                        'id',
-                                        'firstName',
-                                        'lastName',
-                                        'idTypeUser',
-                                        'typeAccount',
-                                        'avatar',
-                                        'avatarGoogle',
-                                        'avatarFacebook',
-                                        'avatarGithub',
-                                        'avatarUpdate',
-                                        'statusUser',
+                                        "id",
+                                        "firstName",
+                                        "lastName",
+                                        "idTypeUser",
+                                        "typeAccount",
+                                        "avatar",
+                                        "avatarGoogle",
+                                        "avatarFacebook",
+                                        "avatarGithub",
+                                        "avatarUpdate",
+                                        "statusUser",
                                     ],
                                     where: {
                                         statusUser: {
-                                            [Op.ne]: 'false',
+                                            [Op.ne]: "false",
                                         },
                                     },
                                 },
@@ -5595,9 +5504,7 @@ const getListVideoByIdUser = (data) => {
                             nest: true,
                             offset: (data.page * 1 - 1) * 50,
                             limit: 50,
-                            order: [
-                                ['stt', data.ft === 'old' ? 'ASC' : 'DESC'],
-                            ],
+                            order: [["stt", data.ft === "old" ? "ASC" : "DESC"]],
                         });
 
                         resolve({
@@ -5606,27 +5513,27 @@ const getListVideoByIdUser = (data) => {
                             countPage: count,
                             countLike,
                         });
-                    } else if (data.nav === 'save') {
+                    } else if (data.nav === "save") {
                         let count = await db.shortVideos.count({
                             include: [
                                 {
                                     model: db.User,
                                     attributes: [
-                                        'id',
-                                        'firstName',
-                                        'lastName',
-                                        'idTypeUser',
-                                        'typeAccount',
-                                        'avatar',
-                                        'avatarGoogle',
-                                        'avatarFacebook',
-                                        'avatarGithub',
-                                        'avatarUpdate',
-                                        'statusUser',
+                                        "id",
+                                        "firstName",
+                                        "lastName",
+                                        "idTypeUser",
+                                        "typeAccount",
+                                        "avatar",
+                                        "avatarGoogle",
+                                        "avatarFacebook",
+                                        "avatarGithub",
+                                        "avatarUpdate",
+                                        "statusUser",
                                     ],
                                     where: {
                                         statusUser: {
-                                            [Op.ne]: 'false',
+                                            [Op.ne]: "false",
                                         },
                                     },
                                 },
@@ -5635,7 +5542,7 @@ const getListVideoByIdUser = (data) => {
                                     where: {
                                         idUser,
                                     },
-                                    attributes: ['id'],
+                                    attributes: ["id"],
                                 },
                             ],
                             raw: false,
@@ -5644,50 +5551,50 @@ const getListVideoByIdUser = (data) => {
 
                         let listVideo = await db.shortVideos.findAll({
                             where: {
-                                scope: 'public',
+                                scope: "public",
                             },
 
                             attributes: [
-                                'id',
-                                'idDriveVideo',
-                                'urlImage',
-                                'content',
-                                'scope',
-                                'countLike',
-                                'countComment',
-                                'stt',
-                                'loadImage',
-                                'loadVideo',
+                                "id",
+                                "idDriveVideo",
+                                "urlImage",
+                                "content",
+                                "scope",
+                                "countLike",
+                                "countComment",
+                                "stt",
+                                "loadImage",
+                                "loadVideo",
                             ],
                             include: [
                                 {
                                     model: db.hashTagVideos,
-                                    attributes: ['id'],
+                                    attributes: ["id"],
                                     include: [
                                         {
                                             model: db.product,
-                                            attributes: ['id', 'nameProduct'],
+                                            attributes: ["id", "nameProduct"],
                                         },
                                     ],
                                 },
                                 {
                                     model: db.User,
                                     attributes: [
-                                        'id',
-                                        'firstName',
-                                        'lastName',
-                                        'idTypeUser',
-                                        'typeAccount',
-                                        'avatar',
-                                        'avatarGoogle',
-                                        'avatarFacebook',
-                                        'avatarGithub',
-                                        'avatarUpdate',
-                                        'statusUser',
+                                        "id",
+                                        "firstName",
+                                        "lastName",
+                                        "idTypeUser",
+                                        "typeAccount",
+                                        "avatar",
+                                        "avatarGoogle",
+                                        "avatarFacebook",
+                                        "avatarGithub",
+                                        "avatarUpdate",
+                                        "statusUser",
                                     ],
                                     where: {
                                         statusUser: {
-                                            [Op.ne]: 'false',
+                                            [Op.ne]: "false",
                                         },
                                     },
                                 },
@@ -5696,16 +5603,14 @@ const getListVideoByIdUser = (data) => {
                                     where: {
                                         idUser,
                                     },
-                                    attributes: ['id'],
+                                    attributes: ["id"],
                                 },
                             ],
                             raw: false,
                             nest: true,
                             offset: (data.page * 1 - 1) * 50,
                             limit: 50,
-                            order: [
-                                ['stt', data.ft === 'old' ? 'ASC' : 'DESC'],
-                            ],
+                            order: [["stt", data.ft === "old" ? "ASC" : "DESC"]],
                         });
 
                         resolve({
@@ -5714,27 +5619,27 @@ const getListVideoByIdUser = (data) => {
                             countPage: count,
                             countLike,
                         });
-                    } else if (data.nav === 'like') {
+                    } else if (data.nav === "like") {
                         let count = await db.shortVideos.count({
                             include: [
                                 {
                                     model: db.User,
                                     attributes: [
-                                        'id',
-                                        'firstName',
-                                        'lastName',
-                                        'idTypeUser',
-                                        'typeAccount',
-                                        'avatar',
-                                        'avatarGoogle',
-                                        'avatarFacebook',
-                                        'avatarGithub',
-                                        'avatarUpdate',
-                                        'statusUser',
+                                        "id",
+                                        "firstName",
+                                        "lastName",
+                                        "idTypeUser",
+                                        "typeAccount",
+                                        "avatar",
+                                        "avatarGoogle",
+                                        "avatarFacebook",
+                                        "avatarGithub",
+                                        "avatarUpdate",
+                                        "statusUser",
                                     ],
                                     where: {
                                         statusUser: {
-                                            [Op.ne]: 'false',
+                                            [Op.ne]: "false",
                                         },
                                     },
                                 },
@@ -5751,50 +5656,50 @@ const getListVideoByIdUser = (data) => {
                         });
                         let listVideo = await db.shortVideos.findAll({
                             where: {
-                                scope: 'public',
+                                scope: "public",
                             },
 
                             attributes: [
-                                'id',
-                                'idDriveVideo',
-                                'urlImage',
-                                'content',
-                                'scope',
-                                'countLike',
-                                'countComment',
-                                'stt',
-                                'loadImage',
-                                'loadVideo',
+                                "id",
+                                "idDriveVideo",
+                                "urlImage",
+                                "content",
+                                "scope",
+                                "countLike",
+                                "countComment",
+                                "stt",
+                                "loadImage",
+                                "loadVideo",
                             ],
                             include: [
                                 {
                                     model: db.hashTagVideos,
-                                    attributes: ['id'],
+                                    attributes: ["id"],
                                     include: [
                                         {
                                             model: db.product,
-                                            attributes: ['id', 'nameProduct'],
+                                            attributes: ["id", "nameProduct"],
                                         },
                                     ],
                                 },
                                 {
                                     model: db.User,
                                     attributes: [
-                                        'id',
-                                        'firstName',
-                                        'lastName',
-                                        'idTypeUser',
-                                        'typeAccount',
-                                        'avatar',
-                                        'avatarGoogle',
-                                        'avatarFacebook',
-                                        'avatarGithub',
-                                        'avatarUpdate',
-                                        'statusUser',
+                                        "id",
+                                        "firstName",
+                                        "lastName",
+                                        "idTypeUser",
+                                        "typeAccount",
+                                        "avatar",
+                                        "avatarGoogle",
+                                        "avatarFacebook",
+                                        "avatarGithub",
+                                        "avatarUpdate",
+                                        "statusUser",
                                     ],
                                     where: {
                                         statusUser: {
-                                            [Op.ne]: 'false',
+                                            [Op.ne]: "false",
                                         },
                                     },
                                 },
@@ -5803,16 +5708,14 @@ const getListVideoByIdUser = (data) => {
                                     where: {
                                         idUser,
                                     },
-                                    attributes: ['id'],
+                                    attributes: ["id"],
                                 },
                             ],
                             raw: false,
                             nest: true,
                             offset: (data.page * 1 - 1) * 50,
                             limit: 50,
-                            order: [
-                                ['stt', data.ft === 'old' ? 'ASC' : 'DESC'],
-                            ],
+                            order: [["stt", data.ft === "old" ? "ASC" : "DESC"]],
                         });
 
                         resolve({
@@ -5826,53 +5729,53 @@ const getListVideoByIdUser = (data) => {
                     return;
                 }
 
-                if (data.nav === 'video') {
+                if (data.nav === "video") {
                     let listVideo = await db.shortVideos.findAll({
                         where: {
                             idUser,
                         },
 
                         attributes: [
-                            'id',
-                            'idDriveVideo',
-                            'urlImage',
-                            'content',
-                            'scope',
-                            'countLike',
-                            'countComment',
-                            'stt',
-                            'loadImage',
-                            'loadVideo',
+                            "id",
+                            "idDriveVideo",
+                            "urlImage",
+                            "content",
+                            "scope",
+                            "countLike",
+                            "countComment",
+                            "stt",
+                            "loadImage",
+                            "loadVideo",
                         ],
                         include: [
                             {
                                 model: db.hashTagVideos,
-                                attributes: ['id'],
+                                attributes: ["id"],
                                 include: [
                                     {
                                         model: db.product,
-                                        attributes: ['id', 'nameProduct'],
+                                        attributes: ["id", "nameProduct"],
                                     },
                                 ],
                             },
                             {
                                 model: db.User,
                                 attributes: [
-                                    'id',
-                                    'firstName',
-                                    'lastName',
-                                    'idTypeUser',
-                                    'typeAccount',
-                                    'avatar',
-                                    'avatarGoogle',
-                                    'avatarFacebook',
-                                    'avatarGithub',
-                                    'avatarUpdate',
-                                    'statusUser',
+                                    "id",
+                                    "firstName",
+                                    "lastName",
+                                    "idTypeUser",
+                                    "typeAccount",
+                                    "avatar",
+                                    "avatarGoogle",
+                                    "avatarFacebook",
+                                    "avatarGithub",
+                                    "avatarUpdate",
+                                    "statusUser",
                                 ],
                                 where: {
                                     statusUser: {
-                                        [Op.ne]: 'false',
+                                        [Op.ne]: "false",
                                     },
                                 },
                             },
@@ -5881,7 +5784,7 @@ const getListVideoByIdUser = (data) => {
                         nest: true,
                         offset: (data.page * 1 - 1) * 50,
                         limit: 50,
-                        order: [['stt', data.ft === 'old' ? 'ASC' : 'DESC']],
+                        order: [["stt", data.ft === "old" ? "ASC" : "DESC"]],
                     });
 
                     resolve({
@@ -5890,27 +5793,27 @@ const getListVideoByIdUser = (data) => {
                         countPage: count,
                         countLike,
                     });
-                } else if (data.nav === 'save') {
+                } else if (data.nav === "save") {
                     let count = await db.shortVideos.count({
                         include: [
                             {
                                 model: db.User,
                                 attributes: [
-                                    'id',
-                                    'firstName',
-                                    'lastName',
-                                    'idTypeUser',
-                                    'typeAccount',
-                                    'avatar',
-                                    'avatarGoogle',
-                                    'avatarFacebook',
-                                    'avatarGithub',
-                                    'avatarUpdate',
-                                    'statusUser',
+                                    "id",
+                                    "firstName",
+                                    "lastName",
+                                    "idTypeUser",
+                                    "typeAccount",
+                                    "avatar",
+                                    "avatarGoogle",
+                                    "avatarFacebook",
+                                    "avatarGithub",
+                                    "avatarUpdate",
+                                    "statusUser",
                                 ],
                                 where: {
                                     statusUser: {
-                                        [Op.ne]: 'false',
+                                        [Op.ne]: "false",
                                     },
                                 },
                             },
@@ -5919,7 +5822,7 @@ const getListVideoByIdUser = (data) => {
                                 where: {
                                     idUser,
                                 },
-                                attributes: ['id'],
+                                attributes: ["id"],
                             },
                         ],
                         raw: false,
@@ -5932,46 +5835,46 @@ const getListVideoByIdUser = (data) => {
                         // },
 
                         attributes: [
-                            'id',
-                            'idDriveVideo',
-                            'urlImage',
-                            'content',
-                            'scope',
-                            'countLike',
-                            'countComment',
-                            'stt',
-                            'loadImage',
-                            'loadVideo',
+                            "id",
+                            "idDriveVideo",
+                            "urlImage",
+                            "content",
+                            "scope",
+                            "countLike",
+                            "countComment",
+                            "stt",
+                            "loadImage",
+                            "loadVideo",
                         ],
                         include: [
                             {
                                 model: db.hashTagVideos,
-                                attributes: ['id'],
+                                attributes: ["id"],
                                 include: [
                                     {
                                         model: db.product,
-                                        attributes: ['id', 'nameProduct'],
+                                        attributes: ["id", "nameProduct"],
                                     },
                                 ],
                             },
                             {
                                 model: db.User,
                                 attributes: [
-                                    'id',
-                                    'firstName',
-                                    'lastName',
-                                    'idTypeUser',
-                                    'typeAccount',
-                                    'avatar',
-                                    'avatarGoogle',
-                                    'avatarFacebook',
-                                    'avatarGithub',
-                                    'avatarUpdate',
-                                    'statusUser',
+                                    "id",
+                                    "firstName",
+                                    "lastName",
+                                    "idTypeUser",
+                                    "typeAccount",
+                                    "avatar",
+                                    "avatarGoogle",
+                                    "avatarFacebook",
+                                    "avatarGithub",
+                                    "avatarUpdate",
+                                    "statusUser",
                                 ],
                                 where: {
                                     statusUser: {
-                                        [Op.ne]: 'false',
+                                        [Op.ne]: "false",
                                     },
                                 },
                             },
@@ -5980,14 +5883,14 @@ const getListVideoByIdUser = (data) => {
                                 where: {
                                     idUser,
                                 },
-                                attributes: ['id'],
+                                attributes: ["id"],
                             },
                         ],
                         raw: false,
                         nest: true,
                         offset: (data.page * 1 - 1) * 50,
                         limit: 50,
-                        order: [['stt', data.ft === 'old' ? 'ASC' : 'DESC']],
+                        order: [["stt", data.ft === "old" ? "ASC" : "DESC"]],
                     });
 
                     resolve({
@@ -5996,27 +5899,27 @@ const getListVideoByIdUser = (data) => {
                         countPage: count,
                         countLike,
                     });
-                } else if (data.nav === 'like') {
+                } else if (data.nav === "like") {
                     let count = await db.shortVideos.count({
                         include: [
                             {
                                 model: db.User,
                                 attributes: [
-                                    'id',
-                                    'firstName',
-                                    'lastName',
-                                    'idTypeUser',
-                                    'typeAccount',
-                                    'avatar',
-                                    'avatarGoogle',
-                                    'avatarFacebook',
-                                    'avatarGithub',
-                                    'avatarUpdate',
-                                    'statusUser',
+                                    "id",
+                                    "firstName",
+                                    "lastName",
+                                    "idTypeUser",
+                                    "typeAccount",
+                                    "avatar",
+                                    "avatarGoogle",
+                                    "avatarFacebook",
+                                    "avatarGithub",
+                                    "avatarUpdate",
+                                    "statusUser",
                                 ],
                                 where: {
                                     statusUser: {
-                                        [Op.ne]: 'false',
+                                        [Op.ne]: "false",
                                     },
                                 },
                             },
@@ -6033,46 +5936,46 @@ const getListVideoByIdUser = (data) => {
                     });
                     let listVideo = await db.shortVideos.findAll({
                         attributes: [
-                            'id',
-                            'idDriveVideo',
-                            'urlImage',
-                            'content',
-                            'scope',
-                            'countLike',
-                            'countComment',
-                            'stt',
-                            'loadImage',
-                            'loadVideo',
+                            "id",
+                            "idDriveVideo",
+                            "urlImage",
+                            "content",
+                            "scope",
+                            "countLike",
+                            "countComment",
+                            "stt",
+                            "loadImage",
+                            "loadVideo",
                         ],
                         include: [
                             {
                                 model: db.hashTagVideos,
-                                attributes: ['id'],
+                                attributes: ["id"],
                                 include: [
                                     {
                                         model: db.product,
-                                        attributes: ['id', 'nameProduct'],
+                                        attributes: ["id", "nameProduct"],
                                     },
                                 ],
                             },
                             {
                                 model: db.User,
                                 attributes: [
-                                    'id',
-                                    'firstName',
-                                    'lastName',
-                                    'idTypeUser',
-                                    'typeAccount',
-                                    'avatar',
-                                    'avatarGoogle',
-                                    'avatarFacebook',
-                                    'avatarGithub',
-                                    'avatarUpdate',
-                                    'statusUser',
+                                    "id",
+                                    "firstName",
+                                    "lastName",
+                                    "idTypeUser",
+                                    "typeAccount",
+                                    "avatar",
+                                    "avatarGoogle",
+                                    "avatarFacebook",
+                                    "avatarGithub",
+                                    "avatarUpdate",
+                                    "statusUser",
                                 ],
                                 where: {
                                     statusUser: {
-                                        [Op.ne]: 'false',
+                                        [Op.ne]: "false",
                                     },
                                 },
                             },
@@ -6081,14 +5984,14 @@ const getListVideoByIdUser = (data) => {
                                 where: {
                                     idUser,
                                 },
-                                attributes: ['id'],
+                                attributes: ["id"],
                             },
                         ],
                         raw: false,
                         nest: true,
                         offset: (data.page * 1 - 1) * 50,
                         limit: 50,
-                        order: [['stt', data.ft === 'old' ? 'ASC' : 'DESC']],
+                        order: [["stt", data.ft === "old" ? "ASC" : "DESC"]],
                     });
 
                     resolve({
@@ -6111,7 +6014,7 @@ const getUserById = (data) => {
             if (!data.idUser) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -6129,7 +6032,7 @@ const getUserById = (data) => {
                 } else {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Not found user',
+                        errMessage: "Not found user",
                     });
                 }
             }
@@ -6145,7 +6048,7 @@ const deleteShortVideoById = (data, payload) => {
             if (!data.accessToken || !data.idShortVideo) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -6160,7 +6063,7 @@ const deleteShortVideoById = (data, payload) => {
                 if (!shortVideo) {
                     resolve({
                         errCode: 3,
-                        errMessage: 'Không tìm thấy video nào!',
+                        errMessage: "Không tìm thấy video nào!",
                     });
                     return;
                 }
@@ -6169,31 +6072,31 @@ const deleteShortVideoById = (data, payload) => {
                 cloudinary.v2.uploader.destroy(shortVideo.idCloudinary);
 
                 await shortVideo.destroy();
-                console.log('xoa shortVideo');
+                console.log("xoa shortVideo");
                 await db.hashTagVideos.destroy({
                     where: {
                         idShortVideo: data.idShortVideo,
                     },
                 });
-                console.log('xoa hashTagVideos');
+                console.log("xoa hashTagVideos");
                 await db.commentShortVideos.destroy({
                     where: {
                         idShortVideo: data.idShortVideo,
                     },
                 });
-                console.log('xoa commentShortVideos');
+                console.log("xoa commentShortVideos");
                 await db.likeShortVideos.destroy({
                     where: {
                         idShortVideo: data.idShortVideo,
                     },
                 });
-                console.log('xoa likeShortVideos');
+                console.log("xoa likeShortVideos");
                 await db.collectionShortVideos.destroy({
                     where: {
                         idShortVideo: data.idShortVideo,
                     },
                 });
-                console.log('xoa collectionShortVideos');
+                console.log("xoa collectionShortVideos");
 
                 resolve({
                     errCode: 0,
@@ -6211,7 +6114,7 @@ const checkLikeBlogById = (data, payload) => {
             if (!data.idBlog || !data.accessToken) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -6240,7 +6143,7 @@ const checkSaveBlogById = (data, payload) => {
             if (!data.idBlog || !data.accessToken) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -6278,7 +6181,7 @@ const getListNotifyAll = (data, payload) => {
             if (!data.accessToken) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -6293,12 +6196,12 @@ const getListNotifyAll = (data, payload) => {
                         },
                     },
                     limit: 10,
-                    order: [['timeCreate', 'DESC']],
+                    order: [["timeCreate", "DESC"]],
                     raw: true,
                 });
 
                 let count = rows.reduce((n, item) => {
-                    if (item.seen === 'false') return n + 1;
+                    if (item.seen === "false") return n + 1;
                     return n;
                 }, 0);
                 resolve({
@@ -6319,7 +6222,7 @@ const getListNotifyByType = (data, payload) => {
             if (!data.accessToken || !data.type || !data.page) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -6336,7 +6239,7 @@ const getListNotifyByType = (data, payload) => {
                     },
                     limit: 20,
                     offset: (data.page - 1) * 20,
-                    order: [['timeCreate', 'DESC']],
+                    order: [["timeCreate", "DESC"]],
                 });
 
                 let count = await db.notifycations.count({
@@ -6367,17 +6270,17 @@ const seenNotifyOfUser = (data, payload) => {
             if (!data.accessToken) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
                 let idUser = payload.id;
 
                 await db.notifycations.update(
-                    { seen: 'true' },
+                    { seen: "true" },
                     {
                         where: {
-                            seen: 'false',
+                            seen: "false",
                             idUser,
                         },
                     }
@@ -6399,19 +6302,19 @@ const sendEmailFromContact = (data) => {
             if (!data.name || !data.email || !data.sdt || !data.content) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
                 commont.sendEmail(
-                    'ngoantung2565@gmail.com',
-                    data.name + ' đã gửi tin nhắn từ TechStoreTvT',
-                    'Nội dụng tin nhắn từ (' +
-                        data.email +
-                        ' - ' +
-                        data.sdt +
-                        '): ' +
-                        data.content
+                    "ngoantung2565@gmail.com",
+                    data.name + " đã gửi tin nhắn từ TechStoreTvT",
+                    "Nội dụng tin nhắn từ (" +
+                    data.email +
+                    " - " +
+                    data.sdt +
+                    "): " +
+                    data.content
                 );
 
                 resolve({
@@ -6430,7 +6333,7 @@ const createNewReportVideo = (data, payload) => {
             if (!data.accessToken || !data.idShortVideo || !data.content) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -6439,7 +6342,7 @@ const createNewReportVideo = (data, payload) => {
                     idShortVideo: data.idShortVideo,
                     idUser: payload.id,
                     content: data.content,
-                    status: 'true',
+                    status: "true",
                 });
                 resolve({
                     errCode: 0,
@@ -6457,7 +6360,7 @@ const createNewReportBlog = (data, payload) => {
             if (!data.accessToken || !data.idBlog || !data.content) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -6466,7 +6369,7 @@ const createNewReportBlog = (data, payload) => {
                     idBlog: data.idBlog,
                     idUser: payload.id,
                     content: data.content,
-                    status: 'true',
+                    status: "true",
                 });
                 resolve({
                     errCode: 0,
@@ -6484,7 +6387,7 @@ const getBillById = (data, payload) => {
             if (!data.idBill) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -6502,7 +6405,7 @@ const getBillById = (data, payload) => {
                                     include: [
                                         {
                                             model: db.imageProduct,
-                                            as: 'imageProduct-product',
+                                            as: "imageProduct-product",
                                         },
                                         { model: db.promotionProduct },
                                     ],
@@ -6515,7 +6418,7 @@ const getBillById = (data, payload) => {
                         {
                             model: db.statusBills,
                             attributes: {
-                                exclude: ['createdAt', 'updatedAt'],
+                                exclude: ["createdAt", "updatedAt"],
                             },
                         },
                         {
@@ -6543,7 +6446,7 @@ const getDetailBillById = (data, payload) => {
             if (!data.idDetailBill) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -6557,7 +6460,7 @@ const getDetailBillById = (data, payload) => {
                             include: [
                                 {
                                     model: db.imageProduct,
-                                    as: 'imageProduct-product',
+                                    as: "imageProduct-product",
                                 },
                                 { model: db.promotionProduct },
                             ],
@@ -6587,15 +6490,10 @@ const getDetailBillById = (data, payload) => {
 const createNewUserMobile = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (
-                !data.firstName ||
-                !data.lastName ||
-                !data.email ||
-                !data.password
-            ) {
+            if (!data.firstName || !data.lastName || !data.email || !data.password) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                 });
             } else {
                 let passHash = commont.hashPassword(data.password);
@@ -6606,27 +6504,27 @@ const createNewUserMobile = (data) => {
                         firstName: data.firstName,
                         lastName: data.lastName,
                         pass: passHash,
-                        idTypeUser: '3',
+                        idTypeUser: "3",
                         keyVerify: keyCode.toString(),
-                        statusUser: 'wait',
-                        typeAccount: 'web',
+                        statusUser: "wait",
+                        typeAccount: "web",
                         id: uuidv4(),
-                        gender: 'nam',
-                        birtday: '1/1/1990',
+                        gender: "nam",
+                        birtday: "1/1/1990",
                     },
                     raw: false,
                 });
 
                 if (!created) {
                     //Tài khoản đã tồn tại
-                    if (user.statusUser === 'true') {
+                    if (user.statusUser === "true") {
                         resolve({
                             errCode: 2,
-                            errMessage: 'Tài khoản này đã tồn tại!',
+                            errMessage: "Tài khoản này đã tồn tại!",
                         });
                     }
                     //Tài khoản chưa được xác nhận
-                    else if (user.statusUser === 'wait') {
+                    else if (user.statusUser === "wait") {
                         //update data
                         user.firstName = data.firstName;
                         user.lastName = data.lastName;
@@ -6635,26 +6533,26 @@ const createNewUserMobile = (data) => {
                         await user.save();
 
                         //send email
-                        let title = 'Xác nhận tạo tài khoản TechStoreTvT';
+                        let title = "Xác nhận tạo tài khoản TechStoreTvT";
                         let contentHtml = `<h2>Mã xác nhận của bạn là: ${keyCode}</h3>`;
 
                         commont.sendEmail(user.email, title, contentHtml);
 
                         resolve({
                             errCode: 0,
-                            errMessage: 'Tài khoản chưa được xác nhận',
+                            errMessage: "Tài khoản chưa được xác nhận",
                         });
                     }
                 } else {
                     //send email
-                    let title = 'Xác nhận tạo tài khoản TechStoreTvT';
+                    let title = "Xác nhận tạo tài khoản TechStoreTvT";
                     let contentHtml = `<h2>Mã xác nhận của bạn là: ${keyCode}</h3>`;
 
                     commont.sendEmail(user.email, title, contentHtml);
 
                     resolve({
                         errCode: 0,
-                        errMessage: 'Đã tạo tài khoản',
+                        errMessage: "Đã tạo tài khoản",
                     });
                 }
             }
@@ -6670,7 +6568,7 @@ const verifyCodeForCreateUserMobile = (data) => {
             if (!data.email || !data.code) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                 });
             } else {
                 let user = await db.User.findOne({
@@ -6684,17 +6582,17 @@ const verifyCodeForCreateUserMobile = (data) => {
                 if (!user) {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Not found user',
+                        errMessage: "Not found user",
                     });
                 } else {
                     if (user.keyVerify !== data.code) {
                         return resolve({
                             errCode: 3,
-                            errMessage: 'Mã xác nhận không đúng',
+                            errMessage: "Mã xác nhận không đúng",
                         });
                     }
 
-                    user.statusUser = 'true';
+                    user.statusUser = "true";
                     await user.save();
 
                     resolve({
@@ -6714,7 +6612,7 @@ const themDanhSachPhat = (data, payload) => {
             if (!data.tenDanhSach) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -6736,7 +6634,7 @@ const themDanhSachPhat = (data, payload) => {
                 } else {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Tên danh sách đã tồn tại',
+                        errMessage: "Tên danh sách đã tồn tại",
                     });
                 }
             }
@@ -6756,11 +6654,11 @@ const layDanhSachPhat = (payload) => {
                 include: [
                     {
                         model: db.chiTietDanhSachPhat,
-                        attributes: ['id'],
+                        attributes: ["id"],
                         include: [
                             {
                                 model: db.baihat,
-                                attributes: ['id', 'anhBia'],
+                                attributes: ["id", "anhBia"],
                             },
                         ],
                     },
@@ -6785,14 +6683,14 @@ const themBaiHatVaoDanhSach = (data, payload) => {
             if (!data.idBaiHat || !data.idDanhSachPhat) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
                 //kiem tra idBaiHat v IdDanhSachPhat
 
                 //end kiem tra
-                let maxSTT = await db.chiTietDanhSachPhat.max('stt', {
+                let maxSTT = await db.chiTietDanhSachPhat.max("stt", {
                     where: {
                         idDanhSachPhat: data.idDanhSachPhat,
                     },
@@ -6817,7 +6715,7 @@ const themBaiHatVaoDanhSach = (data, payload) => {
                 } else {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Bài hát đã có trong danh sách',
+                        errMessage: "Bài hát đã có trong danh sách",
                     });
                 }
             }
@@ -6833,7 +6731,7 @@ const layBaiHatTrongDanhSach = (data, payload) => {
             if (!data.idDanhSachPhat) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -6861,7 +6759,7 @@ const layBaiHatTrongDanhSach = (data, payload) => {
                             ],
                         },
                     ],
-                    order: [[{ model: db.chiTietDanhSachPhat }, 'stt', 'asc']],
+                    order: [[{ model: db.chiTietDanhSachPhat }, "stt", "asc"]],
                     raw: false,
                     nest: true,
                 });
@@ -6883,7 +6781,7 @@ const xoaBaiHatKhoiDanhSach = (data, payload) => {
             if (!data.idDanhSachPhat || !data.idBaiHat) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -6902,7 +6800,7 @@ const xoaBaiHatKhoiDanhSach = (data, payload) => {
                 if (!chiTietDanhSachPhat) {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Chi tiết danh sách phát không tồn tại',
+                        errMessage: "Chi tiết danh sách phát không tồn tại",
                     });
                 } else {
                     await chiTietDanhSachPhat.destroy();
@@ -6923,7 +6821,7 @@ const xoaDanhSachPhat = (data, payload) => {
             if (!data.idDanhSachPhat) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -6960,7 +6858,7 @@ const layBaiHatCuaCaSi = (data, payload) => {
             if (!data.idCaSi) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -7031,7 +6929,7 @@ const layCaSiById = (data, payload) => {
             if (!data.idCaSi) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -7046,7 +6944,7 @@ const layCaSiById = (data, payload) => {
                 if (!casi) {
                     return resolve({
                         errCode: 2,
-                        errMessage: 'Không tìm thấy ca sĩ',
+                        errMessage: "Không tìm thấy ca sĩ",
                     });
                 }
 
@@ -7067,7 +6965,7 @@ const timKiemBaiHat = (data, payload) => {
             if (!data.tenBaiHat) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -7085,7 +6983,7 @@ const timKiemBaiHat = (data, payload) => {
                 });
 
                 const options = {
-                    keys: ['tenBaiHat', 'loiBaiHat'],
+                    keys: ["tenBaiHat", "loiBaiHat"],
                 };
 
                 const fuse = new Fuse(listBH, options);
@@ -7109,7 +7007,7 @@ const timKiemCaSi = (data, payload) => {
             if (!data.tenCaSi) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -7121,7 +7019,7 @@ const timKiemCaSi = (data, payload) => {
                 console.log(listCS[0].tenCaSi);
 
                 const options = {
-                    keys: ['tenCaSi', 'moTa'],
+                    keys: ["tenCaSi", "moTa"],
                 };
 
                 const fuse = new Fuse(listCS, options);
@@ -7145,14 +7043,14 @@ const doiTenDanhSach = (data, payload) => {
             if (!data.idDanhSach || !data.tenDanhSach) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
                 if (data.tenDanhSach.length > 30) {
                     return resolve({
                         errCode: 4,
-                        errMessage: 'Tên danh sách quá dài',
+                        errMessage: "Tên danh sách quá dài",
                     });
                 }
 
@@ -7167,7 +7065,7 @@ const doiTenDanhSach = (data, payload) => {
                 if (!danhsach) {
                     return resolve({
                         errCode: 2,
-                        errMessage: 'Không tìm thấy danh sách nào',
+                        errMessage: "Không tìm thấy danh sách nào",
                     });
                 } else {
                     let checkTen = await db.danhSachPhat.findOne({
@@ -7179,7 +7077,7 @@ const doiTenDanhSach = (data, payload) => {
                     if (checkTen && checkTen.id !== data.idDanhSach) {
                         return resolve({
                             errCode: 3,
-                            errMessage: 'Tên danh sách đã tồn tại',
+                            errMessage: "Tên danh sách đã tồn tại",
                         });
                     }
 
@@ -7203,7 +7101,7 @@ const doiViTriBaiHatTrongDS = (data, payload) => {
             if (!data.idFrom || !data.idTo || !data.idDanhSach) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -7242,7 +7140,7 @@ const doiViTriBaiHatTrongDS = (data, payload) => {
                 if (!dataFrom || !dataTo) {
                     return resolve({
                         errCode: 2,
-                        errMessage: 'Không tìm thấy bài hát trong ds',
+                        errMessage: "Không tìm thấy bài hát trong ds",
                     });
                 }
 
@@ -7272,7 +7170,7 @@ const layDanhSachThongBao = (data, payload) => {
             let thongBaos = await db.thongBao.findAll({
                 limit,
                 offset,
-                order: [['createdAt', 'desc']],
+                order: [["createdAt", "desc"]],
             });
 
             resolve({
@@ -7291,7 +7189,7 @@ const toggleYeuThichBaiHat = (data, payload) => {
             if (!data.idBaiHat) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -7309,14 +7207,14 @@ const toggleYeuThichBaiHat = (data, payload) => {
                 if (create) {
                     resolve({
                         errCode: 0,
-                        errMessage: 'like',
+                        errMessage: "like",
                     });
                 } else {
                     await row.destroy();
 
                     resolve({
                         errCode: 0,
-                        errMessage: 'notLike',
+                        errMessage: "notLike",
                     });
                 }
             }
@@ -7332,7 +7230,7 @@ const kiemTraYeuThichBaiHat = (data, payload) => {
             if (!data.idBaiHat) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing required parameter!',
+                    errMessage: "Missing required parameter!",
                     data,
                 });
             } else {
@@ -7346,15 +7244,115 @@ const kiemTraYeuThichBaiHat = (data, payload) => {
                 if (row) {
                     resolve({
                         errCode: 0,
-                        errMessage: 'like',
+                        errMessage: "like",
                     });
                 } else {
                     resolve({
                         errCode: 0,
-                        errMessage: 'notLike',
+                        errMessage: "notLike",
                     });
                 }
             }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+const layDanhSachBaiHatYeuThich = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let row = await db.yeuThichBaiHat.findAll({
+                where: {
+                    idUser: payload.id,
+                },
+                include: [
+                    {
+                        model: db.baihat,
+                    },
+                ],
+                raw: false,
+                nest: true,
+            });
+
+            resolve({
+                errCode: 0,
+                data: row
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+const toggleQuanTamCaSi = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idCaSi) {
+                resolve({
+                    errCode: 1,
+                    errMessage: "Missing required parameter!",
+                    data,
+                });
+            } else {
+
+                let [row, created] = await db.quanTamCaSi.findOrCreate({
+                    where: {
+                        idUser: payload.id,
+                        idCaSi: data.idCaSi
+                    },
+                    defaults: {
+                        id: uuidv4()
+                    },
+                    raw: false,
+                });
+
+                if (created) {
+                    await row.destroy();
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'no'
+                    });
+                }
+                else {
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'yes'
+                    });
+                }
+
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+const layDanhSachCaSiQuanTam = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            let row = await db.quanTamCaSi.findAll({
+                where: {
+                    idUser: payload.id,
+                },
+                include: [
+                    {
+                        model: ds.casi
+                    }
+                ],
+                nest: true,
+
+                raw: false,
+            });
+
+
+            resolve({
+                errCode: 0,
+                data: row
+            });
+
+
         } catch (e) {
             reject(e);
         }
@@ -7467,4 +7465,7 @@ module.exports = {
     layDanhSachThongBao,
     toggleYeuThichBaiHat,
     kiemTraYeuThichBaiHat,
+    layDanhSachBaiHatYeuThich,
+    toggleQuanTamCaSi,
+    layDanhSachCaSiQuanTam
 };

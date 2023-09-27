@@ -1245,6 +1245,45 @@ const kiemTraYeuThichBaiHat = async (req, res, next) => {
     }
 };
 
+const layDanhSachBaiHatYeuThich = async (req, res, next) => {
+    try {
+        let data = await userService.layDanhSachBaiHatYeuThich(
+            req.query,
+            req.payload
+        );
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const toggleQuanTamCaSi = async (req, res, next) => {
+    try {
+        let data = await userService.toggleQuanTamCaSi(
+            req.query,
+            req.payload
+        );
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const layDanhSachCaSiQuanTam = async (req, res, next) => {
+    try {
+        let data = await userService.layDanhSachCaSiQuanTam(
+            req.query,
+            req.payload
+        );
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -1353,4 +1392,7 @@ module.exports = {
     layDanhSachThongBao,
     toggleYeuThichBaiHat,
     kiemTraYeuThichBaiHat,
+    layDanhSachBaiHatYeuThich,
+    toggleQuanTamCaSi,
+    layDanhSachCaSiQuanTam
 };

@@ -5,6 +5,7 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             // define association here
             casi.hasMany(models.baihat, { foreignKey: 'idCaSi' });
+            casi.hasMany(models.quanTamCaSi, { foreignKey: 'idCaSi' });
         }
     }
     casi.init(

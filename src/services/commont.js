@@ -241,6 +241,9 @@ const routes = {
     layDanhSachThongBao: '/api/v2/lay-danh-sach-thong-bao',
     toggleYeuThichBaiHat: '/api/v2/toggle-yeu-thich-bai-hat',
     kiemTraYeuThichBaiHat: '/api/v2/kiem-tra-yeu-thich-bai-hat',
+    layDanhSachBaiHatYeuThich: '/api/v2/lay-danh-sach-bai-hat-yeu-thich',
+    toggleQuanTamCaSi: '/api/v2/toggle-quan-tam-ca-si',
+    layDanhSachCaSiQuanTam: '/api/v2/lay-ds-ca-si-quan-tam',
 
     //end music app
 

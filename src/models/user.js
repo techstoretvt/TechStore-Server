@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
             User.hasMany(models.danhSachPhat, { foreignKey: 'idUser' });
 
             User.hasMany(models.yeuThichBaiHat, { foreignKey: 'idUser' });
+            User.hasMany(models.quanTamCaSi, { foreignKey: 'idUser' });
         }
     }
     User.init(
