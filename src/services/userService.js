@@ -6948,9 +6948,16 @@ const layCaSiById = (data, payload) => {
                     });
                 }
 
+                let countQuanTam = await db.quanTamCaSi.count({
+                    where: {
+                        idCaSi: data.idCaSi
+                    }
+                })
+
                 resolve({
                     errCode: 0,
                     data: casi,
+                    countQuanTam
                 });
             }
         } catch (e) {
@@ -7318,16 +7325,17 @@ const toggleQuanTamCaSi = (data, payload) => {
                 });
 
                 if (created) {
+
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'yes'
+                    });
+                }
+                else {
                     await row.destroy();
                     resolve({
                         errCode: 0,
                         errMessage: 'no'
-                    });
-                }
-                else {
-                    resolve({
-                        errCode: 0,
-                        errMessage: 'yes'
                     });
                 }
 
