@@ -7356,7 +7356,7 @@ const layDanhSachCaSiQuanTam = (data, payload) => {
                 },
                 include: [
                     {
-                        model: ds.casi
+                        model: db.casi
                     }
                 ],
                 nest: true,
