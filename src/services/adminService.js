@@ -2045,7 +2045,7 @@ const lockUserAdmin = (data) => {
                         user.statusUser = data.status;
                         await user.save();
 
-                        if (data.staus !== 'true')
+                        if (data.status !== 'true')
                             handleEmit(`khoa_tai_khoan_${user.id}`, '');
 
                         resolve({
