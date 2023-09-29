@@ -658,7 +658,7 @@ const loginGoogle = (data, header) => {
                         data: {
                             accessToken: accessToken,
                             refreshToken: refreshToken,
-                            idUser: user.id,
+                            id: user.id,
                         },
                     });
                 } else if (user.statusUser === "false") {
@@ -696,7 +696,7 @@ const loginGoogle = (data, header) => {
                             data: {
                                 accessToken: accessToken,
                                 refreshToken: refreshToken,
-                                idUser: user.id,
+                                id: user.id,
                             },
                         });
                     }
