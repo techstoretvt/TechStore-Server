@@ -193,6 +193,12 @@ const initUserRoute = (app) => {
         userController.layDanhSachCaSiQuanTam
     );
 
+    router.get(
+        routes.kiemTraQuanTamCaSi,
+        verifyAccessToken,
+        userController.kiemTraQuanTamCaSi
+    );
+
 
     router.post(routes.CreateUser, userController.CreateUser);
     router.post(routes.verifyCreateUser, userController.verifyCreateUser);

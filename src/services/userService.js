@@ -7377,6 +7377,46 @@ const layDanhSachCaSiQuanTam = (data, payload) => {
     });
 };
 
+const kiemTraQuanTamCaSi = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idCaSi) {
+                resolve({
+                    errCode: 1,
+                    errMessage: "Missing required parameter!",
+                    data,
+                });
+            }
+            else {
+                let row = await db.quanTamCaSi.findAll({
+                    where: {
+                        idUser: payload.id,
+                        idCaSi: data.idCaSi
+                    },
+
+                });
+                if (!row) {
+                    return resolve({
+                        errCode: 0,
+                        errMessage: "no"
+                    });
+                }
+                else {
+                    return resolve({
+                        errCode: 0,
+                        errMessage: "yes"
+                    });
+                }
+
+            }
+
+
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -7485,5 +7525,6 @@ module.exports = {
     kiemTraYeuThichBaiHat,
     layDanhSachBaiHatYeuThich,
     toggleQuanTamCaSi,
-    layDanhSachCaSiQuanTam
+    layDanhSachCaSiQuanTam,
+    kiemTraQuanTamCaSi
 };

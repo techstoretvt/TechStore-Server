@@ -1284,6 +1284,19 @@ const layDanhSachCaSiQuanTam = async (req, res, next) => {
     }
 };
 
+const kiemTraQuanTamCaSi = async (req, res, next) => {
+    try {
+        let data = await userService.kiemTraQuanTamCaSi(
+            req.query,
+            req.payload
+        );
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -1394,5 +1407,6 @@ module.exports = {
     kiemTraYeuThichBaiHat,
     layDanhSachBaiHatYeuThich,
     toggleQuanTamCaSi,
-    layDanhSachCaSiQuanTam
+    layDanhSachCaSiQuanTam,
+    kiemTraQuanTamCaSi
 };
