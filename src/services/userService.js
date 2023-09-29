@@ -696,6 +696,7 @@ const loginGoogle = (data, header) => {
                             data: {
                                 accessToken: accessToken,
                                 refreshToken: refreshToken,
+                                idUser: user.id,
                             },
                         });
                     }

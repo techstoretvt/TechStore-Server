@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
             loiBaiHat: DataTypes.TEXT,
             anhBia: DataTypes.STRING,
             linkBaiHat: DataTypes.STRING,
-            idCaSi: DataTypes.STRING,
+            idCaSi: DataTypes.STRING,//ko dung nua
             thoiGian: DataTypes.DOUBLE,
             linkMV: DataTypes.TEXT,
         },

@@ -1425,9 +1425,8 @@ const confirmBillById = (data) => {
         <br>
         <div>
             Đơn hàng
-            <span style="color: red;text-transform: uppercase;"> #${
-                bill.id
-            } </span>
+            <span style="color: red;text-transform: uppercase;"> #${bill.id
+                        } </span>
             của bạn đã được duyệt và đang tiến hành giao hàng ngày ${date}.
         </div>
         <br>
@@ -1436,9 +1435,8 @@ const confirmBillById = (data) => {
             hàng trong thời gian sắp tới. Xin cảm ơn quý khách.
         </div>
 
-        <a href="${
-            process.env.LINK_FONTEND
-        }" style="margin: 0 auto;display: block;background-color: red;color: #fff;border: none;
+        <a href="${process.env.LINK_FONTEND
+                        }" style="margin: 0 auto;display: block;background-color: red;color: #fff;border: none;
         padding: 10px 20px;border-radius: 4px;cursor: pointer;width: fit-content;text-decoration: none;">Ghé thăm
             website</a>
 
@@ -1519,9 +1517,8 @@ const cancelBillById = (data) => {
         <br>
         <div>
             Đơn hàng
-            <span style="color: red;text-transform: uppercase;"> #${
-                bill.id
-            } </span>
+            <span style="color: red;text-transform: uppercase;"> #${bill.id
+                        } </span>
             của bạn đã bị hủy ngày ${date}.
         </div>
         <br>
@@ -2048,7 +2045,8 @@ const lockUserAdmin = (data) => {
                         user.statusUser = data.status;
                         await user.save();
 
-                        handleEmit(`khoa_tai_khoan_${data.idUser}`, '');
+                        if (data.staus !== 'true')
+                            handleEmit(`khoa_tai_khoan_${user.id}`, '');
 
                         resolve({
                             errCode: 0,
