@@ -7418,6 +7418,41 @@ const kiemTraQuanTamCaSi = (data, payload) => {
     });
 };
 
+const getListRandomBaiHat = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            let limit = +data.limit || 20
+            let minusId = data.minusId || []
+
+            let listBH = await db.baihat.findAll({
+                where: {
+                    id: {
+                        [Op.notIn]: minusId
+                    }
+                },
+                include: [
+                    {
+                        model: db.casi
+                    }
+                ],
+                limit: limit,
+                order: db.sequelize.random(),
+                nest: true,
+                raw: false,
+            })
+
+            resolve({
+                errCode: 0,
+                data: listBH
+            });
+
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -7527,5 +7562,6 @@ module.exports = {
     layDanhSachBaiHatYeuThich,
     toggleQuanTamCaSi,
     layDanhSachCaSiQuanTam,
-    kiemTraQuanTamCaSi
+    kiemTraQuanTamCaSi,
+    getListRandomBaiHat
 };

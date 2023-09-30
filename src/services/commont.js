@@ -245,6 +245,7 @@ const routes = {
     toggleQuanTamCaSi: '/api/v2/toggle-quan-tam-ca-si',
     layDanhSachCaSiQuanTam: '/api/v2/lay-ds-ca-si-quan-tam',
     kiemTraQuanTamCaSi: '/api/v2/kiem-tra-quan-tam-ca-si',
+    getListRandomBaiHat: '/api/v2/get-list-random-bai-hat',
 
     //end music app
 

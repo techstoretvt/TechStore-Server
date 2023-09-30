@@ -199,6 +199,12 @@ const initUserRoute = (app) => {
         userController.kiemTraQuanTamCaSi
     );
 
+    router.get(
+        routes.getListRandomBaiHat,
+        verifyAccessToken,
+        userController.getListRandomBaiHat
+    );
+
 
     router.post(routes.CreateUser, userController.CreateUser);
     router.post(routes.verifyCreateUser, userController.verifyCreateUser);
