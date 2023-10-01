@@ -7620,6 +7620,12 @@ const getListCommentByIdBaiHat = (data, payload) => {
                     include: [
                         {
                             model: db.commentBHCon
+                        },
+                        {
+                            model: db.User,
+                            attributes: ['id', 'firstName', 'lastName', 'typeAccount', 'avatarFacebook',
+                                'avatarGithub', 'avatarGoogle', 'avatarUpdate'
+                            ]
                         }
                     ],
                     raw: false,
