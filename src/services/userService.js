@@ -7483,6 +7483,17 @@ const addCommentParent = (data, payload) => {
                     countLike: 0
                 })
 
+                let user = await db.User.findOne({
+                    where: {
+                        id: payload.id
+                    },
+                    attributes: ['id', 'firstName', 'lastName', 'typeAccount', 'avatarFacebook',
+                        'avatarGithub', 'avatarGoogle', 'avatarUpdate'
+                    ]
+                })
+
+                row = { ...row.dataValues, User: user }
+
 
                 resolve({
                     errCode: 0,
