@@ -5,6 +5,7 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             // define association here
             commentBHCon.belongsTo(models.commentBHParent, { foreignKey: 'idCommentCha' });
+            commentBHCon.belongsTo(models.User, { foreignKey: 'idUser' });
             // casi.hasMany(models.quanTamCaSi, { foreignKey: 'idCaSi' });
         }
     }
