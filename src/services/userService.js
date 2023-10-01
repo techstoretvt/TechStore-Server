@@ -7474,7 +7474,7 @@ const addCommentParent = (data, payload) => {
 
                 let tgHienTai = new Date().getTime();
 
-                await db.commentBHParent.create({
+                let row = await db.commentBHParent.create({
                     id: uuidv4(),
                     idBaiHat: data.idBaiHat,
                     noiDung: data.noiDung,
@@ -7486,6 +7486,7 @@ const addCommentParent = (data, payload) => {
 
                 resolve({
                     errCode: 0,
+                    data: row
                 });
 
             }
