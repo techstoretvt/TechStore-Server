@@ -7527,7 +7527,7 @@ const addCommentChild = (data, payload) => {
 
                 let tgHienTai = new Date().getTime();
 
-                await db.commentBHCon.create({
+                let row = await db.commentBHCon.create({
                     id: uuidv4(),
                     idUser: payload.id,
                     noiDung: data.noiDung,
@@ -7537,9 +7537,20 @@ const addCommentChild = (data, payload) => {
                     nameUserReply: data.nameUserReply
                 })
 
+                let user = await db.User.findOne({
+                    where: {
+                        id: payload.id
+                    },
+                    attributes: ['id', 'firstName', 'lastName', 'typeAccount', 'avatarFacebook',
+                        'avatarGithub', 'avatarGoogle', 'avatarUpdate'
+                    ]
+                })
+
+                row = { ...row.dataValues, User: user }
 
                 resolve({
                     errCode: 0,
+                    data: row
                 });
 
             }
@@ -7648,6 +7659,7 @@ const getListCommentByIdBaiHat = (data, payload) => {
                             ]
                         }
                     ],
+                    order: [['createdAt', 'desc']],
                     raw: false,
                     nest: true
                 })
