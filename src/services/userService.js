@@ -7453,6 +7453,193 @@ const getListRandomBaiHat = (data, payload) => {
     });
 };
 
+
+const addCommentParent = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idBaiHat || !data.noiDung) {
+                resolve({
+                    errCode: 1,
+                    errMessage: "Missing required parameter!",
+                    data,
+                });
+            } else {
+
+                if (data.noiDung.length > 500) {
+                    return resolve({
+                        errCode: 2,
+                        errMessage: 'Nội dung không được vượt quá 500 kí tự'
+                    });
+                }
+
+                let tgHienTai = new Date().getTime();
+
+                await db.commentBHParent.create({
+                    id: uuidv4(),
+                    idBaiHat: data.idBaiHat,
+                    noiDung: data.noiDung,
+                    idUser: payload.id,
+                    thoiGian: tgHienTai,
+                    countLike: 0
+                })
+
+
+                resolve({
+                    errCode: 0,
+                });
+
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+const addCommentChild = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idCommentParent || !data.noiDung || !data.nameUserReply) {
+                resolve({
+                    errCode: 1,
+                    errMessage: "Missing required parameter!",
+                    data,
+                });
+            } else {
+
+                if (data.noiDung.length > 500) {
+                    return resolve({
+                        errCode: 2,
+                        errMessage: 'Nội dung không được vượt quá 500 kí tự'
+                    });
+                }
+
+                let tgHienTai = new Date().getTime();
+
+                await db.commentBHCon.create({
+                    id: uuidv4(),
+                    idUser: payload.id,
+                    noiDung: data.noiDung,
+                    thoiGian: tgHienTai,
+                    countLike: 0,
+                    idCommentCha: data.idCommentParent,
+                    nameUserReply: data.nameUserReply
+                })
+
+
+                resolve({
+                    errCode: 0,
+                });
+
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+const toggleLikeComment = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idComment || !data.type) {
+                resolve({
+                    errCode: 1,
+                    errMessage: "Missing required parameter!",
+                    data,
+                });
+            } else {
+                let comment;
+                if (data.type === 'parent') {
+                    comment = await db.commentBHParent.findOne({
+                        where: {
+                            id: data.idComment,
+                        },
+                        raw: false
+                    })
+                }
+                else {
+                    comment = await db.commentBHCon.findOne({
+                        where: {
+                            id: data.idComment,
+                        },
+                        raw: false
+                    })
+                }
+
+                let [row, created] = await db.likeCommentBH.findOrCreate({
+                    where: {
+                        idUser: payload.id,
+                        idComment: data.idComment,
+                        type: data.type
+                    },
+                    defaults: {
+                        id: uuidv4()
+                    },
+                    raw: false
+                })
+
+                if (created) {
+                    comment.countLike = comment.countLike + 1;
+                    await comment.save()
+                    return resolve({
+                        errCode: 0,
+                        errMessage: 'yes'
+                    });
+                }
+                else {
+                    await row.destroy();
+                    comment.countLike = comment.countLike - 1;
+                    await comment.save()
+                    return resolve({
+                        errCode: 0,
+                        errMessage: 'no'
+                    });
+                }
+
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+const getListCommentByIdBaiHat = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idBaiHat) {
+                resolve({
+                    errCode: 1,
+                    errMessage: "Missing required parameter!",
+                    data,
+                });
+            } else {
+
+                let listCmt = await db.commentBHParent.findAll({
+                    where: {
+                        idBaiHat: data.idBaiHat
+                    },
+                    include: [
+                        {
+                            model: db.commentBHCon
+                        }
+                    ],
+                    raw: false,
+                    nest: true
+                })
+
+
+                resolve({
+                    errCode: 0,
+                    data: listCmt
+                });
+
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -7563,5 +7750,9 @@ module.exports = {
     toggleQuanTamCaSi,
     layDanhSachCaSiQuanTam,
     kiemTraQuanTamCaSi,
-    getListRandomBaiHat
+    getListRandomBaiHat,
+    addCommentParent,
+    addCommentChild,
+    toggleLikeComment,
+    getListCommentByIdBaiHat
 };

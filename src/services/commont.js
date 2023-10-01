@@ -246,6 +246,10 @@ const routes = {
     layDanhSachCaSiQuanTam: '/api/v2/lay-ds-ca-si-quan-tam',
     kiemTraQuanTamCaSi: '/api/v2/kiem-tra-quan-tam-ca-si',
     getListRandomBaiHat: '/api/v2/get-list-random-bai-hat',
+    addCommentParent: '/api/v2/add-comment-parent',
+    addCommentChild: '/api/v2/add-comment-child',
+    toggleLikeComment: '/api/v2/toggle-like-comment',
+    getListCommentByIdBaiHat: '/api/v2/get-list-comment-by-id-bai-hat',
 
     //end music app
 

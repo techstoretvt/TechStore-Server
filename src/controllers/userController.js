@@ -1310,6 +1310,59 @@ const getListRandomBaiHat = async (req, res, next) => {
     }
 };
 
+const addCommentParent = async (req, res, next) => {
+    try {
+        let data = await userService.addCommentParent(
+            req.body,
+            req.payload
+        );
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const addCommentChild = async (req, res, next) => {
+    try {
+        let data = await userService.addCommentChild(
+            req.body,
+            req.payload
+        );
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const toggleLikeComment = async (req, res, next) => {
+    try {
+        let data = await userService.toggleLikeComment(
+            req.body,
+            req.payload
+        );
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const getListCommentByIdBaiHat = async (req, res, next) => {
+    try {
+        let data = await userService.getListCommentByIdBaiHat(
+            req.query,
+            req.payload
+        );
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+
 module.exports = {
     CreateUser,
     verifyCreateUser,
@@ -1422,5 +1475,9 @@ module.exports = {
     toggleQuanTamCaSi,
     layDanhSachCaSiQuanTam,
     kiemTraQuanTamCaSi,
-    getListRandomBaiHat
+    getListRandomBaiHat,
+    addCommentParent,
+    addCommentChild,
+    toggleLikeComment,
+    getListCommentByIdBaiHat
 };

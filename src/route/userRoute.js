@@ -205,6 +205,12 @@ const initUserRoute = (app) => {
         userController.getListRandomBaiHat
     );
 
+    router.get(
+        routes.getListCommentByIdBaiHat,
+        verifyAccessToken,
+        userController.getListCommentByIdBaiHat
+    );
+
 
     router.post(routes.CreateUser, userController.CreateUser);
     router.post(routes.verifyCreateUser, userController.verifyCreateUser);
@@ -364,6 +370,24 @@ const initUserRoute = (app) => {
         routes.toggleQuanTamCaSi,
         verifyAccessToken,
         userController.toggleQuanTamCaSi
+    );
+
+    router.post(
+        routes.addCommentParent,
+        verifyAccessToken,
+        userController.addCommentParent
+    );
+
+    router.post(
+        routes.addCommentChild,
+        verifyAccessToken,
+        userController.addCommentChild
+    );
+
+    router.post(
+        routes.toggleLikeComment,
+        verifyAccessToken,
+        userController.toggleLikeComment
     );
 
     router.put(
