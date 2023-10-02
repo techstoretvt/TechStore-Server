@@ -14,6 +14,9 @@ module.exports = {
             idComment: {
                 type: Sequelize.STRING,
             },
+            idBaiHat: {
+                type: Sequelize.STRING,
+            },
             idUser: {
                 type: Sequelize.STRING,
             },

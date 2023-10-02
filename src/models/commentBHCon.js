@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
             // define association here
             commentBHCon.belongsTo(models.commentBHParent, { foreignKey: 'idCommentCha' });
             commentBHCon.belongsTo(models.User, { foreignKey: 'idUser' });
-            // casi.hasMany(models.quanTamCaSi, { foreignKey: 'idCaSi' });
+            commentBHCon.hasMany(models.likeCommentBH, { foreignKey: 'idComment' });
         }
     }
     commentBHCon.init(

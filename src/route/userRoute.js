@@ -211,6 +211,12 @@ const initUserRoute = (app) => {
         userController.getListCommentByIdBaiHat
     );
 
+    router.get(
+        routes.getListIdLikeComment,
+        verifyAccessToken,
+        userController.getListIdLikeComment
+    );
+
 
     router.post(routes.CreateUser, userController.CreateUser);
     router.post(routes.verifyCreateUser, userController.verifyCreateUser);

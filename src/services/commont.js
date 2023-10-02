@@ -250,6 +250,7 @@ const routes = {
     addCommentChild: '/api/v2/add-comment-child',
     toggleLikeComment: '/api/v2/toggle-like-comment',
     getListCommentByIdBaiHat: '/api/v2/get-list-comment-by-id-bai-hat',
+    getListIdLikeComment: '/api/v2/get-list-id-like-comment',
 
     //end music app
 

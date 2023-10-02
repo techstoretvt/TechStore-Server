@@ -7563,7 +7563,7 @@ const addCommentChild = (data, payload) => {
 const toggleLikeComment = (data, payload) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.idComment || !data.type) {
+            if (!data.idComment || !data.type || !data.idBaiHat) {
                 resolve({
                     errCode: 1,
                     errMessage: "Missing required parameter!",
@@ -7592,7 +7592,8 @@ const toggleLikeComment = (data, payload) => {
                     where: {
                         idUser: payload.id,
                         idComment: data.idComment,
-                        type: data.type
+                        type: data.type,
+                        idBaiHat: data.idBaiHat
                     },
                     defaults: {
                         id: uuidv4()
@@ -7676,6 +7677,33 @@ const getListCommentByIdBaiHat = (data, payload) => {
         }
     });
 };
+
+const getListIdLikeComment = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idBaiHat) {
+                resolve({
+                    errCode: 1,
+                    errMessage: "Missing required parameter!",
+                    data,
+                });
+            } else {
+
+
+
+
+                resolve({
+                    errCode: 0,
+                    data: []
+                });
+
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 
 
 module.exports = {
@@ -7792,5 +7820,6 @@ module.exports = {
     addCommentParent,
     addCommentChild,
     toggleLikeComment,
-    getListCommentByIdBaiHat
+    getListCommentByIdBaiHat,
+    getListIdLikeComment
 };
