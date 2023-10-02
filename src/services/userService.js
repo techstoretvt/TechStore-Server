@@ -7689,12 +7689,18 @@ const getListIdLikeComment = (data, payload) => {
                 });
             } else {
 
-
+                let listId = await db.likeCommentBH.findAll({
+                    where: {
+                        idBaiHat: data.idBaiHat,
+                        idUser: payload.id
+                    },
+                    attributes: ['idComment']
+                })
 
 
                 resolve({
                     errCode: 0,
-                    data: []
+                    data: listId
                 });
 
             }
