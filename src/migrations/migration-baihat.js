@@ -28,6 +28,10 @@ module.exports = {
             thoiGian: {
                 type: Sequelize.DOUBLE,
             },
+            luotNghe: {
+                type: Sequelize.INTEGER,
+                defaultValue: 0
+            },
             linkMV: {
                 type: Sequelize.TEXT,
             },

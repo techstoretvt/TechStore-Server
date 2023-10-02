@@ -251,6 +251,7 @@ const routes = {
     toggleLikeComment: '/api/v2/toggle-like-comment',
     getListCommentByIdBaiHat: '/api/v2/get-list-comment-by-id-bai-hat',
     getListIdLikeComment: '/api/v2/get-list-id-like-comment',
+    tangViewBaiHat: '/api/v2/tang-view-bai-hat',
 
     //end music app
 

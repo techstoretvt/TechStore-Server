@@ -1375,6 +1375,19 @@ const getListIdLikeComment = async (req, res, next) => {
     }
 };
 
+const tangViewBaiHat = async (req, res, next) => {
+    try {
+        let data = await userService.tangViewBaiHat(
+            req.query,
+            req.payload
+        );
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
 
 module.exports = {
     CreateUser,
@@ -1493,5 +1506,6 @@ module.exports = {
     addCommentChild,
     toggleLikeComment,
     getListCommentByIdBaiHat,
-    getListIdLikeComment
+    getListIdLikeComment,
+    tangViewBaiHat
 };

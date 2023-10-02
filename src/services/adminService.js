@@ -4789,6 +4789,7 @@ const themBaiHat = ({ files, data }) => {
                     item.mimetype.includes('audio')
                 );
                 console.log(fileImage, fileAudio);
+                let luotLike = Math.random() * 100000 + 500;
 
                 let baiHatMoi = await db.baihat.create({
                     id: uuidv4(),
@@ -4799,6 +4800,7 @@ const themBaiHat = ({ files, data }) => {
                     idCaSi: data.idCaSi,
                     thoiGian: +data.thoiGian,
                     linkMV: data.linkMV || 'false',
+                    luotLike
                 });
 
                 let arrayTitle = [

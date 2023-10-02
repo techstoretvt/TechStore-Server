@@ -507,6 +507,12 @@ const initUserRoute = (app) => {
         userController.doiViTriBaiHatTrongDS
     );
 
+    router.put(
+        routes.tangViewBaiHat,
+        verifyAccessToken,
+        userController.tangViewBaiHat
+    );
+
     router.delete(
         routes.deleteAddressUser,
         verifyAccessToken,

@@ -7710,6 +7710,45 @@ const getListIdLikeComment = (data, payload) => {
     });
 };
 
+const tangViewBaiHat = (data, payload) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idBaiHat) {
+                resolve({
+                    errCode: 1,
+                    errMessage: "Missing required parameter!",
+                    data,
+                });
+            } else {
+
+                let currentBH = await db.baihat.findOne({
+                    where: {
+                        id: data.idBaiHat
+                    },
+                    raw: false
+                })
+
+                if (!currentBH) {
+                    return resolve({
+                        errCode: 1,
+                        errMessage: "Khong tim thay bai hat",
+                    });
+                }
+
+                currentBH.luotNghe = currentBH.luotNghe + 1
+                await currentBH.save();
+
+                resolve({
+                    errCode: 0,
+                });
+
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 
 
 module.exports = {
@@ -7827,5 +7866,6 @@ module.exports = {
     addCommentChild,
     toggleLikeComment,
     getListCommentByIdBaiHat,
-    getListIdLikeComment
+    getListIdLikeComment,
+    tangViewBaiHat
 };
