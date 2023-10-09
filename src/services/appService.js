@@ -1017,10 +1017,10 @@ const searchProduct = (data) => {
                 let indexOrder = !data.order
                     ? 0
                     : data.order === 'latest'
-                    ? 1
-                    : data.order === 'selling'
-                    ? 2
-                    : 0;
+                        ? 1
+                        : data.order === 'selling'
+                            ? 2
+                            : 0;
 
                 if (
                     data.promotion &&
@@ -2955,7 +2955,6 @@ const getListBaiHat = (data) => {
             let orderBy = data.orderBy || 'createdAt';
             let order_style = data.order_style || 'asc';
             let search_tenBH = data.search_tenBH || '';
-            let search_tenCS = data.search_tenCS || '';
 
             let baihats = await db.baihat.findAll({
                 where: {
@@ -2965,12 +2964,12 @@ const getListBaiHat = (data) => {
                 },
                 include: [
                     {
-                        model: db.casi,
-                        where: {
-                            tenCaSi: {
-                                [Op.like]: `%${search_tenCS}%`,
-                            },
-                        },
+                        model: db.baiHat_caSi,
+                        include: [
+                            {
+                                model: db.casi
+                            }
+                        ]
                     },
                 ],
                 limit: maxCount,
