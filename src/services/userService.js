@@ -6753,7 +6753,12 @@ const layBaiHatTrongDanhSach = (data, payload) => {
                                     model: db.baihat,
                                     include: [
                                         {
-                                            model: db.casi,
+                                            model: db.baiHat_caSi,
+                                            include: [
+                                                {
+                                                    model: db.casi
+                                                }
+                                            ]
                                         },
                                     ],
                                 },
@@ -6870,9 +6875,9 @@ const layBaiHatCuaCaSi = (data, payload) => {
                 let baihats = await db.baihat.findAll({
                     include: [
                         {
-                            model: db.casi,
+                            model: db.baiHat_caSi,
                             where: {
-                                id: data.idCaSi,
+                                idCaSi: data.idCaSi,
                             },
                         },
                     ],
@@ -6983,7 +6988,12 @@ const timKiemBaiHat = (data, payload) => {
                 let listBH = await db.baihat.findAll({
                     include: [
                         {
-                            model: db.casi,
+                            model: db.baiHat_caSi,
+                            include: [
+                                {
+                                    model: db.casi
+                                }
+                            ]
                         },
                     ],
                     raw: false,
@@ -7283,7 +7293,12 @@ const layDanhSachBaiHatYeuThich = (data, payload) => {
                         model: db.baihat,
                         include: [
                             {
-                                model: db.casi
+                                model: db.baiHat_caSi,
+                                include: [
+                                    {
+                                        model: db.casi
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -7433,7 +7448,12 @@ const getListRandomBaiHat = (data, payload) => {
                 },
                 include: [
                     {
-                        model: db.casi
+                        model: db.baiHat_caSi,
+                        include: [
+                            {
+                                model: db.casi
+                            }
+                        ]
                     }
                 ],
                 limit: limit,
