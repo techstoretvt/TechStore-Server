@@ -6879,6 +6879,9 @@ const layBaiHatCuaCaSi = (data, payload) => {
                             where: {
                                 idCaSi: data.idCaSi,
                             },
+                            include: [
+                                { model: db.casi }
+                            ]
                         },
                     ],
                     raw: false,
