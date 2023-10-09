@@ -11,7 +11,7 @@
     "migrate": "npx sequelize-cli db:migrate"
   },
   "engines": {
-    "node": "14.x"
+    "node": "18.x"
   },
   "keywords": [
     "fullstack",
