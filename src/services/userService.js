@@ -6887,9 +6887,31 @@ const layBaiHatCuaCaSi = (data, payload) => {
                     raw: false,
                     nest: true,
                 });
+
+                let listIdBH = baihats.map(item => item.id)
+                let baihats2 = await db.baihat.findAll({
+                    where: {
+                        id: {
+                            [Op.in]: listIdBH
+                        }
+                    },
+                    include: [
+                        {
+                            model: db.baiHat_caSi,
+                            include: [
+                                { model: db.casi }
+                            ]
+                        },
+                    ],
+                    raw: false,
+                    nest: true,
+                });
+
+
+
                 resolve({
                     errCode: 0,
-                    data: baihats,
+                    data: baihats2,
                 });
             }
         } catch (e) {
