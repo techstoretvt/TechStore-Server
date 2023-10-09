@@ -22,9 +22,6 @@ module.exports = {
             linkBaiHat: {
                 type: Sequelize.STRING,
             },
-            idCaSi: {
-                type: Sequelize.STRING,
-            },
             thoiGian: {
                 type: Sequelize.DOUBLE,
             },
@@ -35,6 +32,29 @@ module.exports = {
             linkMV: {
                 type: Sequelize.TEXT,
             },
+
+
+            tenNhacSi: {
+                type: Sequelize.STRING,
+            },
+            theLoai: {
+                type: Sequelize.STRING,
+            },
+            ngayPhatHanh: {
+                type: Sequelize.STRING,
+            },
+            nhaCungCap: {
+                type: Sequelize.STRING,
+            },
+
+
+
+
+
+
+
+
+
 
             createdAt: {
                 allowNull: false,

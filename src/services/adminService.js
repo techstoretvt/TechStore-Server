@@ -4771,10 +4771,15 @@ const themBaiHat = ({ files, data }) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (
-                !data.tenBaiHat ||
-                !data.loiBaiHat ||
-                !data.idCaSi ||
-                !data.thoiGian
+                !data.tenBaiHat || //r
+                !data.loiBaiHat || //r
+                !data.listIdCaSi || //r
+                !data.thoiGian || //r
+                !data.tenNhacSi || //r
+                !data.theLoai ||  //r
+                !data.nhaCungCap || //r
+                !data.ngayPhatHanh || //r
+                data.listIdCaSi.length === 0
             ) {
                 resolve({
                     errCode: 1,
@@ -4789,19 +4794,49 @@ const themBaiHat = ({ files, data }) => {
                     item.mimetype.includes('audio')
                 );
                 console.log(fileImage, fileAudio);
-                let luotLike = Math.random() * 100000 + 500;
+                let luotNghe = Math.random() * 100000 + 500;
 
-                let baiHatMoi = await db.baihat.create({
-                    id: uuidv4(),
-                    tenBaiHat: data.tenBaiHat,
-                    loiBaiHat: data.loiBaiHat,
-                    anhBia: fileImage.path,
-                    linkBaiHat: fileAudio.path,
-                    idCaSi: data.idCaSi,
-                    thoiGian: +data.thoiGian,
-                    linkMV: data.linkMV || 'false',
-                    luotLike
+
+                let idBaiHat = uuidv4();
+                let [row, created] = await db.baihat.findOrCreate({
+                    where: {
+                        tenBaiHat: data.tenBaiHat,
+                    },
+
+                    defaults: {
+                        id: idBaiHat,
+
+                        loiBaiHat: data.loiBaiHat,
+                        anhBia: fileImage.path,
+                        linkBaiHat: fileAudio.path,
+
+                        thoiGian: +data.thoiGian,
+                        linkMV: data.linkMV || 'false',
+                        luotNghe,
+                        tenNhacSi: data.tenNhacSi,
+                        theLoai: data.theLoai,
+                        nhaCungCap: data.nhaCungCap,
+                        ngayPhatHanh: data.ngayPhatHanh
+                    }
+
                 });
+
+                if (!created) {
+
+                    return resolve({
+                        errCode: 2,
+                        errMessage: 'Bài hát đã tồn tại',
+                    })
+                }
+
+                data.listIdCaSi.forEach(async item => {
+                    await db.baiHat_caSi.create({
+                        id: uuidv4(),
+                        idBaiHat: idBaiHat,
+                        idCaSi: item
+                    })
+                })
+
 
                 let arrayTitle = [
                     'Ra mắt bài hát mới',
@@ -4886,7 +4921,7 @@ const themBaiHat = ({ files, data }) => {
 
                 resolve({
                     errCode: 0,
-                    data: baiHatMoi,
+                    data: row,
                 });
             }
         } catch (e) {
@@ -4901,7 +4936,10 @@ const layDsBaiHat = () => {
             let dsBaiHat = await db.baihat.findAll({
                 include: [
                     {
-                        model: db.casi,
+                        model: db.baiHat_caSi,
+                        include: [
+                            { model: db.casi }
+                        ]
                     },
                 ],
                 raw: false,
@@ -4977,7 +5015,7 @@ const xoaBaiHat = (data) => {
 const suaBaiHat = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.id | !data.tenBaiHat | !data.loiBaiHat || !data.idCaSi) {
+            if (!data.id | !data.tenBaiHat | !data.loiBaiHat) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required paramteter!',
@@ -5000,7 +5038,6 @@ const suaBaiHat = (data) => {
 
                 baihat.tenBaiHat = data.tenBaiHat.trim();
                 baihat.loiBaiHat = data.loiBaiHat.trim();
-                baihat.idCaSi = data.idCaSi.trim();
                 baihat.linkMV = data.linkMV || 'false'
 
                 await baihat.save();

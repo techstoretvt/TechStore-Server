@@ -16,6 +16,9 @@ module.exports = {
             idUser: {
                 type: Sequelize.STRING,
             },
+            anhDanhSach: {
+                type: Sequelize.STRING,
+            },
 
             createdAt: {
                 allowNull: false,

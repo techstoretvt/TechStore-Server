@@ -8,7 +8,10 @@
     "dev": "nodemon --exec babel-node src/index.js",
     "build": "babel src -d build --copy-files",
     "start": "node build/index.js",
-    "migrate":"npx sequelize-cli db:migrate"
+    "migrate": "npx sequelize-cli db:migrate"
+  },
+  "engines": {
+    "node": "14.x"
   },
   "keywords": [
     "fullstack",
