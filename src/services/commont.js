@@ -252,6 +252,13 @@ const routes = {
     getListCommentByIdBaiHat: '/api/v2/get-list-comment-by-id-bai-hat',
     getListIdLikeComment: '/api/v2/get-list-id-like-comment',
     tangViewBaiHat: '/api/v2/tang-view-bai-hat',
+    timKiemBaiHatById: '/api/v2/tim-kiem-bai-hat-by-id',
+    themLoiBaiHat: '/api/v2/them-loi-bai-hat',
+    getListLoiBaiHat: '/api/v2/get-list-loi-bai-hat',
+    suaLoiBaiHatById: "/api/v2/sua-loi-bai-hat-by-id",
+    suaThoiGianBaiHatById: "/api/v2/sua-thoi-gian-bai-hat-by-id",
+    xoaLoiBaiHatById: '/api/v2/xoa-loi-bai-hat-by-id',
+
 
     //end music app
 

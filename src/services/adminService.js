@@ -5053,6 +5053,218 @@ const suaBaiHat = (data) => {
     });
 };
 
+const timKiemBaiHatById = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idBaiHat) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data,
+                });
+            } else {
+                let baihat = await db.baihat.findOne({
+                    where: {
+                        id: data.idBaiHat,
+                    },
+                    raw: false,
+                });
+
+                if (!baihat) {
+                    return resolve({
+                        errCode: 2,
+                        errMessage: 'Bài hát này không tồn tại!',
+                    });
+                }
+
+
+                resolve({
+                    errCode: 0,
+                    data: baihat,
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+const themLoiBaiHat = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idBaiHat || !data.thoiGian) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data,
+                });
+            } else {
+
+                let loiBaiHat = data.loiBaiHat || ""
+
+
+                await db.loiBaiHat.create({
+                    id: uuidv4(),
+                    idBaiHat: data.idBaiHat,
+                    loiBaiHat: loiBaiHat.trim(),
+                    thoiGian: +data.thoiGian,
+                })
+
+
+                resolve({
+                    errCode: 0,
+                    // data: baihat,
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+const getListLoiBaiHat = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idBaiHat) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data,
+                });
+            } else {
+
+
+                let list = await db.loiBaiHat.findAll({
+                    where: {
+                        idBaiHat: data.idBaiHat,
+                    },
+                    order: [['thoiGian', 'asc']]
+                })
+
+
+                resolve({
+                    errCode: 0,
+                    data: list,
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+const suaLoiBaiHatById = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idLoiBaiHat || !data.loiBaiHat) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data,
+                });
+            } else {
+
+
+                let loiBaiHat = await db.loiBaiHat.findOne({
+                    where: {
+                        id: data.idLoiBaiHat,
+                    },
+                    raw: false
+                })
+
+                if (loiBaiHat !== null) {
+                    loiBaiHat.loiBaiHat = data.loiBaiHat;
+                    await loiBaiHat.save()
+                }
+
+
+                resolve({
+                    errCode: 0,
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+const suaThoiGianBaiHatById = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idLoiBaiHat || !data.thoiGian) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data,
+                });
+            } else {
+
+
+                let loiBaiHat = await db.loiBaiHat.findOne({
+                    where: {
+                        id: data.idLoiBaiHat,
+                    },
+                    raw: false
+                })
+
+                if (loiBaiHat !== null) {
+                    loiBaiHat.thoiGian = data.thoiGian;
+                    await loiBaiHat.save()
+                }
+
+
+                resolve({
+                    errCode: 0,
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+const xoaLoiBaiHatById = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.idLoiBaiHat) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required paramteter!',
+                    data,
+                });
+            } else {
+
+
+                let loiBaiHat = await db.loiBaiHat.findOne({
+                    where: {
+                        id: data.idLoiBaiHat,
+                    },
+                    raw: false
+                })
+
+                if (loiBaiHat !== null) {
+                    await loiBaiHat.destroy()
+                    resolve({
+                        errCode: 0,
+                    });
+                }
+                else {
+                    resolve({
+                        errCode: 2,
+                        errMessage: "ko tim thay loi bai hat"
+                    });
+                }
+
+
+
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+
 //end music app
 
 module.exports = {
@@ -5122,6 +5334,12 @@ module.exports = {
     layDsBaiHat,
     xoaBaiHat,
     suaBaiHat,
+    timKiemBaiHatById,
+    themLoiBaiHat,
+    getListLoiBaiHat,
+    suaLoiBaiHatById,
+    suaThoiGianBaiHatById,
+    xoaLoiBaiHatById,
     //end music app
 
     //winform

@@ -831,6 +831,71 @@ const suaBaiHat = async (req, res, next) => {
     }
 };
 
+const timKiemBaiHatById = async (req, res, next) => {
+    try {
+        //call service data
+        let data = await adminService.timKiemBaiHatById(req.query);
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const themLoiBaiHat = async (req, res, next) => {
+    try {
+        //call service data
+        let data = await adminService.themLoiBaiHat(req.body);
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const getListLoiBaiHat = async (req, res, next) => {
+    try {
+        //call service data
+        let data = await adminService.getListLoiBaiHat(req.query);
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const suaLoiBaiHatById = async (req, res, next) => {
+    try {
+        //call service data
+        let data = await adminService.suaLoiBaiHatById(req.body);
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const suaThoiGianBaiHatById = async (req, res, next) => {
+    try {
+        //call service data
+        let data = await adminService.suaThoiGianBaiHatById(req.body);
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const xoaLoiBaiHatById = async (req, res, next) => {
+    try {
+        //call service data
+        let data = await adminService.xoaLoiBaiHatById(req.body);
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
 //end music app
 
 module.exports = {
@@ -900,6 +965,12 @@ module.exports = {
     layDsBaiHat,
     xoaBaiHat,
     suaBaiHat,
+    timKiemBaiHatById,
+    themLoiBaiHat,
+    getListLoiBaiHat,
+    suaLoiBaiHatById,
+    suaThoiGianBaiHatById,
+    xoaLoiBaiHatById,
 
     //and music app
 

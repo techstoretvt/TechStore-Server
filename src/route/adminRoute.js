@@ -141,6 +141,16 @@ const initAdminRoute = (app) => {
         verifyAccessTokenAdmin,
         adminController.layDsBaiHat
     );
+    router.get(
+        routes.timKiemBaiHatById,
+        verifyAccessTokenAdmin,
+        adminController.timKiemBaiHatById
+    );
+
+    router.get(
+        routes.getListLoiBaiHat,
+        adminController.getListLoiBaiHat
+    );
 
     //winform
     router.get(
@@ -278,6 +288,13 @@ const initAdminRoute = (app) => {
         adminController.themBaiHat
     );
 
+    router.post(
+        routes.themLoiBaiHat,
+        verifyAccessTokenAdmin,
+        adminController.themLoiBaiHat
+    );
+
+
     router.put(
         routes.confirmBillById,
         verifyAccessTokenAdmin,
@@ -352,6 +369,17 @@ const initAdminRoute = (app) => {
         verifyAccessTokenAdmin,
         adminController.suaBaiHat
     );
+    router.put(
+        routes.suaLoiBaiHatById,
+        verifyAccessTokenAdmin,
+        adminController.suaLoiBaiHatById
+    );
+
+    router.put(
+        routes.suaThoiGianBaiHatById,
+        verifyAccessTokenAdmin,
+        adminController.suaThoiGianBaiHatById
+    );
 
     router.delete(
         routes.deleteTypeProduct,
@@ -397,6 +425,12 @@ const initAdminRoute = (app) => {
         routes.xoaBaiHat,
         verifyAccessTokenAdmin,
         adminController.xoaBaiHat
+    );
+
+    router.delete(
+        routes.xoaLoiBaiHatById,
+        verifyAccessTokenAdmin,
+        adminController.xoaLoiBaiHatById
     );
 
     return app.use('/', router);
