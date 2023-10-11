@@ -7805,12 +7805,15 @@ const getGoiYMVBaiHat = (data) => {
                 });
             } else {
 
-                let listId = data.listIdBaiHat || []
+                let listId = JSON.parse(data.listIdBaiHat) || ["0f5bb886-effd-4d77-b27d-74aafcc78f58"]
 
                 let listBH = await db.baihat.findAll({
                     where: {
                         id: {
                             [Op.notIn]: listId
+                        },
+                        linkMV: {
+                            [Op.ne]: 'false'
                         }
                     },
                     include: [
@@ -7821,11 +7824,13 @@ const getGoiYMVBaiHat = (data) => {
                             ]
                         }
                     ],
-                    order: db.sequelize.random(),
                     limit: 10,
+                    order: db.sequelize.random(),
                     nest: true,
                     raw: false
                 })
+
+
 
                 resolve({
                     errCode: 0,
