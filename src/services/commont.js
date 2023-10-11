@@ -258,6 +258,7 @@ const routes = {
     suaLoiBaiHatById: "/api/v2/sua-loi-bai-hat-by-id",
     suaThoiGianBaiHatById: "/api/v2/sua-thoi-gian-bai-hat-by-id",
     xoaLoiBaiHatById: '/api/v2/xoa-loi-bai-hat-by-id',
+    getGoiYMVBaiHat: '/api/v2/get-goi-y-mv-bai-hat',
 
 
     //end music app

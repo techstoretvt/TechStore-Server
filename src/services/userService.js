@@ -7794,6 +7794,51 @@ const tangViewBaiHat = (data, payload) => {
     });
 };
 
+const getGoiYMVBaiHat = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.listIdBaiHat) {
+                resolve({
+                    errCode: 1,
+                    errMessage: "Missing required parameter!",
+                    data,
+                });
+            } else {
+
+                let listId = data.listIdBaiHat || []
+
+                let listBH = await db.baihat.findAll({
+                    where: {
+                        id: {
+                            [Op.notIn]: listId
+                        }
+                    },
+                    include: [
+                        {
+                            model: db.baiHat_caSi,
+                            include: [
+                                { model: db.casi }
+                            ]
+                        }
+                    ],
+                    order: db.sequelize.random(),
+                    limit: 10,
+                    nest: true,
+                    raw: false
+                })
+
+                resolve({
+                    errCode: 0,
+                    data: listBH,
+                });
+
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 
 
 module.exports = {
@@ -7912,5 +7957,6 @@ module.exports = {
     toggleLikeComment,
     getListCommentByIdBaiHat,
     getListIdLikeComment,
-    tangViewBaiHat
+    tangViewBaiHat,
+    getGoiYMVBaiHat
 };

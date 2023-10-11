@@ -217,6 +217,11 @@ const initUserRoute = (app) => {
         userController.getListIdLikeComment
     );
 
+    router.get(
+        routes.getGoiYMVBaiHat,
+        userController.getGoiYMVBaiHat
+    );
+
 
     router.post(routes.CreateUser, userController.CreateUser);
     router.post(routes.verifyCreateUser, userController.verifyCreateUser);
