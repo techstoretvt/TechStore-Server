@@ -7857,6 +7857,11 @@ const timKiemMV = (data) => {
 
 
                 let listBH = await db.baihat.findAll({
+                    where: {
+                        linkMV: {
+                            [Op.ne]: 'false'
+                        }
+                    },
                     include: [
                         {
                             model: db.baiHat_caSi,
@@ -7881,7 +7886,7 @@ const timKiemMV = (data) => {
 
                 resolve({
                     errCode: 0,
-                    data: result,
+                    data: result.slice(0, 10),
                 });
 
             }
