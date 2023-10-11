@@ -5067,6 +5067,17 @@ const timKiemBaiHatById = (data) => {
                     where: {
                         id: data.idBaiHat,
                     },
+                    include: [
+                        {
+                            model: db.baiHat_caSi,
+                            include: [
+                                {
+                                    model: db.casi
+                                }
+                            ]
+                        }
+                    ],
+                    nest: true,
                     raw: false,
                 });
 
