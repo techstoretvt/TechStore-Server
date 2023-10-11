@@ -7844,6 +7844,54 @@ const getGoiYMVBaiHat = (data) => {
     });
 };
 
+const timKiemMV = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.value) {
+                resolve({
+                    errCode: 1,
+                    errMessage: "Missing required parameter!",
+                    data,
+                });
+            } else {
+
+
+                let listBH = await db.baihat.findAll({
+                    include: [
+                        {
+                            model: db.baiHat_caSi,
+                            include: [
+                                { model: db.casi }
+                            ]
+                        },
+                    ],
+                    nest: true,
+                    raw: false
+                })
+
+                const options = {
+                    keys: ["tenBaiHat", "loiBaiHat", "baiHat_caSis.casi.tenCaSi"],
+                };
+
+                const fuse = new Fuse(listBH, options);
+
+                const result = fuse.search(data.value);
+
+
+
+                resolve({
+                    errCode: 0,
+                    data: result,
+                });
+
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+
 
 
 module.exports = {
@@ -7963,5 +8011,6 @@ module.exports = {
     getListCommentByIdBaiHat,
     getListIdLikeComment,
     tangViewBaiHat,
-    getGoiYMVBaiHat
+    getGoiYMVBaiHat,
+    timKiemMV
 };

@@ -222,6 +222,12 @@ const initUserRoute = (app) => {
         userController.getGoiYMVBaiHat
     );
 
+    router.get(
+        routes.timKiemMV,
+        userController.timKiemMV
+    );
+
+
 
     router.post(routes.CreateUser, userController.CreateUser);
     router.post(routes.verifyCreateUser, userController.verifyCreateUser);
