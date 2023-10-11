@@ -143,7 +143,6 @@ const initAdminRoute = (app) => {
     );
     router.get(
         routes.timKiemBaiHatById,
-        verifyAccessTokenAdmin,
         adminController.timKiemBaiHatById
     );
 
