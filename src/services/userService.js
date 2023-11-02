@@ -7033,6 +7033,24 @@ const timKiemBaiHat = (data, payload) => {
 
                 const result = fuse.search(data.tenBaiHat);
 
+
+                //them tu khoa
+                let [keyword, created] = await db.keywordSearchs.findOrCreate({
+                    where: {
+                        keyword: data.tenBaiHat.toLowerCase(),
+                    },
+                    defaults: {
+                        amount: 1,
+                        id: uuidv4(),
+                    },
+                    raw: false,
+                });
+
+                if (!created) {
+                    keyword.amount = keyword.amount + 1;
+                    await keyword.save();
+                }
+
                 resolve({
                     errCode: 0,
                     data: result.slice(offset * limit, limit),

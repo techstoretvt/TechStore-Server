@@ -4919,6 +4919,24 @@ const themBaiHat = ({ files, data }) => {
                     urlImage: `https://source.unsplash.com/random?sig=${number3}`,
                 });
 
+
+                //them tu khoa
+                let [keyword, created2] = await db.keywordSearchs.findOrCreate({
+                    where: {
+                        keyword: data.tenBaiHat.toLowerCase(),
+                    },
+                    defaults: {
+                        amount: 1,
+                        id: uuidv4(),
+                    },
+                    raw: false,
+                });
+
+                if (!created2) {
+                    keyword.amount = keyword.amount + 1;
+                    await keyword.save();
+                }
+
                 resolve({
                     errCode: 0,
                     data: row,
