@@ -5239,12 +5239,19 @@ const suaThoiGianBaiHatById = (data) => {
                 if (loiBaiHat !== null) {
                     loiBaiHat.thoiGian = data.thoiGian;
                     await loiBaiHat.save()
+                    resolve({
+                        errCode: 0,
+                    });
+                }
+                else {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Not found'
+                    });
                 }
 
 
-                resolve({
-                    errCode: 0,
-                });
+
             }
         } catch (e) {
             reject(e);
