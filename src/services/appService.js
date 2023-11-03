@@ -6,6 +6,7 @@ import Fuse from 'fuse.js';
 import { v4 as uuidv4 } from 'uuid';
 import commont from '../services/commont';
 const createError = require('http-errors');
+import request from 'request';
 
 const getProductPromotionHome = () => {
     return new Promise(async (resolve, reject) => {
@@ -2915,6 +2916,8 @@ const getListBlogForyouMobile = (data) => {
     });
 };
 
+import axios from 'axios';
+
 const getListKeywordSearchMobile = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -2928,24 +2931,43 @@ const getListKeywordSearchMobile = (data) => {
                 // let text = commont.removeVietnameseDiacritics(data.value);
                 // text = text.toLowerCase();
 
-                let rows = await db.keywordSearchs.findAll({
-                    where: {
-                        keyword: {
-                            [Op.like]: `%${data.value}%`,
-                        },
-                    },
-                });
+                // let rows = await db.keywordSearchs.findAll({
+                //     where: {
+                //         keyword: {
+                //             [Op.like]: `%${data.value}%`,
+                //         },
+                //     },
+                // });
 
-                resolve({
-                    errCode: 0,
-                    data: rows,
-                });
+                request(
+                    {
+                        uri: 'http://suggestqueries.google.com/complete/search?client=firefox&hl=vi',
+                        qs: { q: data.value },
+                        method: 'GET',
+                        // json: request_body,
+                    },
+                    (err, res, body) => {
+                        if (!err) {
+                            console.log(eval(body))
+                            resolve({
+                                errCode: 0,
+                                data: eval(body)[1],
+                            });
+                        } else {
+                            console.error('Unable to send message:' + err);
+                            reject(err);
+                        }
+                    }
+                );
+
+
             }
         } catch (e) {
             reject(e);
         }
     });
 };
+
 
 const getListBaiHat = (data) => {
     return new Promise(async (resolve, reject) => {
