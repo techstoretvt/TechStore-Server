@@ -2931,13 +2931,22 @@ const getListKeywordSearchMobile = (data) => {
                 // let text = commont.removeVietnameseDiacritics(data.value);
                 // text = text.toLowerCase();
 
-                // let rows = await db.keywordSearchs.findAll({
-                //     where: {
-                //         keyword: {
-                //             [Op.like]: `%${data.value}%`,
-                //         },
-                //     },
-                // });
+                let rows = await db.keywordSearchs.findAll({
+                    where: {
+                        keyword: {
+                            [Op.like]: `%${data.value}%`,
+                        },
+                    },
+                    attributes: ['keyword']
+                });
+
+                if (rows && rows.length !== 0) {
+                    return resolve({
+                        errCode: 0,
+                        data: [...rows.map(item => item.keyword)]
+                    });
+                }
+
 
                 request(
                     {
@@ -2948,7 +2957,6 @@ const getListKeywordSearchMobile = (data) => {
                     },
                     (err, res, body) => {
                         if (!err) {
-                            console.log(eval(body))
                             resolve({
                                 errCode: 0,
                                 data: eval(body)[1],
