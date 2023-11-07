@@ -6497,65 +6497,87 @@ const createNewUserMobile = (data) => {
                     errMessage: "Missing required parameter!",
                 });
             } else {
-                let passHash = commont.hashPassword(data.password);
-                let keyCode = Math.floor(Math.random() * 999999 + 100000);
-                let [user, created] = await db.User.findOrCreate({
-                    where: { email: data.email },
-                    defaults: {
-                        firstName: data.firstName,
-                        lastName: data.lastName,
-                        pass: passHash,
-                        idTypeUser: "3",
-                        keyVerify: keyCode.toString(),
-                        statusUser: "wait",
-                        typeAccount: "web",
-                        id: uuidv4(),
-                        gender: "nam",
-                        birtday: "1/1/1990",
-                    },
-                    raw: false,
-                });
 
-                if (!created) {
-                    //Tài khoản đã tồn tại
-                    if (user.statusUser === "true") {
-                        resolve({
-                            errCode: 2,
-                            errMessage: "Tài khoản này đã tồn tại!",
-                        });
+                verifier_email.verify(
+                    data.email,
+                    { hardRefresh: true },
+                    async (err, res) => {
+                        if (err) {
+                            throw err;
+                        }
+                        if (res.smtpCheck === "false") {
+                            resolve({
+                                errCode: 3,
+                                errMessage:
+                                    "Email này không tồn tại, vui lòng kiểm tra lỗi chính tả!",
+                            });
+                            return;
+                        } else {
+                            let passHash = commont.hashPassword(data.password);
+                            let keyCode = Math.floor(Math.random() * 999999 + 100000);
+                            let [user, created] = await db.User.findOrCreate({
+                                where: { email: data.email },
+                                defaults: {
+                                    firstName: data.firstName,
+                                    lastName: data.lastName,
+                                    pass: passHash,
+                                    idTypeUser: "3",
+                                    keyVerify: keyCode.toString(),
+                                    statusUser: "wait",
+                                    typeAccount: "web",
+                                    id: uuidv4(),
+                                    gender: "nam",
+                                    birtday: "1/1/1990",
+                                },
+                                raw: false,
+                            });
+
+                            if (!created) {
+                                //Tài khoản đã tồn tại
+                                if (user.statusUser === "true") {
+                                    resolve({
+                                        errCode: 2,
+                                        errMessage: "Tài khoản này đã tồn tại!",
+                                    });
+                                }
+                                //Tài khoản chưa được xác nhận
+                                else if (user.statusUser === "wait") {
+                                    //update data
+                                    user.firstName = data.firstName;
+                                    user.lastName = data.lastName;
+                                    user.pass = passHash;
+                                    user.keyVerify = keyCode;
+                                    await user.save();
+
+                                    //send email
+                                    let title = "Xác nhận tạo tài khoản TechStoreTvT";
+                                    let contentHtml = `<h2>Mã xác nhận của bạn là: ${keyCode}</h3>`;
+
+                                    commont.sendEmail(user.email, title, contentHtml);
+
+                                    resolve({
+                                        errCode: 0,
+                                        errMessage: "Tài khoản chưa được xác nhận",
+                                    });
+                                }
+                            } else {
+                                //send email
+                                let title = "Xác nhận tạo tài khoản TechStoreTvT";
+                                let contentHtml = `<h2>Mã xác nhận của bạn là: ${keyCode}</h3>`;
+
+                                commont.sendEmail(user.email, title, contentHtml);
+
+                                resolve({
+                                    errCode: 0,
+                                    errMessage: "Đã tạo tài khoản",
+                                });
+                            }
+                        }
                     }
-                    //Tài khoản chưa được xác nhận
-                    else if (user.statusUser === "wait") {
-                        //update data
-                        user.firstName = data.firstName;
-                        user.lastName = data.lastName;
-                        user.pass = passHash;
-                        user.keyVerify = keyCode;
-                        await user.save();
+                );
 
-                        //send email
-                        let title = "Xác nhận tạo tài khoản TechStoreTvT";
-                        let contentHtml = `<h2>Mã xác nhận của bạn là: ${keyCode}</h3>`;
 
-                        commont.sendEmail(user.email, title, contentHtml);
 
-                        resolve({
-                            errCode: 0,
-                            errMessage: "Tài khoản chưa được xác nhận",
-                        });
-                    }
-                } else {
-                    //send email
-                    let title = "Xác nhận tạo tài khoản TechStoreTvT";
-                    let contentHtml = `<h2>Mã xác nhận của bạn là: ${keyCode}</h3>`;
-
-                    commont.sendEmail(user.email, title, contentHtml);
-
-                    resolve({
-                        errCode: 0,
-                        errMessage: "Đã tạo tài khoản",
-                    });
-                }
             }
         } catch (e) {
             reject(e);
