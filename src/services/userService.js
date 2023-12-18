@@ -16,7 +16,7 @@ const { google } = require("googleapis");
 // const { OAuth2Client } = require('google-auth-library');
 const fs = require("fs");
 const path = require("path");
-import { handleEmit } from "../index";
+import { handleEmit } from "../../index";
 import Fuse from "fuse.js";
 import { dataflow } from "googleapis/build/src/apis/dataflow";
 const createError = require("http-errors");
