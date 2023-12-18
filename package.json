@@ -3,15 +3,15 @@
   "version": "1.0.0",
   "description": "backend nodejs techstore",
   "main": "index.js",
+  "engines": {
+    "node": "18.x"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon --exec babel-node src/index.js",
     "build": "babel src -d build --copy-files",
-    "start": "node build/index.js",
+    "start": "nodemon --exec babel-node src/index.js",
     "migrate": "npx sequelize-cli db:migrate"
-  },
-  "engines": {
-    "node": "18.x"
   },
   "keywords": [
     "fullstack",
