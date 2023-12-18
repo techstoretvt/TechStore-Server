@@ -9,7 +9,7 @@ import {
 import { Sequelize } from 'sequelize';
 var cloudinary = require('cloudinary');
 const { Op } = require('sequelize');
-import { handleEmit } from '../../index';
+import { handleEmit } from '../index';
 require('dotenv').config();
 import FuzzySearch from 'fuzzy-search';
 import jwt from 'jsonwebtoken';

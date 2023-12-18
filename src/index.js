@@ -7,14 +7,14 @@ const http = require('http');
 const cookieParser = require('cookie-parser');
 const { ApolloServer } = require('apollo-server-express');
 const createError = require('http-errors');
-const logEvents = require('./src/helpers/logEvents');
+const logEvents = require('./helpers/logEvents');
 
-import configViewEngine from './src/config/viewEngine';
-import initAppRoute from './src/route/appRoute';
-import initUserRoute from './src/route/userRoute';
-import initAdminRoute from './src/route/adminRoute';
-const typeDefs = require('./src/GraphQL/schema/schema');
-const resolvers = require('./src/GraphQL/resolver/resolver');
+import configViewEngine from './config/viewEngine';
+import initAppRoute from './route/appRoute';
+import initUserRoute from './route/userRoute';
+import initAdminRoute from './route/adminRoute';
+const typeDefs = require('./GraphQL/schema/schema');
+const resolvers = require('./GraphQL/resolver/resolver');
 
 const app = express();
 

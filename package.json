@@ -9,7 +9,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon --exec babel-node src/index.js",
-    "start": "nodemon --exec babel-node index.js",
+    "start": "node build/index.js",
     "migrate": "npx sequelize-cli db:migrate"
   },
   "keywords": [
