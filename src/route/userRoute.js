@@ -227,7 +227,10 @@ const initUserRoute = (app) => {
         userController.timKiemMV
     );
 
-
+    router.get(
+        routes.testWebsocket,
+        userController.testWebsocket
+    );
 
     router.post(routes.CreateUser, userController.CreateUser);
     router.post(routes.verifyCreateUser, userController.verifyCreateUser);

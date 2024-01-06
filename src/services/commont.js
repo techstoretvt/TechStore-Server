@@ -367,6 +367,7 @@ const routes = {
     getDetailBillById: '/api/v2/get-detail-bill-by-id-2',
     createNewUserMobile: '/api/v2/create-new-user-mobile',
     verifyCodeForCreateUserMobile: '/api/v2/verify-code-for-create-user-mobile',
+    testWebsocket: '/api/v2/test-web-socket',
 };
 
 module.exports = {

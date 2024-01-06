@@ -7937,6 +7937,23 @@ const timKiemMV = (data) => {
 };
 
 
+const testWebsocket = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            handleEmit("test-socket", data)
+
+            resolve({
+                errCode: 0,
+                data
+            });
+
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 
 
 module.exports = {
@@ -8057,5 +8074,6 @@ module.exports = {
     getListIdLikeComment,
     tangViewBaiHat,
     getGoiYMVBaiHat,
-    timKiemMV
+    timKiemMV,
+    testWebsocket
 };
