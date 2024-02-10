@@ -7073,6 +7073,7 @@ const timKiemBaiHat = (data, payload) => {
                     await keyword.save();
                 }
 
+
                 resolve({
                     errCode: 0,
                     data: result.slice(offset * limit, limit),

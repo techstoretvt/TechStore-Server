@@ -39,6 +39,13 @@ const initUserRoute = (app) => {
     );
 
     router.get(
+        "/view/youtube",
+        (req, res) => {
+            res.sendFile(appRoot + '/src/views/youtube.html');
+        }
+    );
+
+    router.get(
         routes.getUserLogin,
         verifyAccessToken,
         userController.getUserLogin
@@ -146,26 +153,26 @@ const initUserRoute = (app) => {
 
     router.get(
         routes.layBaiHatCuaCaSi,
-        verifyAccessToken,
+        // verifyAccessToken,
         userController.layBaiHatCuaCaSi
     );
 
     router.get(routes.goiYCaSi, verifyAccessToken, userController.goiYCaSi);
     router.get(
         routes.layCaSiById,
-        verifyAccessToken,
+        // verifyAccessToken,
         userController.layCaSiById
     );
 
     router.get(
         routes.timKiemBaiHat,
-        verifyAccessToken,
+        // verifyAccessToken,
         userController.timKiemBaiHat
     );
 
     router.get(
         routes.timKiemCaSi,
-        verifyAccessToken,
+        // verifyAccessToken,
         userController.timKiemCaSi
     );
 
@@ -201,7 +208,7 @@ const initUserRoute = (app) => {
 
     router.get(
         routes.getListRandomBaiHat,
-        verifyAccessToken,
+        // verifyAccessToken,
         userController.getListRandomBaiHat
     );
 
@@ -231,6 +238,8 @@ const initUserRoute = (app) => {
         routes.testWebsocket,
         userController.testWebsocket
     );
+
+
 
     router.post(routes.CreateUser, userController.CreateUser);
     router.post(routes.verifyCreateUser, userController.verifyCreateUser);

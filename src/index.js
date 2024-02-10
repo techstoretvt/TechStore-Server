@@ -86,6 +86,14 @@ io.on('connection', (socket) => {
         });
     });
 
+    socket.on('login-desktop-success', function (key, accessToken) {
+
+        io.emit(`login-desktop-${key}`, {
+            message: 'success',
+            accessToken
+        });
+    });
+
     socket.on('demo_event', (data) => {
         console.log('demo_event', data);
 
