@@ -1424,6 +1424,19 @@ const testWebsocket = async (req, res, next) => {
     }
 };
 
+const checkLoginUser = async (req, res, next) => {
+    try {
+
+        return res.status(200).json({
+            errCode: 0,
+            errMessage: 'OK',
+        });
+    } catch (e) {
+        next(e);
+    }
+};
+
+
 
 module.exports = {
     CreateUser,
@@ -1546,5 +1559,6 @@ module.exports = {
     tangViewBaiHat,
     getGoiYMVBaiHat,
     timKiemMV,
-    testWebsocket
+    testWebsocket,
+    checkLoginUser
 };

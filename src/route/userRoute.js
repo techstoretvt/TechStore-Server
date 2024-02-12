@@ -225,6 +225,12 @@ const initUserRoute = (app) => {
     );
 
     router.get(
+        routes.checkLoginUser,
+        verifyAccessToken,
+        userController.checkLoginUser
+    );
+
+    router.get(
         routes.getGoiYMVBaiHat,
         userController.getGoiYMVBaiHat
     );

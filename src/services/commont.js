@@ -260,6 +260,7 @@ const routes = {
     xoaLoiBaiHatById: '/api/v2/xoa-loi-bai-hat-by-id',
     getGoiYMVBaiHat: '/api/v2/get-goi-y-mv-bai-hat',
     timKiemMV: '/api/v2/tim-kiem-mv',
+    checkLoginUser: '/api/v2/check-login-user',
 
 
     //end music app
