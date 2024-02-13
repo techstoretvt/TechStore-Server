@@ -4,28 +4,28 @@ module.exports = (sequelize, DataTypes) => {
     class User extends Model {
         static associate(models) {
             // define association here
-            User.hasMany(models.cart, { foreignKey: 'idUser' });
-            User.hasMany(models.bill, { foreignKey: 'idUser' });
-            User.hasMany(models.evaluateProduct, { foreignKey: 'idUser' });
-            User.hasMany(models.blogs, { foreignKey: 'idUser' });
-            User.hasMany(models.commentBlog, { foreignKey: 'idUser' });
-            User.hasMany(models.likeBlog, { foreignKey: 'idUser' });
-            User.hasMany(models.addressUser, { foreignKey: 'idUser' });
-            User.hasMany(models.collectionBlogs, { foreignKey: 'idUser' });
-            User.hasMany(models.shortVideos, { foreignKey: 'idUser' });
-            User.hasMany(models.commentShortVideos, { foreignKey: 'idUser' });
-            User.hasMany(models.collectionShortVideos, {
-                foreignKey: 'idUser',
-            });
-            User.hasMany(models.notifycations, { foreignKey: 'idUser' });
-            User.hasMany(models.reportVideos, { foreignKey: 'idUser' });
-            User.hasMany(models.reportBlogs, { foreignKey: 'idUser' });
-            User.hasMany(models.danhSachPhat, { foreignKey: 'idUser' });
+            // User.hasMany(models.cart, { foreignKey: 'idUser' });
+            // User.hasMany(models.bill, { foreignKey: 'idUser' });
+            // User.hasMany(models.evaluateProduct, { foreignKey: 'idUser' });
+            // User.hasMany(models.blogs, { foreignKey: 'idUser' });
+            // User.hasMany(models.commentBlog, { foreignKey: 'idUser' });
+            // User.hasMany(models.likeBlog, { foreignKey: 'idUser' });
+            // User.hasMany(models.addressUser, { foreignKey: 'idUser' });
+            // User.hasMany(models.collectionBlogs, { foreignKey: 'idUser' });
+            // User.hasMany(models.shortVideos, { foreignKey: 'idUser' });
+            // User.hasMany(models.commentShortVideos, { foreignKey: 'idUser' });
+            // User.hasMany(models.collectionShortVideos, {
+            //     foreignKey: 'idUser',
+            // });
+            // User.hasMany(models.notifycations, { foreignKey: 'idUser' });
+            // User.hasMany(models.reportVideos, { foreignKey: 'idUser' });
+            // User.hasMany(models.reportBlogs, { foreignKey: 'idUser' });
+            // User.hasMany(models.danhSachPhat, { foreignKey: 'idUser' });
 
-            User.hasMany(models.yeuThichBaiHat, { foreignKey: 'idUser' });
-            User.hasMany(models.quanTamCaSi, { foreignKey: 'idUser' });
-            User.hasMany(models.commentBHParent, { foreignKey: 'idUser' });
-            User.hasMany(models.commentBHCon, { foreignKey: 'idUser' });
+            // User.hasMany(models.yeuThichBaiHat, { foreignKey: 'idUser' });
+            // User.hasMany(models.quanTamCaSi, { foreignKey: 'idUser' });
+            // User.hasMany(models.commentBHParent, { foreignKey: 'idUser' });
+            // User.hasMany(models.commentBHCon, { foreignKey: 'idUser' });
         }
     }
     User.init(

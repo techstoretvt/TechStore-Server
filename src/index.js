@@ -108,22 +108,28 @@ export const handleEmit = (nameEmit, contentEmit) => {
     io.emit(nameEmit, contentEmit);
 };
 
-//graphql
-const serverQL = new ApolloServer({
-    typeDefs,
-    resolvers,
+app.listen(process.env.PORT, () => {
+    console.log('Runing server succeed!');
+    console.log(`Server RestFull API at http://localhost:${process.env.PORT}/api`);
 });
+
+//graphql
+// const serverQL = new ApolloServer({
+//     typeDefs,
+//     resolvers,
+//     persistedQueries: false
+// });
 
 //run server
-serverQL.start().then((res) => {
-    serverQL.applyMiddleware({ app });
+// serverQL.start().then((res) => {
+//     serverQL.applyMiddleware({ app });
 
-    const port = process.env.PORT;
-    server.listen(port, () => {
-        console.log('Runing server succeed!');
-        console.log(`Server RestFull API at http://localhost:${port}/api`);
-        console.log(
-            `Server GraphQL at http://localhost:${port}${serverQL.graphqlPath}`
-        );
-    });
-});
+//     const port = process.env.PORT;
+//     server.listen(port, () => {
+//         console.log('Runing server succeed!');
+//         console.log(`Server RestFull API at http://localhost:${port}/api`);
+//         console.log(
+//             `Server GraphQL at http://localhost:${port}${serverQL.graphqlPath}`
+//         );
+//     });
+// });

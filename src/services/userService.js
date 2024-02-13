@@ -361,11 +361,13 @@ const userLogin = (data, header) => {
                     errMessage: "Missing required parameter!",
                 });
             } else {
+                console.log('vao 1');
                 let user = await db.User.findOne({
                     where: {
                         email: data.email,
                     },
                 });
+                console.log('vao 2');
 
                 if (
                     !user ||
