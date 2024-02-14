@@ -94,6 +94,14 @@ io.on('connection', (socket) => {
         });
     });
 
+    socket.on('next-music-desktop', function (key) {
+        console.log('next-music-desktop', key);
+
+        io.emit(`'next-music-desktop-${key}`, {
+            message: 'success',
+        });
+    });
+
     socket.on('demo_event', (data) => {
         console.log('demo_event', data);
 
@@ -108,28 +116,23 @@ export const handleEmit = (nameEmit, contentEmit) => {
     io.emit(nameEmit, contentEmit);
 };
 
-app.listen(process.env.PORT, () => {
-    console.log('Runing server succeed!');
-    console.log(`Server RestFull API at http://localhost:${process.env.PORT}/api`);
+//graphql
+const serverQL = new ApolloServer({
+    typeDefs,
+    resolvers,
+    persistedQueries: false
 });
 
-//graphql
-// const serverQL = new ApolloServer({
-//     typeDefs,
-//     resolvers,
-//     persistedQueries: false
-// });
-
 //run server
-// serverQL.start().then((res) => {
-//     serverQL.applyMiddleware({ app });
+serverQL.start().then((res) => {
+    serverQL.applyMiddleware({ app });
 
-//     const port = process.env.PORT;
-//     server.listen(port, () => {
-//         console.log('Runing server succeed!');
-//         console.log(`Server RestFull API at http://localhost:${port}/api`);
-//         console.log(
-//             `Server GraphQL at http://localhost:${port}${serverQL.graphqlPath}`
-//         );
-//     });
-// });
+    const port = process.env.PORT;
+    server.listen(port, () => {
+        console.log('Runing server succeed!');
+        console.log(`Server RestFull API at http://localhost:${port}/api`);
+        console.log(
+            `Server GraphQL at http://localhost:${port}${serverQL.graphqlPath}`
+        );
+    });
+});

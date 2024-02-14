@@ -41,7 +41,16 @@ const initUserRoute = (app) => {
     router.get(
         "/view/youtube",
         (req, res) => {
+
             res.sendFile(appRoot + '/src/views/youtube.html');
+        }
+    );
+
+    router.get(
+        "/view/control-music",
+        (req, res) => {
+            // console.log('approot: ', appRoot);
+            res.render('controlMusic.ejs');
         }
     );
 
