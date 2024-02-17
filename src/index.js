@@ -111,6 +111,27 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log('user disconnected');
     });
+
+    socket.on('room-close', (idRoom) => {
+        io.emit(`room-close-${idRoom}`);
+    });
+
+    socket.on('new-cmt-live', (idRoom, noiDung, nameUser, avatar) => {
+        console.log('new-cmt');
+        io.emit(`new-cmt-live-${idRoom}`, { noiDung, nameUser, avatar });
+    });
+
+    socket.on('next-music-mobile', (id) => {
+        console.log('next-music-mobile', id);
+        io.emit(`next-music-mobile--${id}`);
+    });
+
+    socket.on('prev-music-mobile', (id) => {
+        io.emit(`prev-music-mobile--${id}`);
+        console.log('prev-music-mobile', id);
+    });
+
+
 });
 export const handleEmit = (nameEmit, contentEmit) => {
     io.emit(nameEmit, contentEmit);
@@ -123,16 +144,22 @@ const serverQL = new ApolloServer({
     persistedQueries: false
 });
 
-//run server
-serverQL.start().then((res) => {
-    serverQL.applyMiddleware({ app });
+module.exports = {
+    server,
+    serverQL,
+    app
+}
 
-    const port = process.env.PORT;
-    server.listen(port, () => {
-        console.log('Runing server succeed!');
-        console.log(`Server RestFull API at http://localhost:${port}/api`);
-        console.log(
-            `Server GraphQL at http://localhost:${port}${serverQL.graphqlPath}`
-        );
-    });
-});
+//run server
+// serverQL.start().then((res) => {
+//     serverQL.applyMiddleware({ app });
+
+//     const port = process.env.PORT;
+//     server.listen(port, () => {
+//         console.log('Runing server succeed!');
+//         console.log(`Server RestFull API at http://localhost:${port}/api`);
+//         console.log(
+//             `Server GraphQL at http://localhost:${port}${serverQL.graphqlPath}`
+//         );
+//     });
+// });
