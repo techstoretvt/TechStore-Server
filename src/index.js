@@ -131,6 +131,16 @@ io.on('connection', (socket) => {
         console.log('prev-music-mobile', id);
     });
 
+    socket.on('pause-music-mobile', (id) => {
+        io.emit(`pause-music-mobile--${id}`);
+        console.log('pause-music-mobile', id);
+    });
+
+    socket.on('resume-music-mobile', (id) => {
+        io.emit(`resume-music-mobile--${id}`);
+        console.log('resume-music-mobile', id);
+    });
+
 
 });
 export const handleEmit = (nameEmit, contentEmit) => {
