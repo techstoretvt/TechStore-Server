@@ -3,7 +3,7 @@ const cron = require('cron');
 const https = require('https');
 const backendUrl = process.env.LINK_BACKEND;
 
-const job = new cron.CronJob('*/1 * * * *', function () {
+const job = new cron.CronJob('*/13 * * * *', function () {
     // This function will be executed every 14 minutes.
     console.log("Restarting server");
     // Perform an HTTPS GET request to hit any backend api.
