@@ -1,7 +1,8 @@
 import { server, serverQL, app } from './src/index.js'
 const job = require('./cron.js')
 
-job.start();
+if (process.env.LINK_BACKEND !== "http://localhost:4000")
+    job.start();
 
 serverQL.start().then((res) => {
     serverQL.applyMiddleware({ app });

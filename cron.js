@@ -1,9 +1,9 @@
 // Cron job to hit endpoint every 14 sec to keep backend alive always
 const cron = require('cron');
 const https = require('https');
-const backendUrl = 'provide_backend_api_endpoint_that_is_provided_by_rendor';
+const backendUrl = process.env.LINK_BACKEND;
 
-const job = new cron.CronJob('*/14 ****', function () {
+const job = new cron.CronJob('*/1 * * * *', function () {
     // This function will be executed every 14 minutes.
     console.log("Restarting server");
     // Perform an HTTPS GET request to hit any backend api.
@@ -23,6 +23,4 @@ const job = new cron.CronJob('*/14 ****', function () {
         })
 });
 // Export the cron job.
-module.exports = {
-    job,
-};
+module.exports = job
