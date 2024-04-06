@@ -293,6 +293,24 @@ const getListBaiHat = async (req, res, next) => {
     }
 };
 
+const getAllIdProduct = async (req, res, next) => {
+    try {
+        let data = await appService.getAllIdProduct();
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const getAllIdBlog = async (req, res, next) => {
+    try {
+        let data = await appService.getAllIdBlog();
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
 module.exports = {
     checkStartServer,
     getProductPromotionHome,
@@ -323,4 +341,6 @@ module.exports = {
     getListBlogForyouMobile,
     getListKeywordSearchMobile,
     getListBaiHat,
+    getAllIdProduct,
+    getAllIdBlog
 };

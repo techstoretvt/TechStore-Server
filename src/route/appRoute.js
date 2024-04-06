@@ -106,6 +106,14 @@ const initAppRoute = (app) => {
     router.get(routes.getListBaiHat, appController.getListBaiHat);
 
     router.put(routes.increaseViewBlogById, appController.increaseViewBlogById);
+    router.get(
+        routes.getAllIdProduct,
+        appController.getAllIdProduct
+    );
+    router.get(
+        routes.getAllIdBlog,
+        appController.getAllIdBlog
+    );
 
     //test
     router.get('/api/test-api', adminController.testApi);

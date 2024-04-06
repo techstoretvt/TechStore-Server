@@ -157,6 +157,8 @@ const routes = {
     getSuggestProductMobile: '/api/v2/get-suggest-product-mobile',
     getListBlogForyouMobile: '/api/v2/gwt-list-blog-for-you-mobile',
     getListKeywordSearchMobile: '/api/v2/get-list-keyword-search-mobile',
+    getAllIdProduct: '/api/v2/get-all-id-product',
+    getAllIdBlog: '/api/v2/get-all-id-blog',
 
     //admin
     getAllTypeProduct: '/api/get-all-type-product',

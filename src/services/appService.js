@@ -3020,6 +3020,44 @@ const getListBaiHat = (data) => {
     });
 };
 
+const getAllIdProduct = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            let listIdProduct = await db.product.findAll({
+                attributes: ["id", "createdAt"]
+            })
+
+
+            resolve({
+                errCode: 0,
+                data: listIdProduct,
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+const getAllIdBlog = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            let listIdBlog = await db.blogs.findAll({
+                attributes: ["id", "createdAt"]
+            })
+
+
+            resolve({
+                errCode: 0,
+                data: listIdBlog,
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 module.exports = {
     getProductPromotionHome,
     getTopSellProduct,
@@ -3049,4 +3087,6 @@ module.exports = {
     getListBlogForyouMobile,
     getListKeywordSearchMobile,
     getListBaiHat,
+    getAllIdProduct,
+    getAllIdBlog
 };
