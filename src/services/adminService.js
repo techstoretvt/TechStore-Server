@@ -1665,24 +1665,25 @@ const createNotify_noimage = (data) => {
                         status: 'false',
                         timer: +data.timePost,
                     });
+                    let date = new Date().getTime();
+                    setTimeout(async () => {
+                        let arr = users.map(item => {
+                            return {
+                                id: uuidv4(),
+                                title: data.title,
+                                content: data.content,
+                                redirect_to: data.link,
+                                idUser: item.id,
+                                typeNotify: data.typeNotify,
+                                timeCreate: date,
+                            }
+                        })
+                        await db.notifycations.bulkCreate(arr, { individualHooks: true })
+                        handleEmit('new-notify-all', { title: data.title, content: data.content })
+
+                    }, data.timePost * 1 - date > 0 ? data.timePost * 1 - date : 0);
                 }
 
-                setTimeout(async () => {
-                    let arr = users.map(item => {
-                        return {
-                            id: uuidv4(),
-                            title: data.title,
-                            content: data.content,
-                            redirect_to: data.link,
-                            idUser: item.id,
-                            typeNotify: data.typeNotify,
-                            timeCreate: date,
-                        }
-                    })
-                    await db.notifycations.bulkCreate(arr, { individualHooks: true })
-                    handleEmit('new-notify-all', { title: data.title, content: data.content })
-
-                }, data.timePost * 1 - date > 0 ? data.timePost * 1 - date : 0);
 
                 resolve({
                     errCode: 0,
