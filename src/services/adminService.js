@@ -1621,22 +1621,23 @@ const createNotify_noimage = (data) => {
                     });
                     return;
                 }
+                let date = new Date().getTime();
+                let users = await db.User.findAll({
+                    where: {
+                        statusUser: {
+                            [Op.ne]: 'false',
+                        },
+                    },
+                });
+                users = users.filter((item) => {
+                    return (
+                        item.statusUser === 'true' ||
+                        item.statusUser * 1 < date
+                    );
+                });
 
                 if (!data.timePost || +data.timePost === 0) {
-                    let users = await db.User.findAll({
-                        where: {
-                            statusUser: {
-                                [Op.ne]: 'false',
-                            },
-                        },
-                    });
-                    let date = new Date().getTime();
-                    users = users.filter((item) => {
-                        return (
-                            item.statusUser === 'true' ||
-                            item.statusUser * 1 < date
-                        );
-                    });
+
                     let arr = users.map((item) => {
                         return {
                             id: uuidv4(),
@@ -1665,7 +1666,6 @@ const createNotify_noimage = (data) => {
                         status: 'false',
                         timer: +data.timePost,
                     });
-                    let date = new Date().getTime();
                     setTimeout(async () => {
                         let arr = users.map(item => {
                             return {
@@ -1680,6 +1680,7 @@ const createNotify_noimage = (data) => {
                         })
                         await db.notifycations.bulkCreate(arr, { individualHooks: true })
                         handleEmit('new-notify-all', { title: data.title, content: data.content })
+                        // console.log('hẹn giờ thành công');
 
                     }, data.timePost * 1 - date > 0 ? data.timePost * 1 - date : 0);
                 }
