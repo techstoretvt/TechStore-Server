@@ -1636,9 +1636,8 @@ const createNotify_noimage = (data) => {
                     );
                 });
 
-                if (!data.timePost || +data.timePost === 0) {
-
-                    let arr = users.map((item) => {
+                setTimeout(async () => {
+                    let arr = users.map(item => {
                         return {
                             id: uuidv4(),
                             title: data.title,
@@ -1647,43 +1646,13 @@ const createNotify_noimage = (data) => {
                             idUser: item.id,
                             typeNotify: data.typeNotify,
                             timeCreate: date,
-                        };
-                    });
-                    await db.notifycations.bulkCreate(arr, {
-                        individualHooks: true,
-                    });
-                    handleEmit('new-notify-all', {
-                        title: data.title,
-                        content: data.content,
-                    });
-                } else {
-                    await db.timerNotifys.create({
-                        id: uuidv4(),
-                        title: data.title,
-                        content: data.content,
-                        redirect_to: data.link,
-                        typeNotify: data.typeNotify,
-                        status: 'false',
-                        timer: +data.timePost,
-                    });
-                    setTimeout(async () => {
-                        let arr = users.map(item => {
-                            return {
-                                id: uuidv4(),
-                                title: data.title,
-                                content: data.content,
-                                redirect_to: data.link,
-                                idUser: item.id,
-                                typeNotify: data.typeNotify,
-                                timeCreate: date,
-                            }
-                        })
-                        await db.notifycations.bulkCreate(arr, { individualHooks: true })
-                        handleEmit('new-notify-all', { title: data.title, content: data.content })
-                        // console.log('hẹn giờ thành công');
+                        }
+                    })
+                    await db.notifycations.bulkCreate(arr, { individualHooks: true })
+                    handleEmit('new-notify-all', { title: data.title, content: data.content })
+                    console.log('hẹn giờ thành công');
 
-                    }, data.timePost * 1 - date > 0 ? data.timePost * 1 - date : 0);
-                }
+                }, data.timePost * 1 - date > 0 ? data.timePost * 1 - date : 0);
 
 
                 resolve({
@@ -1719,23 +1688,22 @@ const createNotify_image = (data) => {
                     });
                     return;
                 }
-                // console.log(data);
-
-                if (!data.query.timePost || +data.query.timePost === 0) {
-                    let users = await db.User.findAll({
-                        where: {
-                            statusUser: {
-                                [Op.ne]: 'false',
-                            },
+                let users = await db.User.findAll({
+                    where: {
+                        statusUser: {
+                            [Op.ne]: 'false',
                         },
-                    });
-                    let date = new Date().getTime();
-                    users = users.filter((item) => {
-                        return (
-                            item.statusUser === 'true' ||
-                            item.statusUser * 1 < date
-                        );
-                    });
+                    },
+                });
+                let date = new Date().getTime();
+                users = users.filter((item) => {
+                    return (
+                        item.statusUser === 'true' ||
+                        item.statusUser * 1 < date
+                    );
+                });
+
+                setTimeout(async () => {
                     let arr = users.map((item) => {
                         return {
                             id: uuidv4(),
@@ -1755,18 +1723,9 @@ const createNotify_image = (data) => {
                         title: data.query.title,
                         content: data.query.content,
                     });
-                } else {
-                    await db.timerNotifys.create({
-                        id: uuidv4(),
-                        title: data.query.title,
-                        content: data.query.content,
-                        redirect_to: data.query.link,
-                        typeNotify: data.query.typeNotify,
-                        status: 'false',
-                        urlImage: data.file.path,
-                        timer: +data.query.timePost,
-                    });
-                }
+                    console.log('hẹn giờ thành công');
+
+                }, data.timePost * 1 - date > 0 ? data.timePost * 1 - date : 0);
 
                 resolve({
                     errCode: 0,
