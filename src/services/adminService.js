@@ -1725,7 +1725,7 @@ const createNotify_image = (data) => {
                     });
                     console.log('hẹn giờ thành công');
 
-                }, data.timePost * 1 - date > 0 ? data.timePost * 1 - date : 0);
+                }, data.query.timePost * 1 - date > 0 ? data.query.timePost * 1 - date : 0);
 
                 resolve({
                     errCode: 0,
