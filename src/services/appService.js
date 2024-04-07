@@ -3024,6 +3024,8 @@ const getAllIdProduct = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
 
+            console.log('Get All Id Product');
+
             let listIdProduct = await db.product.findAll({
                 attributes: ["id", "createdAt"]
             })
@@ -3042,6 +3044,8 @@ const getAllIdProduct = (data) => {
 const getAllIdBlog = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
+
+            console.log('Get All Id Blog');
 
             let listIdBlog = await db.blogs.findAll({
                 attributes: ["id", "createdAt"]
