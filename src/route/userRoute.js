@@ -9,6 +9,7 @@ const fileUploader = require('../config/cloudinary.config');
 import cloudinary_evaluate from '../utils/cloudinary/cloudinary_evaluate';
 import cloudinary_blog from '../utils/cloudinary/cloudinary_blog';
 import cloudinary_shortvideo from '../utils/cloudinary/cloudinary_shortvideo';
+import cloudinary_shortvideo_video from '../utils/cloudinary/cloudinary_shortvideo_video';
 import cloudinary_avatar from '../utils/cloudinary/cloudinary_avatar';
 
 let router = express.Router();
@@ -17,7 +18,7 @@ let appRoot = require('app-root-path');
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, appRoot + '/build/public/videoTam/');
+        cb(null, appRoot + '/src/public/videoTam/');
     },
     filename: function (req, file, cb) {
         cb(

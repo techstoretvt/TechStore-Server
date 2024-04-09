@@ -22,6 +22,11 @@ import { dataflow } from "googleapis/build/src/apis/dataflow";
 const createError = require("http-errors");
 var cloudinary = require("cloudinary");
 // await cloudinary.v2.uploader.destroy('vznd4hds4kudr0zbvfop')
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_NAME,
+    api_key: process.env.CLOUDINARY_KEY,
+    api_secret: process.env.CLOUDINARY_SECRET,
+});
 
 // import sequelize from 'sequelize';
 
@@ -4071,10 +4076,16 @@ const uploadCoverImageShortVideo = ({ file, query }) => {
 const uploadVideoForShortVideo = (idShortVideo, url) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let urlVideo = await GG_Drive.uploadFile(
-                url,
-                process.env.ID_FOLDER_SHORT_VIDEO
-            );
+            // let urlVideo = await GG_Drive.uploadFile(
+            //     url,
+            //     process.env.ID_FOLDER_SHORT_VIDEO
+            // );
+
+
+
+
+
+
 
             let shortVideo = await db.shortVideos.findOne({
                 where: {
@@ -4083,21 +4094,49 @@ const uploadVideoForShortVideo = (idShortVideo, url) => {
                 raw: false,
             });
 
-            if (shortVideo.idDriveVideo) {
-                GG_Drive.deleteFile(shortVideo.idDriveVideo);
+            if (shortVideo) {
+                let filepath = path.join(__dirname, `../public/videoTam/${url}`)
+                // cloudinary.uploader.upload(filepath, uploadOptions, (error, result) => {
+                //     if (error) {
+                //         console.error(error);
+                //     } else {
+                //         console.log(result);
+                //         console.log("Video uploaded successfully!");
+                //     }
+                // });
+                cloudinary.v2.uploader
+                    .upload(filepath,
+                        {
+                            resource_type: "video",
+                            public_id: `short_video/${idShortVideo}-${new Date().getTime()}`,
+                            eager: [
+                                { width: 300, height: 300, crop: "pad", audio_codec: "none" },
+                                { width: 160, height: 100, crop: "crop", gravity: "south", audio_codec: "none" }],
+                            eager_async: true,
+                            eager_notification_url: "https://mysite.example.com/notify_endpoint"
+                        })
+                    .then(async result => {
+                        // console.log(result)
+                        if (shortVideo.idDriveVideo) {
+                            //Xoa video cũ
+                            // GG_Drive.deleteFile(shortVideo.idDriveVideo);
+                        }
+                        shortVideo.idDriveVideo = result.url;
+                        shortVideo.loadVideo = "true";
+                        await shortVideo.save();
+
+                        handleEmit(`refresh-short-video-user-${shortVideo?.idUser}`, {
+                            status: true,
+                        });
+
+                        resolve({
+                            errCode: 0,
+                        });
+
+
+                    });
             }
 
-            shortVideo.idDriveVideo = urlVideo.id;
-            shortVideo.loadVideo = "true";
-            await shortVideo.save();
-
-            handleEmit(`refresh-short-video-user-${shortVideo?.idUser}`, {
-                status: true,
-            });
-
-            resolve({
-                errCode: 0,
-            });
         } catch (e) {
             let shortVideo = await db.shortVideos.findOne({
                 where: {
@@ -4109,7 +4148,8 @@ const uploadVideoForShortVideo = (idShortVideo, url) => {
                 await cloudinary.v2.uploader.destroy(shortVideo.idCloudinary);
             }
             if (shortVideo.idDriveVideo) {
-                await GG_Drive.deleteFile(shortVideo.idDriveVideo);
+                //xóa video
+                //await GG_Drive.deleteFile(shortVideo.idDriveVideo);
             }
             await shortVideo.destroy();
             await db.hashTagVideos.destroy({
@@ -6071,7 +6111,7 @@ const deleteShortVideoById = (data, payload) => {
                     return;
                 }
 
-                GG_Drive.deleteFile(shortVideo.idDriveVideo);
+                // GG_Drive.deleteFile(shortVideo.idDriveVideo); // xoa video
                 cloudinary.v2.uploader.destroy(shortVideo.idCloudinary);
 
                 await shortVideo.destroy();
