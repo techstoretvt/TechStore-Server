@@ -64,6 +64,7 @@ const signRefreshToken = async (user_Id, device_id) => {
 const verifyAccessToken = (req, res, next) => {
     // console.log(req.headers);
     if (!req.headers['authorization']) {
+        console.log("unauthorize");
         return next(createError.Unauthorized());
     }
 

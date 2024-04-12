@@ -4286,7 +4286,7 @@ const getListBlogUserByPage = (data, payload) => {
                 });
             } else {
                 let idUser = payload.id;
-                let date = new Date().getTime();
+                // let date = new Date().getTime();
                 let blogs = await db.blogs.findAll({
                     where: {
                         idUser,
