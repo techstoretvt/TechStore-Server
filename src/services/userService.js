@@ -7519,6 +7519,7 @@ const kiemTraQuanTamCaSi = (data, payload) => {
                     },
 
                 });
+                //
                 if (!row || row.length === 0) {
                     return resolve({
                         errCode: 0,
