@@ -9,7 +9,7 @@ serverQL.start().then((res) => {
 
     const port = process.env.PORT;
     server.listen(port, () => {
-        console.log('Runing server succeed!');
+        console.log(`Runing server succeed: http://localhost:${port}`);
         console.log(`Server RestFull API at http://localhost:${port}/api`);
         console.log(
             `Server GraphQL at http://localhost:${port}${serverQL.graphqlPath}`

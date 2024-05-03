@@ -12,7 +12,8 @@
     "build": "babel src -d build --copy-files",
     "start": "node build/index.js",
     "migrate": "npx sequelize-cli db:migrate",
-    "start2": "node build/index.js"
+    "start2": "node build/index.js",
+    "start3": "babel-node server.js"
   },
   "keywords": [
     "fullstack",
