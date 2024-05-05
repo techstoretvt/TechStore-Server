@@ -4909,9 +4909,10 @@ const themBaiHat = ({ files, data }) => {
     });
 };
 
-const layDsBaiHat = () => {
+const layDsBaiHat = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
+            let page = +data.page ?? 1;
             let dsBaiHat = await db.baihat.findAll({
                 include: [
                     {
@@ -4924,11 +4925,16 @@ const layDsBaiHat = () => {
                 raw: false,
                 nest: true,
                 order: [['createdAt', 'desc']],
+                limit: 10,
+                offset: (page - 1) * 10
             });
+
+            let count = await db.baihat.count();
 
             resolve({
                 errCode: 0,
                 data: dsBaiHat,
+                count
             });
         } catch (e) {
             reject(e);

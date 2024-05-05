@@ -802,7 +802,7 @@ const themBaiHat = async (req, res, next) => {
 const layDsBaiHat = async (req, res, next) => {
     try {
         //call service data
-        let data = await adminService.layDsBaiHat();
+        let data = await adminService.layDsBaiHat(req.query);
 
         return res.status(200).json(data);
     } catch (e) {
