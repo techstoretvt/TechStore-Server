@@ -4913,7 +4913,13 @@ const layDsBaiHat = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
             let page = +data.page ?? 1;
+            let keyword = data.keyword ?? ''
             let dsBaiHat = await db.baihat.findAll({
+                where: {
+                    tenBaiHat: {
+                        [Op.iLike]: `%${keyword}%`
+                    }
+                },
                 include: [
                     {
                         model: db.baiHat_caSi,
@@ -4929,7 +4935,13 @@ const layDsBaiHat = (data) => {
                 offset: (page - 1) * 10
             });
 
-            let count = await db.baihat.count();
+            let count = await db.baihat.count({
+                where: {
+                    tenBaiHat: {
+                        [Op.iLike]: `%${keyword}%`
+                    }
+                },
+            });
 
             resolve({
                 errCode: 0,
