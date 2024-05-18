@@ -187,6 +187,17 @@ const getProductBySwapAndPage = async (req, res, next) => {
     }
 };
 
+const fakeThongBaoMusic = async (req, res, next) => {
+    try {
+        //call service data
+        let data = await adminService.fakeThongBaoMusic(req.query);
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
 const addPromotionByIdProduct = async (req, res, next) => {
     try {
         //call service data
@@ -898,6 +909,32 @@ const xoaLoiBaiHatById = async (req, res, next) => {
 };
 //end music app
 
+
+//ontology
+const getListKhuVuc = async (req, res, next) => {
+    try {
+        //call service data
+        let data = await adminService.getListKhuVuc(req.query);
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const getListOGan = async (req, res, next) => {
+    try {
+        //call service data
+        let data = await adminService.getListOGan(req.query);
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+
+
 module.exports = {
     addTypeProduct,
     getAllTypeProduct,
@@ -955,6 +992,7 @@ module.exports = {
     getInventoryByTypeProduct,
     adminLogin,
     checkLoginWithAdmin,
+    fakeThongBaoMusic,
 
     //music app
     themCaSi,
@@ -985,4 +1023,9 @@ module.exports = {
     updateStatusBillAdmin,
     getListStatusBillAdmin,
     //end winform
+
+
+    //ontology
+    getListKhuVuc,
+    getListOGan
 };

@@ -217,6 +217,7 @@ const routes = {
     adminLogin: '/api/v2/admin-login',
     checkLoginWithAdmin: '/api/v2/check-login-with-admin',
 
+
     //music app
     themCaSi: '/api/v2/them-ca-si',
     layDsCaSi: '/api/v2/lay-ds-ca-si',
@@ -263,6 +264,7 @@ const routes = {
     getGoiYMVBaiHat: '/api/v2/get-goi-y-mv-bai-hat',
     timKiemMV: '/api/v2/tim-kiem-mv',
     checkLoginUser: '/api/v2/check-login-user',
+    fakeThongBaoMusic: '/api/v2/fake-thong-bao-music',
 
 
     //end music app
@@ -371,6 +373,11 @@ const routes = {
     createNewUserMobile: '/api/v2/create-new-user-mobile',
     verifyCodeForCreateUserMobile: '/api/v2/verify-code-for-create-user-mobile',
     testWebsocket: '/api/v2/test-web-socket',
+
+
+    //ontology
+    getListKhuVuc: '/api/v2/get-khu-vuc',
+    getListOGan: '/api/v2/get-o-gan',
 };
 
 module.exports = {

@@ -18,6 +18,8 @@ import commont from './commont';
 const { google } = require('googleapis');
 const createError = require('http-errors');
 import { signAccessToken, signRefreshToken } from '../helpers/JWT_service';
+const axios = require('axios');
+
 
 // import { v4 as uuidv4 } from 'uuid';
 // cloudinary.config({
@@ -1289,6 +1291,22 @@ const testApi = () => {
 
             resolve({
                 data: datas,
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+const fakeThongBaoMusic = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            handleEmit('new_thong_bao');
+
+
+            resolve({
+                errCode: 0,
             });
         } catch (e) {
             reject(e);
@@ -5282,6 +5300,47 @@ const xoaLoiBaiHatById = (data) => {
 
 //end music app
 
+
+//ontology
+const getListKhuVuc = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            const response = await axios.get(process.env.LINK_BACKEND_ONTOLOGY + '/api/get-khu-vuc?city=' + data.city);
+            console.log(response.data);
+            resolve({
+                errCode: 0,
+                data: response.data
+
+            });
+
+
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+const getListOGan = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            const response = await axios.get(process.env.LINK_BACKEND_ONTOLOGY + '/api/get-o-gan?city=' + data.city + '&type=' + data.type);
+            console.log(response.data);
+            resolve({
+                errCode: 0,
+                data: response.data
+
+            });
+
+
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+
 module.exports = {
     addTypeProduct,
     getAllTypeProduct,
@@ -5339,6 +5398,7 @@ module.exports = {
     getInventoryByTypeProduct,
     adminLogin,
     checkLoginWithAdmin,
+    fakeThongBaoMusic,
 
     //music app
     themCaSi,
@@ -5368,4 +5428,9 @@ module.exports = {
     updateStatusBillAdmin,
     getListStatusBillAdmin,
     //end winform
+
+
+    //ontology
+    getListKhuVuc,
+    getListOGan
 };

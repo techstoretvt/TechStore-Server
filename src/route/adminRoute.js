@@ -150,6 +150,11 @@ const initAdminRoute = (app) => {
         routes.getListLoiBaiHat,
         adminController.getListLoiBaiHat
     );
+    router.get(
+        routes.fakeThongBaoMusic,
+        adminController.fakeThongBaoMusic
+    );
+
 
     //winform
     router.get(
@@ -430,6 +435,17 @@ const initAdminRoute = (app) => {
         routes.xoaLoiBaiHatById,
         verifyAccessTokenAdmin,
         adminController.xoaLoiBaiHatById
+    );
+
+
+    //ontology
+    router.get(
+        routes.getListKhuVuc,
+        adminController.getListKhuVuc
+    );
+    router.get(
+        routes.getListOGan,
+        adminController.getListOGan
     );
 
     return app.use('/', router);
