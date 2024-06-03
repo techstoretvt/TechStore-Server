@@ -254,6 +254,10 @@ const initUserRoute = (app) => {
         routes.testWebsocket,
         userController.testWebsocket
     );
+    router.get(
+        routes.getListCartOffline,
+        userController.getListCartOffline
+    );
 
 
 
@@ -264,6 +268,7 @@ const initUserRoute = (app) => {
     router.post(routes.loginGoogle, userController.loginGoogle);
     router.post(routes.loginFacebook, userController.loginFacebook);
     router.post(routes.loginGithub, userController.loginGithub);
+    router.post(routes.taoTaiKhoanKhach, userController.taoTaiKhoanKhach);
     router.post(
         routes.addProductToCart,
         verifyAccessToken,

@@ -20,6 +20,8 @@ const getProductPromotionHome = () => {
                     'priceProduct',
                     'isSell',
                     'sold',
+                    'gia_tu',
+                    'gia_den',
                 ],
                 limit: 10,
                 include: [
@@ -81,6 +83,8 @@ const getProductPromotionHome = () => {
                     'priceProduct',
                     'isSell',
                     'sold',
+                    'gia_tu',
+                    'gia_den',
                 ],
                 limit: 10 - products.length,
                 include: [
@@ -158,6 +162,8 @@ const getTopSellProduct = () => {
                     'priceProduct',
                     'isSell',
                     'sold',
+                    'gia_tu',
+                    'gia_den',
                 ],
                 include: [
                     {
@@ -239,6 +245,8 @@ const getNewCollectionProduct = (data) => {
                         'priceProduct',
                         'isSell',
                         'sold',
+                        'gia_tu',
+                        'gia_den'
                     ],
                     include: [
                         {
@@ -320,6 +328,8 @@ const getProductFlycam = () => {
                     'priceProduct',
                     'isSell',
                     'sold',
+                    'gia_tu',
+                    'gia_den',
                 ],
                 include: [
                     {
@@ -405,6 +415,8 @@ const getListProductMayLike = (data) => {
                         'priceProduct',
                         'isSell',
                         'sold',
+                        'gia_tu',
+                        'gia_den'
                     ],
                     where: {
                         id: {
@@ -2504,6 +2516,8 @@ const getProductById = (data) => {
                         'isSell',
                         'sold',
                         'contentHTML',
+                        'gia_tu',
+                        'gia_den'
                     ],
                     limit: 10,
                     include: [
@@ -2917,6 +2931,7 @@ const getListBlogForyouMobile = (data) => {
 };
 
 import axios from 'axios';
+import { includes } from 'lodash';
 
 const getListKeywordSearchMobile = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -3062,6 +3077,72 @@ const getAllIdBlog = (data) => {
     });
 };
 
+//test
+const updateProduct = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            let products = await db.product.findAll();
+
+            for (let product of products) {
+                console.log(product.id);
+                let productUpdate = await db.product.findOne({
+                    where: {
+                        id: product.id
+                    },
+                    include: [
+                        {
+                            model: db.classifyProduct,
+                            as: 'classifyProduct-product',
+                        }
+                    ],
+                    raw: false,
+
+                })
+
+                if (productUpdate) {
+                    console.log(productUpdate['classifyProduct-product'][0].nameClassifyProduct);
+
+                    if (productUpdate['classifyProduct-product'].length === 1) {
+
+                        productUpdate.gia_tu = productUpdate.priceProduct
+                        productUpdate.gia_den = productUpdate.priceProduct
+                        await productUpdate.save();
+                    }
+                    else {
+                        let classifyProducts = productUpdate['classifyProduct-product']
+                        let min = +classifyProducts[0].priceClassify
+                        let max = +classifyProducts[0].priceClassify
+
+                        for (let classifyProduct of classifyProducts) {
+                            let price = +classifyProduct.priceClassify
+                            if (price < min) min = price
+                            if (price > max) max = price
+                        }
+
+                        productUpdate.gia_tu = min + ''
+                        productUpdate.gia_den = max + ''
+                        await productUpdate.save();
+
+                    }
+
+
+                    // productUpdate.gia_tu = '50000'
+                    // await productUpdate.save();
+                }
+
+            }
+
+            resolve({
+                errCode: 0,
+                data: products,
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 module.exports = {
     getProductPromotionHome,
     getTopSellProduct,
@@ -3092,5 +3173,6 @@ module.exports = {
     getListKeywordSearchMobile,
     getListBaiHat,
     getAllIdProduct,
-    getAllIdBlog
+    getAllIdBlog,
+    updateProduct
 };

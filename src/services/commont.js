@@ -373,6 +373,8 @@ const routes = {
     createNewUserMobile: '/api/v2/create-new-user-mobile',
     verifyCodeForCreateUserMobile: '/api/v2/verify-code-for-create-user-mobile',
     testWebsocket: '/api/v2/test-web-socket',
+    getListCartOffline: '/api/v2/get-list-cart-offline',
+    taoTaiKhoanKhach: '/api/v2/tao-tai-khoan-khach',
 
 
     //ontology

@@ -1437,6 +1437,31 @@ const checkLoginUser = async (req, res, next) => {
 };
 
 
+const getListCartOffline = async (req, res, next) => {
+    try {
+        let data = await userService.getListCartOffline(
+            req.query
+        );
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+
+const taoTaiKhoanKhach = async (req, res, next) => {
+    try {
+        let data = await userService.taoTaiKhoanKhach(
+            req.body
+        );
+
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
 
 module.exports = {
     CreateUser,
@@ -1560,5 +1585,7 @@ module.exports = {
     getGoiYMVBaiHat,
     timKiemMV,
     testWebsocket,
-    checkLoginUser
+    checkLoginUser,
+    getListCartOffline,
+    taoTaiKhoanKhach
 };

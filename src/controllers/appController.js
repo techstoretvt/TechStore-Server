@@ -311,6 +311,17 @@ const getAllIdBlog = async (req, res, next) => {
     }
 };
 
+//test
+const updateProduct = async (req, res, next) => {
+    try {
+        let data = await appService.updateProduct();
+        return res.status(200).json(data);
+    } catch (e) {
+        next(e);
+    }
+};
+
+
 module.exports = {
     checkStartServer,
     getProductPromotionHome,
@@ -342,5 +353,6 @@ module.exports = {
     getListKeywordSearchMobile,
     getListBaiHat,
     getAllIdProduct,
-    getAllIdBlog
+    getAllIdBlog,
+    updateProduct
 };

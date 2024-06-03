@@ -31,6 +31,8 @@ module.exports = (sequelize, DataTypes) => {
     isSell: DataTypes.STRING,
     sold: DataTypes.INTEGER,
     stt: DataTypes.INTEGER,
+    gia_tu: DataTypes.STRING,
+    gia_den: DataTypes.STRING,
 
 
   }, {

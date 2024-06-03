@@ -2566,21 +2566,22 @@ const buyProductByCard = (data, payload) => {
                     raw: false,
                     nest: true,
                 });
+                console.log("cart2: ", cart2);
 
                 let totals = 0;
 
                 let arrayProduct = cart.map((item, index) => {
                     let price;
-                    if (cart2[index].classifyProduct.nameClassifyProduct === "default")
+                    if (cart2[index].classifyProduct?.nameClassifyProduct === "default")
                         price = +cart2[index].product.priceProduct;
-                    else price = cart2[index].classifyProduct.priceClassify;
+                    else price = cart2[index].classifyProduct?.priceClassify;
 
                     totals = totals + Math.floor(price / 23000) * +item.amount;
                     price = Math.floor(price / 23000) + ".00";
 
                     return {
-                        name: cart2[index].product.nameProduct,
-                        sku: cart2[index].classifyProduct.nameClassifyProduct,
+                        name: cart2[index].product?.nameProduct,
+                        sku: cart2[index].classifyProduct?.nameClassifyProduct,
                         price: price,
                         currency: "USD",
                         quantity: +item.amount,
@@ -7998,6 +7999,138 @@ const testWebsocket = (data) => {
     });
 };
 
+const getListCartOffline = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            let dataCart = data.dataCart
+
+            let listData = []
+
+            for (let card of dataCart) {
+                let product = await db.product.findOne({
+                    where: {
+                        id: card.id
+                    },
+                    include: [
+                        {
+                            model: db.imageProduct,
+                            as: "imageProduct-product",
+                            attributes: {
+                                exclude: ["createdAt", "updatedAt", "id"],
+                            },
+                        },
+                        {
+                            model: db.promotionProduct,
+                            attributes: {
+                                exclude: ["createdAt", "updatedAt", "id"],
+                            },
+                        },
+                        {
+                            model: db.classifyProduct,
+                            as: "classifyProduct-product",
+                            attributes: {
+                                exclude: ["createdAt", "updatedAt"],
+                            },
+                        },
+                    ],
+                    nest: true,
+                    raw: false
+                })
+
+                let classify = await db.classifyProduct.findOne({
+                    where: {
+                        id: card.idClassifyProduct
+                    }
+                })
+
+                listData.push({
+                    product,
+                    classifyProduct: classify,
+                    amount: card.amount,
+                    type: 'offline',
+                    isChoose: 'true'
+                })
+            }
+
+
+            resolve({
+                errCode: 0,
+                data: listData
+            });
+
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+const taoTaiKhoanKhach = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.sdtKhach || !data.diaChiKhach || !data.hoTenKhach) {
+                return resolve({
+                    errCode: 1,
+                    errMessage: "Missing required parameter!",
+                    data,
+                });
+            }
+
+            // console.log(data);
+
+            let newUser = await db.User.create({
+                id: uuidv4(),
+                firstName: data.hoTenKhach,
+                sdt: data.sdtKhach,
+                typeAccount: 'web',
+                idTypeUser: '3',
+                statusUser: "true"
+            })
+
+            // console.log("User id: ", newUser.id);
+
+            let newAddress = await db.addressUser.create({
+                id: uuidv4(),
+                idUser: newUser.id,
+                nameAddress: 'Địa chỉ khách',
+                fullname: data.hoTenKhach,
+                sdt: data.sdtKhach,
+                addressText: data.diaChiKhach,
+                status: 'true',
+                isDefault: 'true'
+            })
+
+            // console.log("Address id: ", newAddress.id);
+
+            for (let cart of data.listCart) {
+                let newCart = await db.cart.create({
+                    id: uuidv4(),
+                    idUser: newUser.id,
+                    idProduct: cart.product.id,
+                    amount: +cart.amount,
+                    idClassifyProduct: cart.classifyProduct.id,
+                    stt: 1,
+                    isChoose: 'true'
+                })
+                console.log("Cart: ", cart);
+            }
+
+
+            const accessToken = await signAccessToken(newUser.id);
+
+
+
+
+            resolve({
+                errCode: 0,
+                data: accessToken
+            });
+
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
 
 
 module.exports = {
@@ -8119,5 +8252,7 @@ module.exports = {
     tangViewBaiHat,
     getGoiYMVBaiHat,
     timKiemMV,
-    testWebsocket
+    testWebsocket,
+    getListCartOffline,
+    taoTaiKhoanKhach
 };

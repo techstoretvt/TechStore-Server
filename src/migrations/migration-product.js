@@ -45,6 +45,12 @@ module.exports = {
         autoIncrement: true,
         type: Sequelize.INTEGER
       },
+      gia_tu: {
+        type: Sequelize.STRING
+      },
+      gia_den: {
+        type: Sequelize.STRING
+      },
 
 
 

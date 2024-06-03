@@ -38,6 +38,10 @@ const initAppRoute = (app) => {
     router.get('/verify-email', userController.verifyEmail);
     router.get('/api/v1/check-start-server', appController.checkStartServer);
 
+    //test
+    router.get('/update-product-system', appController.updateProduct);
+
+
     //app api
     router.get(
         routes.getProductPromotionHome,
